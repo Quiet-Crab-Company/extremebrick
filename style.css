@@ -65,17 +65,32 @@ body {
   filter: grayscale(100%) contrast(1.12);
 }
 
-@media (min-height: 800px) and (min-width: 500px) {
+/* Web / Desktop Background (Active when browsing on web / widescreen / landscape) */
+@media (min-width: 600px), (orientation: landscape) {
   body {
-    padding: 12px 0 18px;
+    background-image: url('web_background.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
+
+@media (min-width: 600px), (min-height: 700px) and (min-width: 480px) {
+  body {
+    padding: 12px 0 20px;
   }
 
   #game-container {
-    height: 90vh;
-    max-height: 90vh;
-    max-width: calc(90vh * 9 / 16);
+    height: 88vh;
+    max-height: 88vh;
+    max-width: calc(88vh * 9 / 16);
     border-radius: 18px;
-    border: 2px solid rgba(181, 55, 242, 0.4);
+    border: 2px solid rgba(181, 55, 242, 0.45);
+    box-shadow: 
+      0 0 50px rgba(181, 55, 242, 0.45),
+      0 0 100px rgba(0, 0, 0, 0.95),
+      inset 0 0 20px rgba(181, 55, 242, 0.2);
   }
 }
 
@@ -847,13 +862,19 @@ body {
 .site-footer {
   width: 100%;
   max-width: 580px;
-  padding: 16px 20px 24px;
-  margin: 0 auto;
+  padding: 14px 20px 18px;
+  margin: 12px auto 0;
   text-align: center;
   font-family: var(--font-ui);
   font-size: 0.82rem;
   line-height: 1.5;
-  color: rgba(245, 245, 252, 0.72);
+  color: rgba(245, 245, 252, 0.82);
+  background: rgba(10, 8, 22, 0.72);
+  border: 1px solid rgba(181, 55, 242, 0.28);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
   z-index: 10;
   flex-shrink: 0;
   user-select: text;
