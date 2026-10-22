@@ -1312,7 +1312,13 @@ class BrickBreakerGame {
       this.sound.init();
       const newMuted = !this.sound.isMuted;
       this.sound.setMuted(newMuted);
-      this.btnSound.textContent = this.sound.isMuted ? '🔇' : '🔊';
+      const iconImg = this.btnSound.querySelector('img');
+      if (iconImg) {
+        iconImg.src = this.sound.isMuted
+          ? 'images/mute-audio-play-svgrepo-com.svg'
+          : 'images/sound-on-music-svgrepo-com.svg';
+        iconImg.alt = this.sound.isMuted ? 'Muted' : 'Sound On';
+      }
       this.btnSound.classList.toggle('muted', this.sound.isMuted);
     };
 
