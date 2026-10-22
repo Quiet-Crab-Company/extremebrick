@@ -4091,7 +4091,7 @@ class BrickBreakerGame {
     }
   }
 
-  // Render background image preserving natural aspect ratio (cover mode)
+  // Render background image (stretched to full canvas)
   drawBackground() {
     if (!this.images.bg) {
       this.ctx.fillStyle = '#060511';
@@ -4100,29 +4100,7 @@ class BrickBreakerGame {
     }
 
     const bg = this.images.bg;
-    const nw = bg.naturalWidth || bg.width;
-    const nh = bg.naturalHeight || bg.height;
-
-    if (!nw || !nh) {
-      this.ctx.drawImage(bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      return;
-    }
-
-    const canvasRatio = CANVAS_WIDTH / CANVAS_HEIGHT; // 900 / 1600 = 0.5625
-    const imgRatio = nw / nh;
-
-    let sx = 0, sy = 0, sw = nw, sh = nh;
-    if (imgRatio > canvasRatio) {
-      // Image is wider than canvas (e.g. 1800x3000) -> crop sides symmetrically to center
-      sw = nh * canvasRatio;
-      sx = (nw - sw) / 2;
-    } else if (imgRatio < canvasRatio) {
-      // Image is taller than canvas -> anchor to bottom (keeps city skyline visible)
-      sh = nw / canvasRatio;
-      sy = nh - sh;
-    }
-
-    this.ctx.drawImage(bg, sx, sy, sw, sh, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.ctx.drawImage(bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   }
 
   // --- Rendering ---
