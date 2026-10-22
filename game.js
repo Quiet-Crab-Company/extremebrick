@@ -1265,7 +1265,7 @@ class BrickBreakerGame {
     this.magataDebuff = { active: false, timer: 0 };
     this.magataComments = [];
     this.ruriiroDebuff = { active: false };
-    this.haruSlowMotion = { active: false, timer: 0, duration: 2.0, slowFactor: 0.25 };
+    this.setSlowMotion(false);
     this.skillCutins = [];
     this.resetBatSize();
     this.generateBricks(true); // Bricks push in from top on start
@@ -1350,6 +1350,29 @@ class BrickBreakerGame {
     this.newHighBadgeEl.classList.toggle('hidden', !isNewRecord);
 
     this.overlayGameOver.classList.remove('hidden');
+    this.setSlowMotion(false);
+  }
+
+  setSlowMotion(active) {
+    if (active) {
+      this.haruSlowMotion = {
+        active: true,
+        timer: 2.0,
+        duration: 2.0,
+        slowFactor: 0.25
+      };
+      if (this.container) {
+        this.container.classList.add('slowmo-grayscale');
+      }
+    } else {
+      if (this.haruSlowMotion) {
+        this.haruSlowMotion.active = false;
+        this.haruSlowMotion.timer = 0;
+      }
+      if (this.container) {
+        this.container.classList.remove('slowmo-grayscale');
+      }
+    }
   }
 
   extendBat() {
@@ -2604,13 +2627,8 @@ class BrickBreakerGame {
     if (brick.specialType === 'haru') {
       this.sound.playSpecialHit();
 
-      // Activate 2-second slow motion (0.25x speed for balls, hearts, containers)
-      this.haruSlowMotion = {
-        active: true,
-        timer: 2.0,
-        duration: 2.0,
-        slowFactor: 0.25
-      };
+      // Activate 2-second slow motion (0.25x speed for balls, hearts, containers) & grayscale mode
+      this.setSlowMotion(true);
 
       // Resonant pulse burst around each active ball upon slow-mo activation
       for (const b of this.balls) {
@@ -2849,8 +2867,7 @@ class BrickBreakerGame {
       }
 
       if (this.haruSlowMotion.timer <= 0) {
-        this.haruSlowMotion.active = false;
-        this.haruSlowMotion.timer = 0;
+        this.setSlowMotion(false);
 
         // Reset all ball speeds to normal default base speed!
         this.speedMultiplier = 1.0;
@@ -3599,7 +3616,7 @@ class BrickBreakerGame {
       this.boardSlowDebuff = { active: false, timer: 0 };
       this.magataDebuff = { active: false, timer: 0 };
       this.magataComments = [];
-      this.haruSlowMotion = { active: false, timer: 0, duration: 2.0, slowFactor: 0.25 };
+      this.setSlowMotion(false);
       this.skillCutins = [];
 
       if (this.lives > 0) {

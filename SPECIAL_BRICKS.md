@@ -777,13 +777,14 @@ The **Haru Brick** introduces the **Power Resonance** skill. Breaking a Haru bri
 
 ### Core Mechanics
 * **Skill Name**: `"Power Resonance"` (Configured in `skills_config.json`).
-* **2-Second Slow Motion**:
-  * Upon impact, activates `this.haruSlowMotion = { active: true, timer: 2.0, duration: 2.0, slowFactor: 0.25 }`.
+* **2-Second Slow Motion & Grayscale**:
+  * Upon impact, activates `this.setSlowMotion(true)` (`this.haruSlowMotion = { active: true, timer: 2.0, duration: 2.0, slowFactor: 0.25 }`).
+  * **Grayscale Shift**: Applies `-webkit-filter: grayscale(100%) contrast(1.12); filter: grayscale(100%) contrast(1.12)` to `#game-container`, turning the entire game world into a dramatic monochrome time-freeze for the 2 seconds!
   * **Balls**: Multiplies movement step by `0.25x`, keeping directional velocity smooth while dilating physics.
   * **Zero Hearts**: Slows downward gravity acceleration and velocity by `0.25x`.
   * **Containers**: Slows descent velocity and angular rotation by `0.25x`.
 * **Velocity Normalization (After 2 Seconds)**:
-  * When the 2 seconds expire, slow motion ends and all active balls (`this.balls`) have their velocities scaled back to baseline:
+  * When the 2 seconds expire, slow motion ends (`this.setSlowMotion(false)`), color smoothly fades back in, and all active balls (`this.balls`) have their velocities scaled back to baseline:
     ```javascript
     const ratio = BASE_BALL_SPEED / currentSpeed;
     ball.vx *= ratio;
@@ -796,7 +797,7 @@ The **Haru Brick** introduces the **Power Resonance** skill. Breaking a Haru bri
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` on hit; plays resonance chime when speed normalization triggers.
 * **Floating Text**: Displays `POWER RESONANCE!` in bright electric cyan (`#00e5ff`) followed by `SLOW MOTION (2s)!` on trigger, and `SPEED NORMALIZED!` when normal speed resumes.
-* **Time Dilation Aura**: Renders a pulsating cyan resonance border aura along the field perimeter during the 2 seconds of slow motion.
+* **Grayscale & Time Dilation Aura**: Transforms entire screen into cinematic monochrome with a pulsating cyan resonance border aura along the field perimeter during the 2 seconds of slow motion.
 * **Ball Shockwave**: Spawns an expanding cyan and white resonance burst around each normalized ball (`#00e5ff`, `#ffffff`).
 * **Brick Particles**: Radiates 30 electric cyan, sky blue, and radiant white sparkles (`#00e5ff`, `#76ffff`, `#ffffff`) on destruction.
 

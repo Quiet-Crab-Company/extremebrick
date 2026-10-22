@@ -52,6 +52,13 @@ body {
   display: flex;
   flex-direction: column;
   touch-action: none;
+  transition: filter 0.25s ease, -webkit-filter 0.25s ease;
+}
+
+/* Haru Slow Motion Grayscale Effect */
+#game-container.slowmo-grayscale {
+  -webkit-filter: grayscale(100%) contrast(1.12);
+  filter: grayscale(100%) contrast(1.12);
 }
 
 @media (min-height: 800px) and (min-width: 500px) {
