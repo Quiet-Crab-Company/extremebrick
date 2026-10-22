@@ -1584,10 +1584,6 @@ class BrickBreakerGame {
     const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
     const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 200);
 
-    // Floating text
-    this.floatingTexts.push(
-      new FloatingText(bx, by, 'GREEN GALE!', '#00ff88', '13px "Press Start 2P"')
-    );
 
     // Burst of emerald green and mint sparks at brick
     this.spawnExplosion(bx, by, '#00ff88', 35);
@@ -1682,9 +1678,6 @@ class BrickBreakerGame {
     this.suiContainerRain.timer = 30.0;
     this.suiContainerRain.nextDropTimer = 0.5; // first container drops 0.5s after break
 
-    this.floatingTexts.push(
-      new FloatingText(bx, by, 'CONTAINER RAIN (30S)!', '#ff3344', '11px "Press Start 2P"')
-    );
 
     this.spawnExplosion(bx, by, '#ff3344', 32);
     this.spawnExplosion(bx, by, '#8b0000', 20);
@@ -1854,9 +1847,6 @@ class BrickBreakerGame {
       this.magataComments.push(comment);
     });
 
-    this.floatingTexts.push(
-      new FloatingText(bx, by, 'MA☆GA☆TA DANMAKU (30S)!', '#ff007f', '11px "Press Start 2P"')
-    );
 
     this.spawnExplosion(bx, by, '#ff007f', 32);
     this.spawnExplosion(bx, by, '#ff69b4', 22);
@@ -1930,9 +1920,6 @@ class BrickBreakerGame {
     this.spawnExplosion(bx, by, '#1f4e96', 24);
     this.spawnExplosion(bx, by, '#ffffff', 16);
 
-    this.floatingTexts.push(
-      new FloatingText(bx, by, 'RURIIRO ILLUSION!', '#4d79ff', '12px "Press Start 2P"')
-    );
 
     // Get all other alive bricks currently on the field
     const aliveBricks = this.bricks.filter(b => b.alive && b !== brick);
@@ -1997,9 +1984,6 @@ class BrickBreakerGame {
     this.spawnExplosion(bx, by, '#4d79ff', 24);
     this.spawnExplosion(bx, by, '#ffffff', 18);
 
-    this.floatingTexts.push(
-      new FloatingText(bx, by, 'REAL FOUND! DISPELLED!', '#00f3ff', '12px "Press Start 2P"')
-    );
 
     this.ruriiroDebuff.active = false;
 
@@ -2257,9 +2241,6 @@ class BrickBreakerGame {
     if (brick.specialType === 'yo') {
       this.extendBat();
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'EXTENDED BOARD! (30s)', '#ffe600', '11px "Press Start 2P"')
-      );
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffe600', 24);
       return;
     }
@@ -2284,9 +2265,6 @@ class BrickBreakerGame {
       }
 
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'MAGNET ACTIVE (1 BALL)!', '#00f3ff', '10px "Press Start 2P"')
-      );
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00f3ff', 30);
       return;
     }
@@ -2300,9 +2278,6 @@ class BrickBreakerGame {
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff3b30', 36);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff9500', 20);
 
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'BOOM!', '#ff3b30', '14px "Press Start 2P"')
-      );
 
       // Explode all adjacent bricks
       const adjacentBricks = this.bricks.filter(
@@ -2344,9 +2319,6 @@ class BrickBreakerGame {
       this.shield.active = true;
       this.shield.timer = SHIELD_DURATION;
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'NEON SHIELD (15s / 1 HIT)!', '#00f3ff', '10px "Press Start 2P"')
-      );
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00f3ff', 30);
       return;
     }
@@ -2356,9 +2328,6 @@ class BrickBreakerGame {
       this.turrets.active = true;
       this.turrets.timer = TURRET_DURATION;
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'DUAL TURRETS (30s)!', '#ff2a85', '10px "Press Start 2P"')
-      );
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff2a85', 30);
       return;
     }
@@ -2373,9 +2342,6 @@ class BrickBreakerGame {
 
       if (adjacentUnpoisoned.length > 0) {
         this.sound.playSpecialHit();
-        this.floatingTexts.push(
-          new FloatingText(brick.x + brick.width / 2, brick.y, 'POISON SPREAD!', '#39ff14', '10px "Press Start 2P"')
-        );
         this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#39ff14', 30);
         const target = adjacentUnpoisoned[Math.floor(Math.random() * adjacentUnpoisoned.length)];
         this.poisonBrick(target);
@@ -2396,9 +2362,6 @@ class BrickBreakerGame {
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#bf00ff', 40);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffffff', 20);
 
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'X-BLAST!', '#bf00ff', '15px "Press Start 2P"')
-      );
 
       // Create dramatic diagonal purple neon laser beams across the grid
       this.xBeams.push({
@@ -2457,9 +2420,6 @@ class BrickBreakerGame {
       });
 
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(spawnX, brick.y, 'BOUNCE HEART 3x!', '#00f3ff', '11px "Press Start 2P"')
-      );
 
       // Cyan & magenta neon particle burst
       this.spawnExplosion(spawnX, spawnY, '#00f3ff', 24);
@@ -2489,9 +2449,6 @@ class BrickBreakerGame {
       this.boardSpeedBoost.active = true;
       this.boardSpeedBoost.timer = BOARD_SPEED_BOOST_DURATION;
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'SPEED BOOST (20s)!', '#ffea00', '11px "Press Start 2P"')
-      );
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffea00', 28);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff9100', 20);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffffff', 12);
@@ -2506,9 +2463,6 @@ class BrickBreakerGame {
       const sourceX = brick.x + brick.width / 2;
       const sourceY = brick.y + brick.height / 2;
 
-      this.floatingTexts.push(
-        new FloatingText(sourceX, brick.y, 'JUMP!', '#f368e0', '13px "Press Start 2P"')
-      );
       this.spawnExplosion(sourceX, sourceY, '#f368e0', 20);
       this.spawnExplosion(sourceX, sourceY, '#ff00aa', 14);
       this.spawnExplosion(sourceX, sourceY, '#ffffff', 8);
@@ -2550,9 +2504,6 @@ class BrickBreakerGame {
       const sourceX = brick.x + brick.width / 2;
       const sourceY = brick.y + brick.height / 2;
 
-      this.floatingTexts.push(
-        new FloatingText(sourceX, brick.y, 'RAPID BULLETS (x5)!', '#ffffff', '11px "Press Start 2P"')
-      );
       this.spawnExplosion(sourceX, sourceY, '#ffffff', 26);
       this.spawnExplosion(sourceX, sourceY, '#e0f7fa', 16);
 
@@ -2576,9 +2527,6 @@ class BrickBreakerGame {
       const sourceX = brick.x + brick.width / 2;
       const sourceY = brick.y + brick.height / 2;
 
-      this.floatingTexts.push(
-        new FloatingText(sourceX, brick.y, 'BOARD SHORTENED (1M)!', '#ff3344', '11px "Press Start 2P"')
-      );
       this.spawnExplosion(sourceX, sourceY, '#ff3344', 32);
       this.spawnExplosion(sourceX, sourceY, '#555555', 24);
       this.spawnExplosion(sourceX, sourceY, '#00f3ff', 16);
@@ -2625,9 +2573,6 @@ class BrickBreakerGame {
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff3300', 40);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffffff', 20);
 
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, '+ BLAST!', '#ff3300', '15px "Press Start 2P"')
-      );
 
       // Create dramatic horizontal & vertical fiery laser beams across the grid
       this.plusBeams.push({
@@ -2682,9 +2627,6 @@ class BrickBreakerGame {
       }
 
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'FIRE BALL! (x5)', '#ff4500', '13px "Press Start 2P"')
-      );
 
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff3b30', 32);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffa500', 22);
@@ -2697,9 +2639,6 @@ class BrickBreakerGame {
       this.gravityField.active = true;
       this.gravityField.timer = GRAVITY_FIELD_DURATION;
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'GRAVITY FIELD (8s)!', '#ff69b4', '11px "Press Start 2P"')
-      );
 
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff69b4', 32);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff1493', 20);
@@ -2712,9 +2651,6 @@ class BrickBreakerGame {
       this.pointDebuff.active = true;
       this.pointDebuff.timer = DEBUFF_ICHINOSE_DURATION;
       this.sound.playDebuff();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'DEBUFF: 1 PT ONLY! (60s)', '#ff0033', '10px "Press Start 2P"')
-      );
 
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0033', 35);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#880015', 24);
@@ -2737,9 +2673,6 @@ class BrickBreakerGame {
 
       // Audio & Floating notification
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'EXTRA BALL!', '#00c3e3', '12px "Press Start 2P"')
-      );
 
       // Cyan & Silver starburst explosion
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00c3e3', 24);
@@ -2816,9 +2749,6 @@ class BrickBreakerGame {
         }
 
         this.sound.playSpecialHit();
-        this.floatingTexts.push(
-          new FloatingText(brick.x + brick.width / 2, brick.y, 'DEBUFF CLEARED!', '#88d629', '12px "Press Start 2P"')
-        );
 
         // Cleansing Emerald & Lime starburst explosion
         this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#88d629', 28);
@@ -2847,12 +2777,6 @@ class BrickBreakerGame {
         this.spawnExplosion(b.x, b.y, '#ffffff', 8);
       }
 
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'POWER RESONANCE!', '#00e5ff', '12px "Press Start 2P"')
-      );
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y + 16, 'SLOW MOTION (2s)!', '#ffffff', '10px "Press Start 2P"')
-      );
 
       // Cyan, sky blue & radiant white resonance particle burst
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00e5ff', 30);
@@ -3275,7 +3199,7 @@ class BrickBreakerGame {
         this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#39ff14', 24);
         const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (brick.isHard ? '#ffcc00' : '#39ff14');
         this.floatingTexts.push(
-          new FloatingText(brick.x + brick.width / 2, brick.y, `POISON BREAK! +${ptsGained}`, ptsColor, '10px "Press Start 2P"')
+          new FloatingText(brick.x + brick.width / 2, brick.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
         );
 
         if (brick.isSpecial) {
@@ -3516,9 +3440,6 @@ class BrickBreakerGame {
             ball.hasMagnetEffect = false;
             this.magnetBricksRemaining = 0;
             this.updateMagnetBrick();
-            this.floatingTexts.push(
-              new FloatingText(brick.x + brick.width / 2, brick.y - 14, 'MAGNET REMOVED', '#00f3ff', '10px "Press Start 2P"')
-            );
           }
 
           // Handle special brick vs normal brick
@@ -3530,12 +3451,6 @@ class BrickBreakerGame {
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 14);
             if (brick.isHard) {
               this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffcc00', 8);
-            }
-            if (wasMagnet) {
-              const countText = this.magnetBricksRemaining > 0 ? `MAGNET (${this.magnetBricksRemaining} LEFT)` : 'MAGNET ENDED';
-              this.floatingTexts.push(
-                new FloatingText(brick.x + brick.width / 2, brick.y - 14, countText, '#00f3ff', '10px "Press Start 2P"')
-              );
             }
             const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (brick.isHard ? '#ffcc00' : '#ff2a85');
             this.floatingTexts.push(
@@ -3953,9 +3868,6 @@ class BrickBreakerGame {
         this.spawnExplosion(impactX, impactY, '#f368e0', 36);
         this.spawnExplosion(impactX, impactY, '#ff00aa', 24);
         this.spawnExplosion(impactX, impactY, '#ffffff', 16);
-        this.floatingTexts.push(
-          new FloatingText(impactX, destY - 14, '+ CROSS BLAST!', '#f368e0', '13px "Press Start 2P"')
-        );
 
         // Find the 5 bricks in a + sign around the target (center + up, down, left, right)
         const crossBricks = this.bricks.filter(
