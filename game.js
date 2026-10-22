@@ -190,6 +190,12 @@ class SoundSystem {
       gain.gain.setValueAtTime(volume, this.ctx.currentTime);
       source.connect(gain);
       gain.connect(this.ctx.destination);
+      source.onended = () => {
+        try {
+          source.disconnect();
+          gain.disconnect();
+        } catch (e) { }
+      };
       source.start(0);
       return true;
     } catch (e) {
@@ -220,6 +226,13 @@ class SoundSystem {
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) { }
+      };
 
       osc.start(now);
       osc.stop(now + 0.08);
@@ -252,6 +265,13 @@ class SoundSystem {
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) { }
+      };
 
       osc.start(now);
       osc.stop(now + 0.06);
@@ -304,6 +324,14 @@ class SoundSystem {
       filter.connect(gain);
       gain.connect(this.ctx.destination);
 
+      noise.onended = () => {
+        try {
+          noise.disconnect();
+          filter.disconnect();
+          gain.disconnect();
+        } catch (e) { }
+      };
+
       noise.start(now);
       noise.stop(now + 0.85);
     } catch (e) { }
@@ -330,6 +358,13 @@ class SoundSystem {
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
+
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gain.disconnect();
+          } catch (e) { }
+        };
 
         osc.start(startTime);
         osc.stop(startTime + 0.12);
@@ -366,6 +401,13 @@ class SoundSystem {
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) { }
+      };
+
       osc.start(now);
       osc.stop(now + 0.35);
     } catch (e) { }
@@ -392,6 +434,13 @@ class SoundSystem {
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
+
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gain.disconnect();
+          } catch (e) { }
+        };
 
         osc.start(startTime);
         osc.stop(startTime + 0.2);
@@ -428,6 +477,13 @@ class SoundSystem {
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gain.disconnect();
+          } catch (e) { }
+        };
+
         osc.start(startTime);
         osc.stop(startTime + 0.22);
       });
@@ -456,6 +512,13 @@ class SoundSystem {
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (e) { }
+      };
 
       osc.start(now);
       osc.stop(now + 0.4);
@@ -491,15 +554,11 @@ class Particle {
   }
 
   draw(ctx) {
-    ctx.save();
     ctx.globalAlpha = this.alpha;
     ctx.fillStyle = this.color;
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 8;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, Math.max(0.1, this.size * this.alpha), 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, Math.max(0.3, this.size * this.alpha), 0, Math.PI * 2);
     ctx.fill();
-    ctx.restore();
   }
 }
 
@@ -611,6 +670,12 @@ class BrickBreakerGame {
     this.skillCutins = [];
     this.skillsConfig = {};
 
+    // Performance Caches (Offscreen Canvases & Gradients)
+    this.cachedRedVignette = null;
+    this.cachedPinkVignette = null;
+    this.cachedGravityGrad = null;
+    this.cachedWindGrad = null;
+
     // Assets
     this.images = {};
     this.assetsLoaded = false;
@@ -639,6 +704,51 @@ class BrickBreakerGame {
 
     this.lastTime = performance.now();
     this.init();
+  }
+
+  // Pre-render debuff vignettes to offscreen canvases to eliminate per-frame gradient allocation
+  initVignetteCanvases() {
+    this.cachedRedVignette = this.renderOffscreenVignette('#dc0a14');
+    this.cachedPinkVignette = this.renderOffscreenVignette('#ff006e');
+  }
+
+  renderOffscreenVignette(colorHex) {
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = CANVAS_WIDTH;
+    offCanvas.height = CANVAS_HEIGHT;
+    const offCtx = offCanvas.getContext('2d');
+    const cornerRadius = 420;
+    const isPink = colorHex === '#ff006e';
+    const cornerColor = isPink ? 'rgba(255, 0, 110, 0.45)' : 'rgba(220, 10, 20, 0.45)';
+    const cornerFade = 'rgba(200, 0, 0, 0)';
+
+    // 4 Corner Gradients
+    const corners = [
+      [0, 0, 0, 0],
+      [CANVAS_WIDTH, 0, CANVAS_WIDTH - cornerRadius, 0],
+      [0, CANVAS_HEIGHT, 0, CANVAS_HEIGHT - cornerRadius],
+      [CANVAS_WIDTH, CANVAS_HEIGHT, CANVAS_WIDTH - cornerRadius, CANVAS_HEIGHT - cornerRadius]
+    ];
+    for (const [cx, cy, rx, ry] of corners) {
+      const g = offCtx.createRadialGradient(cx, cy, 0, cx, cy, cornerRadius);
+      g.addColorStop(0, cornerColor);
+      g.addColorStop(1, cornerFade);
+      offCtx.fillStyle = g;
+      offCtx.fillRect(rx, ry, cornerRadius, cornerRadius);
+    }
+
+    // Outer screen perimeter vignette
+    const edgeVignette = offCtx.createRadialGradient(
+      CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.42,
+      CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, Math.hypot(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+    );
+    edgeVignette.addColorStop(0, 'rgba(255, 0, 0, 0)');
+    edgeVignette.addColorStop(0.75, 'rgba(200, 0, 20, 0.08)');
+    edgeVignette.addColorStop(1, isPink ? 'rgba(255, 0, 110, 0.28)' : 'rgba(220, 10, 20, 0.28)');
+    offCtx.fillStyle = edgeVignette;
+    offCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    return offCanvas;
   }
 
   // --- High Score Persistence ---
@@ -698,6 +808,11 @@ class BrickBreakerGame {
       this.scorePopupContainer = document.getElementById('score-popup-container');
     }
     if (!this.scorePopupContainer) return;
+
+    // Prune oldest popup to prevent DOM thrashing during large multi-brick cascades
+    while (this.scorePopupContainer.children.length >= 8) {
+      this.scorePopupContainer.removeChild(this.scorePopupContainer.firstChild);
+    }
 
     const popup = document.createElement('span');
     popup.className = 'score-popup';
@@ -1127,11 +1242,17 @@ class BrickBreakerGame {
       }
     });
 
-    // Pointer / Touch Swiping
+    // Pointer / Touch Swiping - Cache bounding rect to avoid layout recalculation on high-frequency moves
+    let cachedRect = this.canvas.getBoundingClientRect();
+    const updateRect = () => {
+      cachedRect = this.canvas.getBoundingClientRect();
+    };
+    window.addEventListener('resize', updateRect);
+    window.addEventListener('scroll', updateRect, { passive: true });
+
     const getCanvasX = (clientX) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const scaleX = CANVAS_WIDTH / rect.width;
-      return (clientX - rect.left) * scaleX;
+      const scaleX = CANVAS_WIDTH / (cachedRect.width || 1);
+      return (clientX - cachedRect.left) * scaleX;
     };
 
     const handlePointerMove = (clientX) => {
@@ -1140,6 +1261,7 @@ class BrickBreakerGame {
     };
 
     this.container.addEventListener('pointerdown', (e) => {
+      updateRect();
       this.sound.init();
       this.isPointerDown = true;
       handlePointerMove(e.clientX);
@@ -1217,6 +1339,7 @@ class BrickBreakerGame {
 
   // --- Game Flow Methods ---
   async init() {
+    this.initVignetteCanvases();
     this.setupInputs();
     this.updateHUD();
     // Position paddle and resting preview ball on canvas behind overlay
@@ -2668,8 +2791,10 @@ class BrickBreakerGame {
   }
 
   spawnExplosion(x, y, color, count = 16) {
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+    if (this.particles.length >= 220) return;
+    const effectiveCount = Math.min(count, 220 - this.particles.length);
+    for (let i = 0; i < effectiveCount; i++) {
+      const angle = (Math.PI * 2 * i) / effectiveCount + (Math.random() - 0.5) * 0.5;
       const speed = Math.random() * 6 + 2;
       const size = Math.random() * 4 + 2;
       const life = Math.random() * 0.4 + 0.35;
@@ -3648,7 +3773,10 @@ class BrickBreakerGame {
       }
     }
 
-    // Update Floating Texts
+    // Update Floating Texts (capped at 18 to avoid cascade backlog)
+    if (this.floatingTexts.length > 18) {
+      this.floatingTexts.splice(0, this.floatingTexts.length - 18);
+    }
     for (let t = this.floatingTexts.length - 1; t >= 0; t--) {
       this.floatingTexts[t].update(dt);
       if (this.floatingTexts[t].life <= 0) {
@@ -4349,12 +4477,14 @@ class BrickBreakerGame {
       this.ctx.globalAlpha = fieldAlpha;
 
       // Vertical pink transparent gradient covering bottom 30% of field
-      const grad = this.ctx.createLinearGradient(0, GRAVITY_FIELD_Y, 0, CANVAS_HEIGHT);
-      grad.addColorStop(0, 'rgba(255, 105, 180, 0.08)');
-      grad.addColorStop(0.35, 'rgba(255, 20, 147, 0.13)');
-      grad.addColorStop(1, 'rgba(255, 105, 180, 0.22)');
+      if (!this.cachedGravityGrad) {
+        this.cachedGravityGrad = this.ctx.createLinearGradient(0, GRAVITY_FIELD_Y, 0, CANVAS_HEIGHT);
+        this.cachedGravityGrad.addColorStop(0, 'rgba(255, 105, 180, 0.08)');
+        this.cachedGravityGrad.addColorStop(0.35, 'rgba(255, 20, 147, 0.13)');
+        this.cachedGravityGrad.addColorStop(1, 'rgba(255, 105, 180, 0.22)');
+      }
 
-      this.ctx.fillStyle = grad;
+      this.ctx.fillStyle = this.cachedGravityGrad;
       this.ctx.fillRect(0, GRAVITY_FIELD_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GRAVITY_FIELD_Y);
 
       // Top glowing neon boundary line at Y = 1120
@@ -4405,13 +4535,18 @@ class BrickBreakerGame {
       const windAlpha = this.taigaWind.active ? Math.min(1.0, this.taigaWind.timer * 3.0) : 0;
 
       // Layer 1: Ambient emerald / mint upward gale glow from bottom
-      const windGrad = this.ctx.createLinearGradient(0, CANVAS_HEIGHT, 0, HEADER_HEIGHT);
-      windGrad.addColorStop(0, `rgba(0, 255, 136, ${0.30 * windAlpha})`);
-      windGrad.addColorStop(0.35, `rgba(57, 255, 20, ${0.15 * windAlpha})`);
-      windGrad.addColorStop(0.75, `rgba(0, 243, 255, ${0.08 * windAlpha})`);
-      windGrad.addColorStop(1, 'rgba(0, 255, 136, 0)');
-      this.ctx.fillStyle = windGrad;
+      if (!this.cachedWindGrad) {
+        this.cachedWindGrad = this.ctx.createLinearGradient(0, CANVAS_HEIGHT, 0, HEADER_HEIGHT);
+        this.cachedWindGrad.addColorStop(0, 'rgba(0, 255, 136, 0.30)');
+        this.cachedWindGrad.addColorStop(0.35, 'rgba(57, 255, 20, 0.15)');
+        this.cachedWindGrad.addColorStop(0.75, 'rgba(0, 243, 255, 0.08)');
+        this.cachedWindGrad.addColorStop(1, 'rgba(0, 255, 136, 0)');
+      }
+      this.ctx.save();
+      this.ctx.globalAlpha = windAlpha;
+      this.ctx.fillStyle = this.cachedWindGrad;
       this.ctx.fillRect(0, HEADER_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT - HEADER_HEIGHT);
+      this.ctx.restore();
 
       // Layer 2: Flowing dynamic vertical wind streamer ribbons
       for (const rib of this.taigaWind.ribbons) {
@@ -4541,24 +4676,18 @@ class BrickBreakerGame {
       for (const bp of this.brokenParticles) {
         if (bp.type === 'smoke') {
           const alpha = Math.max(0, bp.life / bp.maxLife) * 0.45;
-          this.ctx.save();
           this.ctx.globalAlpha = alpha;
           this.ctx.fillStyle = `rgb(${bp.gray}, ${bp.gray}, ${bp.gray})`;
           this.ctx.beginPath();
           this.ctx.arc(bp.x, bp.y, bp.size, 0, Math.PI * 2);
           this.ctx.fill();
-          this.ctx.restore();
         } else if (bp.type === 'spark') {
           const alpha = Math.max(0, bp.life / bp.maxLife);
-          this.ctx.save();
           this.ctx.globalAlpha = alpha;
           this.ctx.fillStyle = bp.color;
-          this.ctx.shadowColor = bp.color;
-          this.ctx.shadowBlur = 10;
           this.ctx.beginPath();
           this.ctx.arc(bp.x, bp.y, bp.size, 0, Math.PI * 2);
           this.ctx.fill();
-          this.ctx.restore();
         }
       }
 
@@ -4857,22 +4986,23 @@ class BrickBreakerGame {
       const isFire = ball.isFireBall && ball.fireHitsRemaining > 0;
 
       if (ball.trail.length > 1) {
-        const fullTrail = [...ball.trail, { x: ball.x, y: ball.y }];
-
         this.ctx.save();
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
 
+        const trail = ball.trail;
+        const trailLen = trail.length;
+
         // Pass 1: Outer Neon Blue/Cyan Comet Glow (or Fiery Orange Blaze)
         this.ctx.shadowColor = isFire ? '#ff4500' : '#00f3ff';
-        for (let i = 0; i < fullTrail.length - 1; i++) {
-          const p1 = fullTrail[i];
-          const p2 = fullTrail[i + 1];
-          const progress = (i + 1) / fullTrail.length;
+        this.ctx.shadowBlur = isFire ? 18 : 12;
+        for (let i = 0; i < trailLen; i++) {
+          const p1 = trail[i];
+          const p2 = (i === trailLen - 1) ? ball : trail[i + 1];
+          const progress = (i + 1) / (trailLen + 1);
           const alpha = Math.pow(progress, 1.2) * (isFire ? 0.75 : 0.55);
           const width = ball.radius * (0.35 + 1.25 * progress);
 
-          this.ctx.shadowBlur = (isFire ? 20 : 15) * progress;
           this.ctx.strokeStyle = isFire ? `rgba(255, 69, 0, ${alpha})` : `rgba(0, 243, 255, ${alpha})`;
           this.ctx.lineWidth = width;
           this.ctx.beginPath();
@@ -4882,14 +5012,14 @@ class BrickBreakerGame {
         }
 
         // Pass 2: Inner Laser Core (Hot White / Electric Cyan or Fiery Yellow-White)
-        for (let i = 0; i < fullTrail.length - 1; i++) {
-          const p1 = fullTrail[i];
-          const p2 = fullTrail[i + 1];
-          const progress = (i + 1) / fullTrail.length;
+        this.ctx.shadowBlur = isFire ? 8 : 5;
+        for (let i = 0; i < trailLen; i++) {
+          const p1 = trail[i];
+          const p2 = (i === trailLen - 1) ? ball : trail[i + 1];
+          const progress = (i + 1) / (trailLen + 1);
           const alpha = Math.pow(progress, 1.5) * 0.85;
           const width = ball.radius * (0.15 + 0.55 * progress);
 
-          this.ctx.shadowBlur = (isFire ? 10 : 6) * progress;
           this.ctx.strokeStyle = isFire ? `rgba(255, 240, 180, ${alpha})` : `rgba(230, 255, 255, ${alpha})`;
           this.ctx.lineWidth = width;
           this.ctx.beginPath();
@@ -4898,10 +5028,11 @@ class BrickBreakerGame {
           this.ctx.stroke();
         }
 
-        // Pass 3: Trailing Energy Motes
-        for (let i = 0; i < fullTrail.length - 1; i += 2) {
-          const pt = fullTrail[i];
-          const progress = (i + 1) / fullTrail.length;
+        // Pass 3: Trailing Energy Motes (disable shadowBlur for fast drawing)
+        this.ctx.shadowBlur = 0;
+        for (let i = 0; i < trailLen; i += 2) {
+          const pt = trail[i];
+          const progress = (i + 1) / (trailLen + 1);
           const moteSize = Math.max(0.8, ball.radius * 0.3 * progress);
           const alpha = Math.pow(progress, 1.8) * 0.65;
 
@@ -5061,9 +5192,13 @@ class BrickBreakerGame {
       this.drawMagataDanmaku();
     }
 
-    // 5. Draw Particles
-    for (const particle of this.particles) {
-      particle.draw(this.ctx);
+    // 5. Draw Particles (batched without per-particle context pushes)
+    if (this.particles.length > 0) {
+      this.ctx.save();
+      for (let p = 0; p < this.particles.length; p++) {
+        this.particles[p].draw(this.ctx);
+      }
+      this.ctx.restore();
     }
 
     // 6. Draw Floating Texts
@@ -5329,58 +5464,14 @@ class BrickBreakerGame {
       if (isMagataActive) minTimer = Math.min(minTimer, this.magataDebuff.timer);
 
       const isEnding = minTimer <= 3.0;
-      const debuffAlpha = isEnding ? (Math.floor(minTimer * 6) % 2 === 0 ? 0.35 : 1.0) : 1.0;
+      const debuffAlpha = (isEnding ? (Math.floor(minTimer * 6) % 2 === 0 ? 0.35 : 1.0) : 1.0) * pulse;
 
       this.ctx.globalAlpha = debuffAlpha;
-
-      // 4 Corner Radial Gradients for curved debuff corner glow
-      const cornerRadius = 420;
-      const cornerColor = (isMagataActive && !isPointDebuffActive && !isBatShortened && !isSuiRainActive && !isSlowActive && !isRuriiroActive)
-        ? `rgba(255, 0, 110, ${0.45 * pulse})`
-        : `rgba(220, 10, 20, ${0.45 * pulse})`;
-      const cornerFade = 'rgba(200, 0, 0, 0)';
-
-      // Top-Left Corner
-      const tl = this.ctx.createRadialGradient(0, 0, 0, 0, 0, cornerRadius);
-      tl.addColorStop(0, cornerColor);
-      tl.addColorStop(1, cornerFade);
-      this.ctx.fillStyle = tl;
-      this.ctx.fillRect(0, 0, cornerRadius, cornerRadius);
-
-      // Top-Right Corner
-      const tr = this.ctx.createRadialGradient(CANVAS_WIDTH, 0, 0, CANVAS_WIDTH, 0, cornerRadius);
-      tr.addColorStop(0, cornerColor);
-      tr.addColorStop(1, cornerFade);
-      this.ctx.fillStyle = tr;
-      this.ctx.fillRect(CANVAS_WIDTH - cornerRadius, 0, cornerRadius, cornerRadius);
-
-      // Bottom-Left Corner
-      const bl = this.ctx.createRadialGradient(0, CANVAS_HEIGHT, 0, 0, CANVAS_HEIGHT, cornerRadius);
-      bl.addColorStop(0, cornerColor);
-      bl.addColorStop(1, cornerFade);
-      this.ctx.fillStyle = bl;
-      this.ctx.fillRect(0, CANVAS_HEIGHT - cornerRadius, cornerRadius, cornerRadius);
-
-      // Bottom-Right Corner
-      const br = this.ctx.createRadialGradient(CANVAS_WIDTH, CANVAS_HEIGHT, 0, CANVAS_WIDTH, CANVAS_HEIGHT, cornerRadius);
-      br.addColorStop(0, cornerColor);
-      br.addColorStop(1, cornerFade);
-      this.ctx.fillStyle = br;
-      this.ctx.fillRect(CANVAS_WIDTH - cornerRadius, CANVAS_HEIGHT - cornerRadius, cornerRadius, cornerRadius);
-
-      // Ambient outer screen perimeter vignette
-      const edgeVignette = this.ctx.createRadialGradient(
-        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.42,
-        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, Math.hypot(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
-      );
-      edgeVignette.addColorStop(0, 'rgba(255, 0, 0, 0)');
-      edgeVignette.addColorStop(0.75, 'rgba(200, 0, 20, 0.08)');
-      const vignetteColor = (isMagataActive && !isPointDebuffActive && !isBatShortened && !isSuiRainActive && !isSlowActive && !isRuriiroActive)
-        ? `rgba(255, 0, 110, ${0.28 * pulse})`
-        : `rgba(220, 10, 20, ${0.28 * pulse})`;
-      edgeVignette.addColorStop(1, vignetteColor);
-      this.ctx.fillStyle = edgeVignette;
-      this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      const isPinkOnly = isMagataActive && !isPointDebuffActive && !isBatShortened && !isSuiRainActive && !isSlowActive && !isRuriiroActive;
+      const vignette = isPinkOnly ? this.cachedPinkVignette : this.cachedRedVignette;
+      if (vignette) {
+        this.ctx.drawImage(vignette, 0, 0);
+      }
 
       this.ctx.restore();
     }
