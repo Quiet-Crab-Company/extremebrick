@@ -7,20 +7,20 @@
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 1600;
 
-const COLS = 7;
+const COLS = 6;
 const ROWS = 5;
-const TOTAL_BRICKS = COLS * ROWS; // 35
+const TOTAL_BRICKS = COLS * ROWS; // 30
 const BRICK_POINTS = 10;
 const WAVE_BONUS_POINTS = 500;
 const INITIAL_LIVES = 3;
 const MAX_LIVES = 3;
 const HEADER_HEIGHT = 250; // Header area for score & highscore; ball cannot pass into it
 
-const BRICK_WIDTH = 90;
-const BRICK_HEIGHT = 50;
+const BRICK_WIDTH = 108;
+const BRICK_HEIGHT = 60;
 const BRICK_GAP_X = 8;
 const BRICK_GAP_Y = 8;
-const GRID_START_Y = HEADER_HEIGHT + BRICK_HEIGHT + BRICK_GAP_Y; // 250 + 50 + 8 = 308px (1 brick tall gap from header line)
+const GRID_START_Y = HEADER_HEIGHT + BRICK_HEIGHT + BRICK_GAP_Y; // 250 + 60 + 8 = 318px (1 brick tall gap from header line)
 const GRID_START_X = Math.round((CANVAS_WIDTH - (COLS * BRICK_WIDTH + (COLS - 1) * BRICK_GAP_X)) / 2);
 
 const BAT_WIDTH = 215;
@@ -1103,11 +1103,11 @@ class BrickBreakerGame {
   generateBricks(slideDown = false) {
     this.bricks = [];
     this.ruriiroDebuff = { active: false };
-    const total = ROWS * COLS; // 35 bricks
+    const total = ROWS * COLS; // 30 bricks
 
-    // At the minimum half of the bricks are special bricks (>= 18 out of 35, up to 22)
-    const minSpecial = Math.ceil(total / 2); // 18
-    const maxSpecial = Math.min(total - 4, Math.floor(total * 0.65)); // 22
+    // At the minimum half of the bricks are special bricks (>= 15 out of 30, up to 19)
+    const minSpecial = Math.ceil(total / 2); // 15
+    const maxSpecial = Math.min(total - 4, Math.floor(total * 0.65)); // 19
     const specialCount = Math.floor(Math.random() * (maxSpecial - minSpecial + 1)) + minSpecial;
 
     // Pick unique indices for special bricks
@@ -2246,10 +2246,15 @@ class BrickBreakerGame {
     const config = (this.skillsConfig && this.skillsConfig[brickType]) || (this.getDefaultSkillsConfig && this.getDefaultSkillsConfig()[brickType]);
     if (!config) return;
 
+    const cutinWidth = 400;
+    const cutinHeight = 99;
+    const slotStep = 118;
+    const baseY = 940;
+
     // Shift existing active cutins down by 1 slot (Slot 0 -> Slot 1, Slot 1 -> Slot 2)
     for (const cutin of this.skillCutins) {
       cutin.slot++;
-      cutin.targetY = 960 + cutin.slot * 97;
+      cutin.targetY = baseY + cutin.slot * slotStep;
       // If pushed beyond the 2 visible slots (slot >= 2), mark as displaced so it rapidly fades out
       if (cutin.slot >= 2) {
         cutin.isDisplaced = true;
@@ -2272,12 +2277,12 @@ class BrickBreakerGame {
       type: config.type || 'buff',
       iconImage: iconImg,
       slot: 0,
-      x: -360,
+      x: -420,
       targetX: 24,
-      y: 960,
-      targetY: 960,
-      width: 328,
-      height: 81,
+      y: baseY,
+      targetY: baseY,
+      width: cutinWidth,
+      height: cutinHeight,
       age: 0,
       duration: 1.0,
       alpha: 1.0,
@@ -2309,7 +2314,7 @@ class BrickBreakerGame {
 
       const glowColor = isDebuff ? '#ff1e42' : '#00d4ff';
       this.ctx.shadowColor = glowColor;
-      this.ctx.shadowBlur = 20;
+      this.ctx.shadowBlur = 22;
 
       if (bannerImg && bannerImg.complete && bannerImg.naturalWidth !== 0) {
         this.ctx.drawImage(bannerImg, cutin.x, cutin.y, cutin.width, cutin.height);
@@ -2320,19 +2325,19 @@ class BrickBreakerGame {
 
       // 2. "Buff" or "Debuff" text on the black tab box (red small text for debuff, blue small text for buff)
       const badgeText = isDebuff ? 'Debuff' : 'Buff';
-      this.ctx.font = '7px "Press Start 2P"';
+      this.ctx.font = '8.5px "Press Start 2P"';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
       this.ctx.fillStyle = isDebuff ? '#ff3b56' : '#00e5ff';
       this.ctx.shadowColor = isDebuff ? '#ff0033' : '#0088ff';
       this.ctx.shadowBlur = 4;
-      this.ctx.fillText(badgeText, cutin.x + 76, cutin.y + 28.5);
+      this.ctx.fillText(badgeText, cutin.x + 93, cutin.y + 35);
 
       // 3. Skill Name vertically centered inside the red / blue colored box
-      let fontSize = 11;
-      if (cutin.name.length > 17) fontSize = 8.5;
-      else if (cutin.name.length > 14) fontSize = 9.5;
-      else if (cutin.name.length > 11) fontSize = 10.5;
+      let fontSize = 13;
+      if (cutin.name.length > 17) fontSize = 10.5;
+      else if (cutin.name.length > 14) fontSize = 11.5;
+      else if (cutin.name.length > 11) fontSize = 12.5;
 
       this.ctx.font = `${fontSize}px "Press Start 2P"`;
       this.ctx.textAlign = 'left';
@@ -2340,17 +2345,17 @@ class BrickBreakerGame {
       this.ctx.shadowColor = '#000000';
       this.ctx.shadowBlur = 6;
       this.ctx.fillStyle = '#ffffff';
-      const textX = cutin.x + 28;
-      const textY = cutin.y + 51;
-      this.ctx.fillText(cutin.name, textX, textY, 215);
+      const textX = cutin.x + 34;
+      const textY = cutin.y + 62;
+      this.ctx.fillText(cutin.name, textX, textY, 260);
 
       // 4. Brick icon on the most right (centered within the colored box)
       const iconImg = cutin.iconImage || this.images['brick_' + cutin.key] || this.images[cutin.key];
       if (iconImg && iconImg.complete && iconImg.naturalWidth !== 0) {
-        const iconW = 56;
-        const iconH = 28;
-        const iconX = cutin.x + cutin.width - iconW - 14;
-        const iconY = cutin.y + 50 - iconH / 2;
+        const iconW = 68;
+        const iconH = 34;
+        const iconX = cutin.x + cutin.width - iconW - 17;
+        const iconY = cutin.y + 61 - iconH / 2;
         this.ctx.shadowColor = isDebuff ? '#ff0033' : '#00f3ff';
         this.ctx.shadowBlur = 8;
         this.ctx.drawImage(iconImg, iconX, iconY, iconW, iconH);
@@ -4238,7 +4243,7 @@ class BrickBreakerGame {
     this.ctx.stroke();
     this.ctx.restore();
 
-    // 2. Draw Bricks (7 columns x 5 rows) - clipped below header line
+    // 2. Draw Bricks (6 columns x 5 rows) - clipped below header line
     this.ctx.save();
     this.ctx.beginPath();
     this.ctx.rect(0, HEADER_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT - HEADER_HEIGHT);

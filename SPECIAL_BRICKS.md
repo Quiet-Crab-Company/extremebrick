@@ -5,13 +5,13 @@ This document provides a breakdown of the grid architecture and each brick type 
 ---
 
 ## Grid Architecture & Spawn Distribution
-- **Grid Size**: **7 columns × 5 rows** (**35 total bricks** per round).
+- **Grid Size**: **6 columns × 5 rows** (**30 total bricks** per round).
 - **Corridors & Top Gap**:
-  - **Top Gap**: 1 brick tall gap from the header line (`HEADER_HEIGHT = 250px`, `GRID_START_Y = 308px`, providing 58px vertical clearance) allowing the 32px diameter ball to pass above the bricks and bounce between the ceiling line and the top row of bricks.
-  - **Left & Right Corridors**: Centered 7-column layout with 111px open gaps on both left (`x = 0..111px`) and right (`x = 789..900px`), giving ample space for balls to slide past either side and loop behind the brick formation.
-- **Special Bricks per Round**: **Minimum half the bricks are special bricks** (at least 18 out of 35 bricks, randomly 18 to 22 special bricks, ~51%–63% of the grid).
+  - **Top Gap**: 1 brick tall gap from the header line (`HEADER_HEIGHT = 250px`, `GRID_START_Y = 318px`, providing 68px vertical clearance) allowing the 32px diameter ball to pass above the bricks and bounce between the ceiling line and the top row of bricks.
+  - **Left & Right Corridors**: Centered 6-column layout with 106px open gaps on both left (`x = 0..106px`) and right (`x = 794..900px`), giving ample space for balls to slide past either side and loop behind the brick formation.
+- **Special Bricks per Round**: **Minimum half the bricks are special bricks** (at least 15 out of 30 bricks, randomly 15 to 19 special bricks, ~50%–63% of the grid).
 - **Debuff Brick Guarantee**: **Each round is guaranteed to have at least one debuff brick** (`ichinose`, `akuta`, `sui`, `magata`, or `ruriiro`).
-- **Normal Bricks**: **13–17 normal bricks** per round (~37%–49% of the grid). Out of these normal bricks, a random count (between 3 and 6) are reinforced as **Hard Bricks** (`images/brick_hard.webp`).
+- **Normal Bricks**: **11–15 normal bricks** per round (~37%–50% of the grid). Out of these normal bricks, a random count (between 3 and 6) are reinforced as **Hard Bricks** (`images/brick_hard.webp`).
 - **Individual Randomization**: Each of the special brick slots is individually randomized across the weighted special types pool.
 - **Explosion Interaction**: When a special brick is caught in an explosion (from a **Q Brick**), **its special skill effect activates immediately** as well (including cascading Q bomb explosions, board extensions, multiball spawns, shields, and magnetism)!
 
@@ -21,7 +21,7 @@ This document provides a breakdown of the grid architecture and each brick type 
 
 | Brick Type | Image Asset | Effect Summary | Duration / Limit | Special Slot Chance | SFX Triggered |
 | :--- | :---: | :--- | :--- | :---: | :--- |
-| **Normal Brick** | `images/brick_normal.webp` | Standard brick. Grants +10 points when destroyed. | Permanent | ~7–14 of 35 | `audio/hit.mp3` |
+| **Normal Brick** | `images/brick_normal.webp` | Standard brick. Grants +10 points when destroyed. | Permanent | ~6–12 of 30 | `audio/hit.mp3` |
 | **Hard Brick** *(2-Hit Normal Brick)* | `images/brick_hard.webp` → `images/brick_cracked.webp` | Reinforced normal brick requiring **2 hits** to break. Turns into cracked brick (`images/brick_cracked.webp`) on 1st hit; destroys on 2nd hit. Grants **+30 points** instead of 10. | Permanent (2 Hits) | Random 3–6 of Normal pool | `audio/hit.mp3` |
 | **Yo Brick** *(Board Extender)* | `images/brick_yo.webp` | Widens paddle from 215px to 284px and equips extended sprite. | **30 Seconds** (Timer resets if another Yo brick is broken) | ~15.5% | `audio/special_brick.mp3` |
 | **Zero Brick** *(3-Bounce Zero Heart Extra Life)* | `images/brick_zero.webp` | Drops a **Zero Heart** (`images/zero_heart.webp`, resized to ball size) that must be bounced on the paddle **3 times** to transform into an extra life (max 3 lives). Heavy physics; does not hit bricks; does not destroy Kazuki shield; unaffected by gravity field. | **3 Paddle Bounces** (Max 3 Lives) | **~7.0%** (Rarest special brick) | `audio/special_brick.mp3` |
