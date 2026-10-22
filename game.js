@@ -104,7 +104,7 @@ class SoundSystem {
         this.bgm.removeEventListener('canplay', onCanPlay);
         this.bgm.removeEventListener('error', onError);
         resolve();
-      }, 1500);
+      }, 600);
     });
   }
 
@@ -947,7 +947,31 @@ class BrickBreakerGame {
 
     updateLoadingUI(0, 'PREPARING ASSETS...');
 
-    for (const item of assets) {
+    // Load customizable JSON configs in parallel with asset downloading
+    const jsonPromises = Promise.all([
+      fetch('magata_comments.json?v=' + Date.now())
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && Array.isArray(data) && data.length > 0) {
+            this.magataTemplates = data;
+          }
+        })
+        .catch(e => console.warn('Failed to load magata_comments.json:', e)),
+      fetch('skills_config.json?v=' + Date.now())
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+            this.skillsConfig = data;
+          }
+        })
+        .catch(e => console.warn('Failed to load skills_config.json:', e))
+    ]);
+
+    // High-performance worker pool: 8 concurrent downloads simultaneously
+    const CONCURRENCY = 8;
+    let nextIdx = 0;
+
+    const loadSingleAsset = async (item) => {
       try {
         if (item.type === 'image') {
           await new Promise((resolve) => {
@@ -973,34 +997,26 @@ class BrickBreakerGame {
         completed++;
         const targetPercent = Math.min(100, Math.round((completed / total) * 100));
         updateLoadingUI(targetPercent, `LOADED: ${item.label}`);
-        // Gentle pacing to make loading visible and smooth
-        await new Promise((r) => setTimeout(r, 45));
       }
-    }
+    };
+
+    const worker = async () => {
+      while (nextIdx < assets.length) {
+        const item = assets[nextIdx++];
+        await loadSingleAsset(item);
+      }
+    };
+
+    const workerCount = Math.min(CONCURRENCY, assets.length);
+    const workers = Array.from({ length: workerCount }, () => worker());
+
+    await Promise.all([...workers, jsonPromises]);
 
     this.assetsLoaded = true;
 
-    // Load customizable Nico Nico Douga comment templates from magata_comments.json
-    try {
-      const res = await fetch('magata_comments.json?v=' + Date.now());
-      if (res.ok) {
-        this.magataTemplates = await res.json();
-      }
-    } catch (e) {
-      console.warn('Failed to load magata_comments.json, using fallback templates', e);
-    }
+    // Verify fallbacks for configs if network requests failed
     if (!this.magataTemplates || !Array.isArray(this.magataTemplates) || this.magataTemplates.length === 0) {
       this.magataTemplates = this.getDefaultMagataComments();
-    }
-
-    // Load customizable skill cutin configurations from skills_config.json
-    try {
-      const sRes = await fetch('skills_config.json?v=' + Date.now());
-      if (sRes.ok) {
-        this.skillsConfig = await sRes.json();
-      }
-    } catch (e) {
-      console.warn('Failed to load skills_config.json, using fallback config', e);
     }
     if (!this.skillsConfig || typeof this.skillsConfig !== 'object' || Object.keys(this.skillsConfig).length === 0) {
       this.skillsConfig = this.getDefaultSkillsConfig();
