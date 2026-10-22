@@ -571,6 +571,117 @@ body {
   text-shadow: 0 0 16px rgba(255, 42, 133, 0.8);
 }
 
+/* Settings Modal */
+.settings-card {
+  max-width: 360px;
+  padding: 28px 24px;
+}
+
+.settings-title {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
+  margin-bottom: 22px;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(181, 55, 242, 0.3);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: inset 0 0 15px rgba(181, 55, 242, 0.08);
+}
+
+.setting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-name {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: #f5f5fc;
+  letter-spacing: 1px;
+}
+
+.setting-val {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
+}
+
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.neon-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(181, 55, 242, 0.45) 0%, rgba(0, 243, 255, 0.45) 100%);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.neon-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan), 0 0 18px var(--neon-cyan);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.neon-slider::-webkit-slider-thumb:hover,
+.neon-slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 0 14px var(--neon-pink), 0 0 24px var(--neon-pink);
+  border-color: var(--neon-pink);
+}
+
+.neon-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan), 0 0 18px var(--neon-cyan);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.neon-slider::-moz-range-thumb:hover,
+.neon-slider::-moz-range-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 0 14px var(--neon-pink), 0 0 24px var(--neon-pink);
+  border-color: var(--neon-pink);
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: center;
+}
+
 .final-stats {
   display: flex;
   gap: 12px;

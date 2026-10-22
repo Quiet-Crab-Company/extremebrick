@@ -50,7 +50,19 @@ class SoundSystem {
     this.isMuted = false;
     this.buffers = {};
     this.bgm = null;
-    this.bgmVolume = 0.28; // 80% of original 0.35 volume
+
+    let savedBgm = null, savedSfx = null;
+    try {
+      savedBgm = localStorage.getItem('extremebrick_bgm_vol');
+      savedSfx = localStorage.getItem('extremebrick_sfx_vol');
+    } catch (e) {}
+
+    this.bgmVolumePercent = savedBgm !== null ? Math.max(0, Math.min(100, parseInt(savedBgm, 10))) : 80;
+    this.sfxVolumePercent = savedSfx !== null ? Math.max(0, Math.min(100, parseInt(savedSfx, 10))) : 80;
+
+    this.bgmVolume = (this.bgmVolumePercent / 100) * 0.35;
+    this.sfxVolume = this.sfxVolumePercent / 100;
+    this.masterSfxGain = null;
     this.bgmPlaying = false;
   }
 
@@ -65,8 +77,45 @@ class SoundSystem {
       if (this.ctx && this.ctx.state === 'suspended') {
         this.ctx.resume();
       }
+      if (this.ctx && !this.masterSfxGain) {
+        this.masterSfxGain = this.ctx.createGain();
+        this.masterSfxGain.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
+        this.masterSfxGain.connect(this.ctx.destination);
+      }
     } catch (e) {
       console.warn('Audio init error:', e);
+    }
+  }
+
+  getDestination() {
+    if (!this.ctx) return null;
+    if (!this.masterSfxGain) {
+      this.masterSfxGain = this.ctx.createGain();
+      this.masterSfxGain.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
+      this.masterSfxGain.connect(this.ctx.destination);
+    }
+    return this.masterSfxGain;
+  }
+
+  setBgmVolume(percent) {
+    this.bgmVolumePercent = Math.max(0, Math.min(100, Math.round(percent)));
+    this.bgmVolume = (this.bgmVolumePercent / 100) * 0.35;
+    try {
+      localStorage.setItem('extremebrick_bgm_vol', this.bgmVolumePercent);
+    } catch (e) {}
+    if (this.bgm) {
+      this.bgm.volume = this.bgmVolume;
+    }
+  }
+
+  setSfxVolume(percent) {
+    this.sfxVolumePercent = Math.max(0, Math.min(100, Math.round(percent)));
+    this.sfxVolume = this.sfxVolumePercent / 100;
+    try {
+      localStorage.setItem('extremebrick_sfx_vol', this.sfxVolumePercent);
+    } catch (e) {}
+    if (this.ctx && this.masterSfxGain) {
+      this.masterSfxGain.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
     }
   }
 
@@ -179,7 +228,7 @@ class SoundSystem {
   }
 
   playBuffer(key, volume = 0.35) {
-    if (this.isMuted || !this.ctx || !this.buffers[key]) return false;
+    if (this.isMuted || !this.ctx || !this.buffers[key] || this.sfxVolume === 0) return false;
     try {
       if (this.ctx.state === 'suspended') {
         this.ctx.resume();
@@ -189,7 +238,8 @@ class SoundSystem {
       const gain = this.ctx.createGain();
       gain.gain.setValueAtTime(volume, this.ctx.currentTime);
       source.connect(gain);
-      gain.connect(this.ctx.destination);
+      const dest = this.getDestination();
+      if (dest) gain.connect(dest);
       source.onended = () => {
         try {
           source.disconnect();
@@ -210,7 +260,7 @@ class SoundSystem {
 
   synthBatBounce() {
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -225,7 +275,8 @@ class SoundSystem {
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      const dest = this.getDestination();
+      if (dest) gain.connect(dest);
 
       osc.onended = () => {
         try {
@@ -246,7 +297,7 @@ class SoundSystem {
 
   synthBrickHit() {
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -264,7 +315,8 @@ class SoundSystem {
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      const dest = this.getDestination();
+      if (dest) gain.connect(dest);
 
       osc.onended = () => {
         try {
@@ -295,7 +347,7 @@ class SoundSystem {
   playWindGale() {
     this.playSpecialHit();
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -322,7 +374,8 @@ class SoundSystem {
 
       noise.connect(filter);
       filter.connect(gain);
-      gain.connect(this.ctx.destination);
+      const dest = this.getDestination();
+      if (dest) gain.connect(dest);
 
       noise.onended = () => {
         try {
@@ -339,7 +392,7 @@ class SoundSystem {
 
   synthSpecialHit() {
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -357,7 +410,8 @@ class SoundSystem {
         gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.12);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        const dest = this.getDestination();
+        if (dest) gain.connect(dest);
 
         osc.onended = () => {
           try {
@@ -384,7 +438,7 @@ class SoundSystem {
 
   synthLifeLost() {
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -399,7 +453,8 @@ class SoundSystem {
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      const dest = this.getDestination();
+      if (dest) gain.connect(dest);
 
       osc.onended = () => {
         try {
@@ -415,7 +470,7 @@ class SoundSystem {
 
   playWaveClear() {
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -433,7 +488,8 @@ class SoundSystem {
         gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        const dest = this.getDestination();
+        if (dest) gain.connect(dest);
 
         osc.onended = () => {
           try {
@@ -457,7 +513,7 @@ class SoundSystem {
 
   synthGameOver() {
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -475,7 +531,8 @@ class SoundSystem {
         gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.22);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        const dest = this.getDestination();
+        if (dest) gain.connect(dest);
 
         osc.onended = () => {
           try {
@@ -497,7 +554,7 @@ class SoundSystem {
 
   synthExplosion() {
     try {
-      if (this.isMuted) return;
+      if (this.isMuted || this.sfxVolume === 0) return;
       this.init();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
@@ -511,7 +568,8 @@ class SoundSystem {
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      const dest = this.getDestination();
+      if (dest) gain.connect(dest);
 
       osc.onended = () => {
         try {
@@ -623,8 +681,14 @@ class BrickBreakerGame {
     this.btnResume = document.getElementById('btn-resume');
     this.btnRestartPause = document.getElementById('btn-restart-pause');
     this.btnRestart = document.getElementById('btn-restart');
-    this.btnSound = document.getElementById('btn-sound');
+    this.btnSettings = document.getElementById('btn-settings');
     this.btnPause = document.getElementById('btn-pause');
+    this.overlaySettings = document.getElementById('overlay-settings');
+    this.btnCloseSettings = document.getElementById('btn-close-settings');
+    this.sliderBgm = document.getElementById('slider-bgm');
+    this.sliderSfx = document.getElementById('slider-sfx');
+    this.bgmVolumeVal = document.getElementById('bgm-volume-val');
+    this.sfxVolumeVal = document.getElementById('sfx-volume-val');
 
     // Audio & Particles
     this.sound = new SoundSystem();
@@ -1324,21 +1388,72 @@ class BrickBreakerGame {
     this.btnRestartPause.addEventListener('click', () => this.restartGame());
     this.btnRestart.addEventListener('click', () => this.restartGame());
 
-    const toggleSoundMute = () => {
+    // Settings Modal Handlers
+    const openSettings = () => {
       this.sound.init();
-      const newMuted = !this.sound.isMuted;
-      this.sound.setMuted(newMuted);
-      const iconImg = this.btnSound.querySelector('img');
-      if (iconImg) {
-        iconImg.src = this.sound.isMuted
-          ? 'images/mute-audio-play-svgrepo-com.svg'
-          : 'images/sound-on-music-svgrepo-com.svg';
-        iconImg.alt = this.sound.isMuted ? 'Muted' : 'Sound On';
+      if (this.state === 'PLAYING') {
+        this.wasPlayingBeforeSettings = true;
+        this.state = 'PAUSED';
+        this.sound.pauseBGM();
+      } else {
+        this.wasPlayingBeforeSettings = false;
       }
-      this.btnSound.classList.toggle('muted', this.sound.isMuted);
+      if (this.overlaySettings) {
+        this.overlaySettings.classList.remove('hidden');
+      }
     };
 
-    this.btnSound.addEventListener('click', toggleSoundMute);
+    const closeSettings = () => {
+      if (this.overlaySettings) {
+        this.overlaySettings.classList.add('hidden');
+      }
+      if (this.wasPlayingBeforeSettings && this.state === 'PAUSED') {
+        this.wasPlayingBeforeSettings = false;
+        this.state = 'PLAYING';
+        this.lastTime = performance.now();
+        this.sound.resumeBGM();
+      }
+    };
+
+    if (this.btnSettings) {
+      this.btnSettings.addEventListener('click', openSettings);
+    }
+    if (this.btnCloseSettings) {
+      this.btnCloseSettings.addEventListener('click', closeSettings);
+    }
+    if (this.overlaySettings) {
+      this.overlaySettings.addEventListener('click', (e) => {
+        if (e.target === this.overlaySettings) {
+          closeSettings();
+        }
+      });
+    }
+
+    if (this.sliderBgm) {
+      this.sliderBgm.value = this.sound.bgmVolumePercent;
+      if (this.bgmVolumeVal) this.bgmVolumeVal.textContent = `${this.sound.bgmVolumePercent}%`;
+      this.sliderBgm.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        this.sound.setBgmVolume(val);
+        if (this.bgmVolumeVal) this.bgmVolumeVal.textContent = `${val}%`;
+      });
+    }
+
+    let sfxPreviewTimer = null;
+    if (this.sliderSfx) {
+      this.sliderSfx.value = this.sound.sfxVolumePercent;
+      if (this.sfxVolumeVal) this.sfxVolumeVal.textContent = `${this.sound.sfxVolumePercent}%`;
+      this.sliderSfx.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        this.sound.setSfxVolume(val);
+        if (this.sfxVolumeVal) this.sfxVolumeVal.textContent = `${val}%`;
+
+        clearTimeout(sfxPreviewTimer);
+        sfxPreviewTimer = setTimeout(() => {
+          this.sound.playBrickHit();
+        }, 120);
+      });
+    }
 
     this.btnPause.addEventListener('click', () => this.togglePause());
   }

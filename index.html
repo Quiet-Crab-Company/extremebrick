@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="web_background.png" media="(min-width: 600px)">
-  <link rel="stylesheet" href="style.css?v=9.26">
+  <link rel="stylesheet" href="style.css?v=9.27">
 </head>
 <body>
   <div id="game-container">
@@ -34,8 +34,8 @@
 
       <div class="hud-right">
         <div class="hud-btn-group">
-          <button id="btn-sound" class="icon-btn" aria-label="Toggle Sound" title="Sound On/Off">
-            <img id="sound-icon" src="images/sound-on-music-svgrepo-com.svg" alt="Sound On" class="hud-btn-icon">
+          <button id="btn-settings" class="icon-btn" aria-label="Settings" title="Settings">
+            <img id="settings-icon" src="images/gear-svgrepo-com.svg" alt="Settings" class="hud-btn-icon">
           </button>
           <button id="btn-pause" class="icon-btn" aria-label="Pause Game" title="Pause">
             <img id="pause-icon" src="images/pause-svgrepo-com.svg" alt="Pause" class="hud-btn-icon">
@@ -74,6 +74,36 @@
           <div class="tap-prompt-box">
             <div class="pixel-prompt-text blink-glow">TAP TO START</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Overlay -->
+    <div id="overlay-settings" class="game-overlay hidden">
+      <div class="modal-card settings-card">
+        <h2 class="modal-title settings-title">SETTINGS</h2>
+        <div class="settings-content">
+          <div class="setting-item">
+            <div class="setting-header">
+              <span class="setting-name">BGM VOLUME</span>
+              <span id="bgm-volume-val" class="setting-val pixel-val">80%</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="slider-bgm" class="neon-slider" min="0" max="100" value="80">
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-header">
+              <span class="setting-name">SFX VOLUME</span>
+              <span id="sfx-volume-val" class="setting-val pixel-val">80%</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="slider-sfx" class="neon-slider" min="0" max="100" value="80">
+            </div>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button id="btn-close-settings" class="btn-primary">CLOSE</button>
         </div>
       </div>
     </div>
@@ -133,6 +163,6 @@
     </div>
   </footer>
 
-  <script src="game.js?v=9.35"></script>
+  <script src="game.js?v=9.36"></script>
 </body>
 </html>
