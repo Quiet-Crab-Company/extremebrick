@@ -449,7 +449,7 @@ The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike ben
        1
     NANODA
     ```
-    with the **`1` rendered in an enormous 240px bold font**, subtly pulsing with a transparent white ambient aura throughout the debuff duration.
+    with the **`1` rendered in an enormous 240px bold font**, displayed as pure, transparent white text with no outline throughout the debuff duration.
 * **Curved Red Corner Screen Glow (Vignette)**:
   * When the debuff is active, a red glow renders around the corners and edges of the screen:
     * **4 Corner Radial Gradients**: Located at top-left `(0, 0)`, top-right `(CANVAS_WIDTH, 0)`, bottom-left `(0, CANVAS_HEIGHT)`, and bottom-right `(CANVAS_WIDTH, CANVAS_HEIGHT)` with radius `420px`, fading smoothly toward the center.
@@ -465,7 +465,7 @@ The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike ben
 
 ### Sensory Feedback
 * **Audio**: Plays specialized debuff audio `audio/special_brick_debuff.mp3` upon activation.
-* **Field Watermark**: Transparent white `NUMBERS 1 NANODA` watermark with giant `1` in the center field.
+* **Field Watermark**: Transparent white `NUMBERS 1 NANODA` text (no outline) with giant `1` in the center field.
 * **Particles**: Tri-level dark crimson, burgundy, and abyss particle burst (`#ff0033`, `#880015`, `#220005`).
 * **Visuals**: Curved 4-corner radial red screen glow, edge perimeter vignette, live header timer, red `+1` score numbers, and transparent white field text.
 

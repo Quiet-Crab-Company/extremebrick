@@ -4525,33 +4525,20 @@ class BrickBreakerGame {
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
 
-      // Soft ambient white glow
-      this.ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
-      this.ctx.shadowBlur = 16;
-
       // Line 1: "NUMBERS"
       this.ctx.font = '900 44px "Impact", "Arial Black", sans-serif';
       this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       this.ctx.fillText('NUMBERS', centerX, centerY - 145);
-      this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.75})`;
-      this.ctx.lineWidth = 1.5;
-      this.ctx.strokeText('NUMBERS', centerX, centerY - 145);
 
       // Line 2: "1" (very big letter!)
       this.ctx.font = '900 240px "Impact", "Arial Black", sans-serif';
       this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 1.05})`;
       this.ctx.fillText('1', centerX, centerY + 5);
-      this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.85})`;
-      this.ctx.lineWidth = 3;
-      this.ctx.strokeText('1', centerX, centerY + 5);
 
       // Line 3: "NANODA"
       this.ctx.font = '900 44px "Impact", "Arial Black", sans-serif';
       this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       this.ctx.fillText('NANODA', centerX, centerY + 155);
-      this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.75})`;
-      this.ctx.lineWidth = 1.5;
-      this.ctx.strokeText('NANODA', centerX, centerY + 155);
 
       this.ctx.restore();
     }
