@@ -1,0 +1,127 @@
+{
+  "yo": {
+    "name": "OVERDRIVE",
+    "type": "buff",
+    "icon": "images/brick_yo.png"
+  },
+  "tsuki": {
+    "name": "IROHA BALL",
+    "type": "buff",
+    "icon": "images/brick_tsuki.png"
+  },
+  "q": {
+    "name": "BROKEN MORAL",
+    "type": "buff",
+    "icon": "images/brick_q.png"
+  },
+  "kazuki": {
+    "name": "DEFLECT SERVER",
+    "type": "buff",
+    "icon": "images/brick_kazuki.png"
+  },
+  "miu": {
+    "name": "LUMINOUS CRYSTAL",
+    "type": "buff",
+    "icon": "images/brick_miu.png"
+  },
+  "jio": {
+    "name": "POISON RAIN",
+    "type": "buff",
+    "icon": "images/brick_jio.png"
+  },
+  "enoki": {
+    "name": "IGNITION",
+    "type": "buff",
+    "icon": "images/brick_enoki.png"
+  },
+  "koishi": {
+    "name": "TIME TO EAT",
+    "type": "buff",
+    "icon": "images/brick_koishi.png"
+  },
+  "shun": {
+    "name": "PLAY BALL",
+    "type": "buff",
+    "icon": "images/brick_shun.png"
+  },
+  "eiji": {
+    "name": "MONEY IS POWER!",
+    "type": "buff",
+    "icon": "images/brick_eiji.png"
+  },
+  "saigo": {
+    "name": "ROAR OF OUTRAGE",
+    "type": "buff",
+    "icon": "images/brick_saigo.png"
+  },
+  "hyakuichitaro": {
+    "name": "FIGHTING SPIRIT",
+    "type": "buff",
+    "icon": "images/brick_hyakuichitaro.png"
+  },
+  "tsuruko": {
+    "name": "TWILIGHT'S EMBRACE",
+    "type": "buff",
+    "icon": "images/brick_tsuruko.png"
+  },
+  "ichinose": {
+    "name": "POWER HARASSMENT",
+    "type": "debuff",
+    "icon": "images/brick_ichinose.png"
+  },
+  "mita": {
+    "name": "ENERGIZE",
+    "type": "buff",
+    "icon": "images/brick_mita.png"
+  },
+  "manami": {
+    "name": "HEAVY METAL",
+    "type": "buff",
+    "icon": "images/brick_manami.png"
+  },
+  "saori": {
+    "name": "INSTANT PERCEPTION",
+    "type": "buff",
+    "icon": "images/brick_saori.png"
+  },
+  "akuta": {
+    "name": "TOKIMEKI TIME",
+    "type": "debuff",
+    "icon": "images/brick_akuta.png"
+  },
+  "taiga": {
+    "name": "BREAKTHROUGH",
+    "type": "buff",
+    "icon": "images/brick_taiga.png"
+  },
+  "sui": {
+    "name": "LEBENSTRIEB",
+    "type": "debuff",
+    "icon": "images/brick_sui.png"
+  },
+  "magata": {
+    "name": "REJECTION IMPULSE",
+    "type": "debuff",
+    "icon": "images/brick_magata.png"
+  },
+  "ruriiro": {
+    "name": "HEAVEN OR HELL",
+    "type": "debuff",
+    "icon": "images/brick_ruriiro.png"
+  },
+  "ruriiro_real": {
+    "name": "THE REAL RURIIRO",
+    "type": "buff",
+    "icon": "images/brick_ruriiro.png"
+  },
+  "zero": {
+    "name": "ITS YOUR CUTE ZERO!",
+    "type": "buff",
+    "icon": "images/brick_zero.png"
+  },
+  "haru": {
+    "name": "POWER RESONANCE",
+    "type": "buff",
+    "icon": "images/brick_haru.png"
+  }
+}

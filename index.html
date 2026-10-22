@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Extreme Bricks</title>
+  <link rel="icon" type="image/png" href="images/ball.png">
+  <link rel="apple-touch-icon" href="images/ball.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Top HUD overlay -->
+    <header id="game-hud">
+      <div class="hud-left">
+        <div class="score-row current-score-row">
+          <span class="hud-label">SCORE:</span>
+          <div class="score-val-wrapper">
+            <span id="score-val" class="pixel-val score-main">00000</span>
+            <div id="score-popup-container" class="score-popup-container" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="score-row high-score-row">
+          <span class="hud-label">HIGH:</span>
+          <span id="high-score-val" class="pixel-val">00000</span>
+        </div>
+      </div>
+
+
+
+      <div class="hud-right">
+        <div id="lives-container" title="Remaining Lives">
+          <!-- Live icons rendered dynamically -->
+        </div>
+        <button id="btn-sound" class="icon-btn" aria-label="Toggle Sound" title="Sound On/Off">🔊</button>
+        <button id="btn-pause" class="icon-btn" aria-label="Pause Game" title="Pause">⏸</button>
+      </div>
+    </header>
+
+    <!-- Canvas -->
+    <canvas id="game-canvas" width="900" height="1600"></canvas>
+
+    <!-- Modals and Overlays -->
+    <div id="overlay-start" class="game-overlay start-overlay">
+      <div class="start-card">
+        <div class="logo-wrapper">
+          <h1 class="pixel-logo">E<span class="neon-pink">X</span>TREME <span class="neon-pink">B</span>RICKS</h1>
+        </div>
+
+        <!-- Asset Loading Section -->
+        <div id="loading-section" class="loading-container">
+          <div class="loading-info-row">
+            <span id="loading-status" class="pixel-info-text">LOADING ASSETS...</span>
+            <span id="loading-percent" class="pixel-info-text">0%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div id="loading-progress-bar" class="progress-bar-fill"></div>
+          </div>
+          <div id="loading-item-name" class="pixel-item-text">INITIALIZING...</div>
+        </div>
+
+        <!-- Tap to Start Section (revealed after loading) -->
+        <div id="tap-section" class="tap-container hidden">
+          <div class="tap-prompt-box">
+            <div class="pixel-prompt-text blink-glow">TAP TO START</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay-pause" class="game-overlay hidden">
+      <div class="modal-card">
+        <h2 class="modal-title">PAUSED</h2>
+        <div class="pause-actions">
+          <button id="btn-resume" class="btn-primary">RESUME</button>
+          <button id="btn-restart-pause" class="btn-secondary">RESTART</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay-wave" class="game-overlay wave-overlay hidden">
+      <div class="wave-announcement">
+        <h2 id="wave-title" class="wave-title">WAVE CLEARED!</h2>
+        <p class="wave-bonus">+500 BONUS POINTS</p>
+      </div>
+    </div>
+
+    <div id="overlay-gameover" class="game-overlay hidden">
+      <div class="modal-card">
+        <h2 class="modal-title gameover-title">GAME OVER</h2>
+        <div class="final-stats">
+          <div class="stat-box">
+            <span class="stat-label">FINAL SCORE</span>
+            <span id="final-score" class="stat-value pixel-val">00000</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">HIGH SCORE</span>
+            <span id="gameover-high-score" class="stat-value pixel-val">00000</span>
+          </div>
+        </div>
+        <div id="new-high-badge" class="new-record-badge hidden">🏆 NEW RECORD!</div>
+        <button id="btn-restart" class="btn-primary">PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js?v=9.17"></script>
+</body>
+</html>

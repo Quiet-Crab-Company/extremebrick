@@ -1,0 +1,19 @@
+{
+  "name": "t9brickbreaker",
+  "version": "1.0.0",
+  "description": "Cyber Breakout - Brick Breaker Game",
+  "main": "game.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "brick-breaker",
+    "arcade",
+    "game",
+    "canvas",
+    "html5"
+  ],
+  "author": "",
+  "license": "ISC"
+}
