@@ -34,7 +34,7 @@ const SHIELD_DURATION = 15; // seconds that bottom shield stays active (disappea
 const TURRET_DURATION = 30; // seconds that dual side turrets stay active
 const BULLET_SPEED = 20; // velocity of turret bullets
 const GRAVITY_FIELD_Y = 1120; // Y coordinate for bottom 30% of field (1120 to 1600, 480px height)
-const GRAVITY_FIELD_DURATION = 15; // seconds that gravity field stays active
+const GRAVITY_FIELD_DURATION = 8; // seconds that gravity field stays active
 const GRAVITY_FIELD_SLOW_FACTOR = 0.45; // slow down factor while falling in gravity field
 const DEBUFF_ICHINOSE_DURATION = 60; // 60 seconds (1 minute) for Ichinose point debuff
 const BOARD_SPEED_BOOST_DURATION = 20; // 20 seconds board speed boost from Mita brick
@@ -2482,13 +2482,13 @@ class BrickBreakerGame {
       return;
     }
 
-    // Check if this is the "tsuruko" brick: adds a pink transparent gravity field in bottom half for 15s
+    // Check if this is the "tsuruko" brick: adds a pink transparent gravity field in bottom half for 8s
     if (brick.specialType === 'tsuruko') {
       this.gravityField.active = true;
       this.gravityField.timer = GRAVITY_FIELD_DURATION;
       this.sound.playSpecialHit();
       this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'GRAVITY FIELD (15s)!', '#ff69b4', '11px "Press Start 2P"')
+        new FloatingText(brick.x + brick.width / 2, brick.y, 'GRAVITY FIELD (8s)!', '#ff69b4', '11px "Press Start 2P"')
       );
 
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff69b4', 32);

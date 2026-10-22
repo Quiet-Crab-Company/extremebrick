@@ -35,7 +35,7 @@ This document provides a breakdown of the grid architecture and each brick type 
 | **Eiji Brick** *(Golden Treasure)* | `images/brick_eiji.png` | Awards **+1000 bonus points** immediately upon destruction! | Instant | ~9.6% | `audio/special_brick.mp3` |
 | **Saigo Brick** *(+ Shape Blast)* | `images/brick_saigo.png` | Takes 3 hits (displays live countdown badge & flashes). On 3rd hit, breaks all bricks in + shape across its row and column! | **3 Hits** (Countdown: 3 -> 2 -> 1) | ~8.7% | `audio/explode.mp3` & `audio/hit.mp3` |
 | **Hyakuichitaro Brick** *(Fire Ball Pierce)* | `images/brick_hyakuichitaro.png` | Turns ball into a **Fire Ball** that pierces straight through bricks without bouncing back for **5 hits**! | **5 Hits** (Ball piercing) | ~8.0% | `audio/special_brick.mp3` & `audio/hit.mp3` |
-| **Tsuruko Brick** *(Gravity Field)* | `images/brick_tsuruko.png` | Activates a pink transparent gravity field in bottom 30% of playfield (`Y = 1120-1600`) for **15s**; balls slow down while falling. | **15 Seconds** | ~8.0% | `audio/special_brick.mp3` |
+| **Tsuruko Brick** *(Gravity Field)* | `images/brick_tsuruko.png` | Activates a pink transparent gravity field in bottom 30% of playfield (`Y = 1120-1600`) for **8s**; balls slow down while falling. | **8 Seconds** | ~8.0% | `audio/special_brick.mp3` |
 | **Ichinose Brick** *(Debuff Brick)* | `images/brick_ichinose.png` | **DEBUFF BRICK**: Clamps **all points gained for the next 1 minute (60s) to strictly 1 point**. Displays curved red corner glow across screen. | **60 Seconds (1 Min)** | ~7.3% | `audio/special_brick_debuff.mp3` |
 | **Mita Brick** *(Board Speed Boost)* | `images/brick_mita.png` | Accelerates paddle movement speed (75% faster keyboard velocity + accelerated touch/mouse tracking) for **20 seconds**. Surrounded by vibrant golden neon electric aura. | **20 Seconds** | ~7.2% | `audio/special_brick.mp3` |
 | **Manami Brick** *(Warp Jump + Cross Blast)* | `images/brick_manami.png` | Physically leaps through the air to a random alive brick with a rotating 3D parabolic jump arc and ground shadow, detonating **5 bricks in a + sign** on landing! | Instant / 0.48s flight | ~6.8% | `audio/special_brick.mp3` & `audio/explode.mp3` |
@@ -395,15 +395,15 @@ The **Hyakuichitaro Brick** is an intense offensive power-up featuring vivid pur
 
 ---
 
-## 13. Tsuruko Brick (`brick_tsuruko.png`) - *Pink Gravity Field (15s)*
+## 13. Tsuruko Brick (`brick_tsuruko.png`) - *Pink Gravity Field (8s)*
 
 ### Purpose & Concept
-The **Tsuruko Brick** is a strategic spatial manipulation power-up featuring charming pink hair and radiant pink eyes with a chic black beret. Breaking a Tsuruko brick generates a translucent **Pink Gravity Field** across the bottom 30% of the playfield (`Y = 1120 to 1600`, 480px height) for **15 seconds**, applying anti-gravity drag that significantly slows down balls while falling!
+The **Tsuruko Brick** is a strategic spatial manipulation power-up featuring charming pink hair and radiant pink eyes with a chic black beret. Breaking a Tsuruko brick generates a translucent **Pink Gravity Field** across the bottom 30% of the playfield (`Y = 1120 to 1600`, 480px height) for **8 seconds**, applying anti-gravity drag that significantly slows down balls while falling!
 
 ### Core Mechanics
 * **Gravity Field Activation**:
-  * Upon destruction, sets `this.gravityField.active = true` and `this.gravityField.timer = 15.0`.
-  * If another Tsuruko brick is broken while active, the timer refreshes back to 15 seconds.
+  * Upon destruction, sets `this.gravityField.active = true` and `this.gravityField.timer = 8.0`.
+  * If another Tsuruko brick is broken while active, the timer refreshes back to 8 seconds.
 * **Fall-Damping Time Dilation**:
   * Specifically targets balls in the bottom 30% of the playfield while falling (`ball.y >= 1120 && ball.vy > 0`).
   * Motion displacement is damped by a factor of `0.45` (55% speed reduction), providing generous reaction time to position the paddle.
@@ -417,7 +417,7 @@ The **Tsuruko Brick** is a strategic spatial manipulation power-up featuring cha
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` upon activation.
-* **Floating Text**: Displays `GRAVITY FIELD (15s)!` in vivid neon pink (`#ff69b4`).
+* **Floating Text**: Displays `GRAVITY FIELD (8s)!` in vivid neon pink (`#ff69b4`).
 * **Particles**: Triple-tiered pink and white energy burst (`#ff69b4`, `#ff1493`, `#ffffff`).
 * **Visuals**: Translucent pink field gradient, top neon boundary line, upward drifting anti-gravity lines, and ball slow-motion pulse rings.
 
