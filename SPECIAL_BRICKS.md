@@ -442,6 +442,14 @@ The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike ben
     }
     ```
   * All floating score indicators render in warning crimson red (`#ff3344`) displaying `+1` while the debuff is active.
+* **Field Watermark ("NUMBERS 1 NANODA")**:
+  * Centered directly on the open playfield between the brick formation and the paddle, a large transparent white watermark displays:
+    ```
+    NUMBERS
+       1
+    NANODA
+    ```
+    with the **`1` rendered in an enormous 240px bold font**, subtly pulsing with a transparent white ambient aura throughout the debuff duration.
 * **Curved Red Corner Screen Glow (Vignette)**:
   * When the debuff is active, a red glow renders around the corners and edges of the screen:
     * **4 Corner Radial Gradients**: Located at top-left `(0, 0)`, top-right `(CANVAS_WIDTH, 0)`, bottom-left `(0, CANVAS_HEIGHT)`, and bottom-right `(CANVAS_WIDTH, CANVAS_HEIGHT)` with radius `420px`, fading smoothly toward the center.
@@ -452,14 +460,14 @@ The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike ben
   * Outlined with an ominous cursed crimson neon glow (`#ff0033`).
   * **Strictly NO on-brick badge**: In strict compliance with the badge rule (*only Enoki and Saigo have countdown badges*), Ichinose displays no badge icon.
 * **Expiration / Reversion**:
-  * After 60 seconds of active play, the debuff expires, clearing the red screen glow and popping floating text `DEBUFF CLEARED` in radiant mint green (`#00ff88`).
+  * After 60 seconds of active play, the debuff expires, clearing the red screen glow, field watermark, and popping floating text `DEBUFF CLEARED` in radiant mint green (`#00ff88`).
   * Debuff state also clears if all balls are lost (life lost) or on game restart.
 
 ### Sensory Feedback
 * **Audio**: Plays specialized debuff audio `audio/special_brick_debuff.mp3` upon activation.
-* **Floating Text**: Displays `DEBUFF: 1 PT ONLY! (60s)` in crimson red (`#ff0033`).
+* **Field Watermark**: Transparent white `NUMBERS 1 NANODA` watermark with giant `1` in the center field.
 * **Particles**: Tri-level dark crimson, burgundy, and abyss particle burst (`#ff0033`, `#880015`, `#220005`).
-* **Visuals**: Curved 4-corner radial red screen glow, edge perimeter vignette, live header timer, and red `+1` score numbers.
+* **Visuals**: Curved 4-corner radial red screen glow, edge perimeter vignette, live header timer, red `+1` score numbers, and transparent white field text.
 
 ---
 

@@ -4634,6 +4634,51 @@ class BrickBreakerGame {
       this.ctx.restore();
     }
 
+    // 2d. Draw Ichinose 1-Point Debuff Field Watermark ("NUMBERS 1 NANODA")
+    if (this.pointDebuff && this.pointDebuff.active) {
+      this.ctx.save();
+      const isEnding = this.pointDebuff.timer <= 3.0;
+      const pulse = 0.88 + 0.12 * Math.sin(Date.now() / 200);
+      const baseAlpha = isEnding ? (Math.floor(this.pointDebuff.timer * 6) % 2 === 0 ? 0.08 : 0.22) : 0.18;
+      const alpha = baseAlpha * pulse;
+
+      const centerX = CANVAS_WIDTH / 2;
+      const centerY = 1015; // Centered vertically in open field between brick area (~590) and paddle (1440)
+
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+
+      // Soft ambient white glow
+      this.ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+      this.ctx.shadowBlur = 16;
+
+      // Line 1: "NUMBERS"
+      this.ctx.font = '900 44px "Impact", "Arial Black", sans-serif';
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      this.ctx.fillText('NUMBERS', centerX, centerY - 145);
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.75})`;
+      this.ctx.lineWidth = 1.5;
+      this.ctx.strokeText('NUMBERS', centerX, centerY - 145);
+
+      // Line 2: "1" (very big letter!)
+      this.ctx.font = '900 240px "Impact", "Arial Black", sans-serif';
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 1.05})`;
+      this.ctx.fillText('1', centerX, centerY + 5);
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.85})`;
+      this.ctx.lineWidth = 3;
+      this.ctx.strokeText('1', centerX, centerY + 5);
+
+      // Line 3: "NANODA"
+      this.ctx.font = '900 44px "Impact", "Arial Black", sans-serif';
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      this.ctx.fillText('NANODA', centerX, centerY + 155);
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.75})`;
+      this.ctx.lineWidth = 1.5;
+      this.ctx.strokeText('NANODA', centerX, centerY + 155);
+
+      this.ctx.restore();
+    }
+
     // Red glow behind board during Container Slow debuff (Sui)
     if (this.boardSlowDebuff && this.boardSlowDebuff.active) {
       this.ctx.save();
