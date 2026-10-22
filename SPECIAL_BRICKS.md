@@ -189,7 +189,7 @@ The **Kazuki Brick** summons an emergency neon safety barrier beneath the player
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` on activation; `audio/bounce.mp3` on deflection.
-* **Floating Text**: Displays `NEON SHIELD (15s / 1 HIT)!` on activation, and `SHIELD DEFLECT!` on deflection.
+* **Floating Text**: None (only points text appears in the field).
 * **Particles**: 30 electric cyan particles on activation, plus vibrant cyan & white explosion sparks along the shield line on ball bounce.
 
 ---
@@ -609,7 +609,7 @@ The **Taiga Brick** is a high-utility rescue and repositioning power-up. Upon de
 
 ### Sensory Feedback
 * **Audio**: Plays synthesized rushing wind gale SFX (`playWindGale()`) alongside `audio/special_brick.mp3`.
-* **Floating Text**: Displays `GREEN GALE (1S)!` at the brick upon break, and `🍃 WIND RESCUE!` upon bottom deflection.
+* **Floating Text**: None (only points text appears in the field).
 * **Particles**: Emerald, mint, and white particle explosion at the brick; vertical flowing wind streamer ribbons and spiraling wind particles rushing upward from the bottom during the 1 second.
 
 ---
@@ -759,7 +759,6 @@ The **Hard Brick** is a sturdy normal brick variant. Unlike special bricks, it d
     * Instantly transmutes its sprite to **Cracked Brick** (`images/brick_cracked.webp`).
     * Triggers a momentary white hit flash wash (`hitFlashTimer = 0.35`).
     * Emits stone rubble and sparks (`#d0d0d0`, `#888888`).
-    * Spawns floating indicator text: `CRACKED! (1 HIT LEFT)` in gold (`#ffcc00`).
   * **Hit 2 (Destruction)**:
     * Destroyed like standard bricks (`alive = false`).
     * Disintegrates with stone rubble and gold particles (`#e0e0e0`, `#ffcc00`).
@@ -773,7 +772,7 @@ The **Hard Brick** is a sturdy normal brick variant. Unlike special bricks, it d
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/hit.mp3` on both the 1st crack hit and final destruction hit.
-* **Floating Text**: `CRACKED! (1 HIT LEFT)` on 1st hit; `+30` on final destruction.
+* **Floating Text**: `+30` points on final destruction (no countdown text on cracked hit).
 * **Visuals**: Distinct reinforced metal/stone plate sprite (`brick_hard.webp`) transitioning to fractured fissure sprite (`brick_cracked.webp`). White hit flash overlay on crack.
 
 ---

@@ -1739,9 +1739,6 @@ class BrickBreakerGame {
     this.container.classList.add('shake');
     setTimeout(() => this.container.classList.remove('shake'), 220);
 
-    this.floatingTexts.push(
-      new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 25, 'HEAVY SLOW (2s)!', '#ff3344', '13px "Press Start 2P"')
-    );
 
     // Red impact sparks & smoke at paddle
     this.spawnExplosion(this.bat.x + this.bat.width / 2, this.bat.y, '#ff3344', 30);
@@ -2812,9 +2809,6 @@ class BrickBreakerGame {
     brick.poisonTimer = 5.0;
     brick.poisonDuration = 5.0;
     this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#39ff14', 16);
-    this.floatingTexts.push(
-      new FloatingText(brick.x + brick.width / 2, brick.y - 12, 'POISONED (5s)!', '#39ff14', '10px "Press Start 2P"')
-    );
   }
 
   spawnExplosion(x, y, color, count = 16) {
@@ -2891,9 +2885,6 @@ class BrickBreakerGame {
         try {
           this.sound.playLaser();
         } catch (e) { }
-        this.floatingTexts.push(
-          new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 20, 'BOARD NORMALIZED', '#00f3ff', '10px "Press Start 2P"')
-        );
       } else {
         // Delicate, sparse drift of glowing sakura petals falling off extended board
         if (this.sakuraPetals.length < 12 && Math.random() < 0.12) {
@@ -2947,9 +2938,6 @@ class BrickBreakerGame {
         try {
           this.sound.playSpecialHit();
         } catch (e) { }
-        this.floatingTexts.push(
-          new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 20, 'BOARD RESTORED!', '#00ff88', '11px "Press Start 2P"')
-        );
       }
     }
 
@@ -2959,9 +2947,6 @@ class BrickBreakerGame {
       if (this.shield.timer <= 0) {
         this.shield.active = false;
         this.shield.timer = 0;
-        this.floatingTexts.push(
-          new FloatingText(CANVAS_WIDTH / 2, SHIELD_Y - 20, 'SHIELD EXPIRED', '#00f3ff', '10px "Press Start 2P"')
-        );
       }
     }
 
@@ -2971,9 +2956,6 @@ class BrickBreakerGame {
       if (this.turrets.timer <= 0) {
         this.turrets.active = false;
         this.turrets.timer = 0;
-        this.floatingTexts.push(
-          new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 20, 'TURRETS EXPIRED', '#ff2a85', '10px "Press Start 2P"')
-        );
       }
     }
 
@@ -2983,9 +2965,6 @@ class BrickBreakerGame {
       if (this.gravityField.timer <= 0) {
         this.gravityField.active = false;
         this.gravityField.timer = 0;
-        this.floatingTexts.push(
-          new FloatingText(CANVAS_WIDTH / 2, GRAVITY_FIELD_Y + 40, 'GRAVITY FIELD ENDED', '#ff69b4', '10px "Press Start 2P"')
-        );
       }
     }
 
@@ -2995,9 +2974,6 @@ class BrickBreakerGame {
       if (this.pointDebuff.timer <= 0) {
         this.pointDebuff.active = false;
         this.pointDebuff.timer = 0;
-        this.floatingTexts.push(
-          new FloatingText(CANVAS_WIDTH / 2, HEADER_HEIGHT + 40, 'DEBUFF CLEARED', '#00ff88', '11px "Press Start 2P"')
-        );
       }
     }
 
@@ -3043,9 +3019,6 @@ class BrickBreakerGame {
           this.sound.playSpecialHit();
         } catch (e) { }
 
-        this.floatingTexts.push(
-          new FloatingText(CANVAS_WIDTH / 2, HEADER_HEIGHT + 60, 'SPEED NORMALIZED!', '#00e5ff', '12px "Press Start 2P"')
-        );
       }
     }
 
@@ -3088,9 +3061,6 @@ class BrickBreakerGame {
       if (this.boardSpeedBoost.timer <= 0) {
         this.boardSpeedBoost.active = false;
         this.boardSpeedBoost.timer = 0;
-        this.floatingTexts.push(
-          new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 20, 'SPEED NORMALIZED', '#ffea00', '10px "Press Start 2P"')
-        );
       }
     }
 
@@ -3117,9 +3087,6 @@ class BrickBreakerGame {
       if (this.boardSlowDebuff.timer <= 0) {
         this.boardSlowDebuff.active = false;
         this.boardSlowDebuff.timer = 0;
-        this.floatingTexts.push(
-          new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 20, 'SPEED RESTORED', '#00ff88', '10px "Press Start 2P"')
-        );
       }
     }
 
@@ -3152,9 +3119,6 @@ class BrickBreakerGame {
 
       if (this.magataDebuff.timer <= 0 && this.magataComments.length === 0) {
         this.magataDebuff.active = false;
-        this.floatingTexts.push(
-          new FloatingText(CANVAS_WIDTH / 2, HEADER_HEIGHT + 40, 'DANMAKU CLEARED', '#00ff88', '11px "Press Start 2P"')
-        );
       }
     }
 
@@ -3383,15 +3347,6 @@ class BrickBreakerGame {
               this.sound.playBrickHit();
               this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#d0d0d0', 14);
               this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#888888', 8);
-              this.floatingTexts.push(
-                new FloatingText(
-                  brick.x + brick.width / 2,
-                  brick.y - 14,
-                  'CRACKED! (1 HIT LEFT)',
-                  '#ffcc00',
-                  '11px "Press Start 2P"'
-                )
-              );
               break;
             }
 
@@ -3403,15 +3358,6 @@ class BrickBreakerGame {
               const sparkColor = brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff';
               const textColor = brick.specialType === 'saigo' ? '#ff5533' : '#df40ff';
               this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 18);
-              this.floatingTexts.push(
-                new FloatingText(
-                  brick.x + brick.width / 2,
-                  brick.y - 14,
-                  `${brick.hitsRemaining} HIT${brick.hitsRemaining > 1 ? 'S' : ''} LEFT!`,
-                  textColor,
-                  '11px "Press Start 2P"'
-                )
-              );
               break;
             }
           } else {
@@ -3426,15 +3372,6 @@ class BrickBreakerGame {
             this.spawnExplosion(closestX, closestY, '#ffcc00', 16);
             this.spawnExplosion(closestX, closestY, '#ffffff', 8);
 
-            this.floatingTexts.push(
-              new FloatingText(
-                brick.x + brick.width / 2,
-                brick.y - 14,
-                ball.fireHitsRemaining > 0 ? `PIERCE! (${ball.fireHitsRemaining} LEFT)` : 'PIERCE (LAST)!',
-                '#ff4500',
-                '11px "Press Start 2P"'
-              )
-            );
           }
 
           // Brick destroyed on 3rd hit (or 2nd hit for hard bricks, 1st hit for standard bricks)
@@ -3490,9 +3427,6 @@ class BrickBreakerGame {
 
         this.spawnExplosion(ball.x, SHIELD_Y, '#00f3ff', 24);
         this.spawnExplosion(ball.x, SHIELD_Y, '#ffffff', 12);
-        this.floatingTexts.push(
-          new FloatingText(ball.x, SHIELD_Y - 20, 'SHIELD DEFLECT!', '#00f3ff', '10px "Press Start 2P"')
-        );
       }
 
       // Green Wind Updraft (Taiga Brick Effect): during the 1-second blow, bounce any ball reaching the bottom upwards once
@@ -3500,9 +3434,6 @@ class BrickBreakerGame {
         this.bounceBallUpwardsWithWind(ball);
         this.sound.playWindGale();
         this.sound.playWallBounce();
-        this.floatingTexts.push(
-          new FloatingText(ball.x, BAT_Y - 25, '🍃 WIND RESCUE!', '#00ff88', '14px "Press Start 2P"')
-        );
       }
 
       // Ball falls below screen bottom
@@ -3510,9 +3441,6 @@ class BrickBreakerGame {
         if (this.taigaWind && this.taigaWind.active && !ball.bouncedByWind) {
           this.bounceBallUpwardsWithWind(ball);
           this.sound.playWindGale();
-          this.floatingTexts.push(
-            new FloatingText(ball.x, BAT_Y - 25, '🍃 WIND RESCUE!', '#00ff88', '14px "Press Start 2P"')
-          );
         } else {
           if (ball.hasMagnetEffect) {
             ball.hasMagnetEffect = false;
@@ -3562,15 +3490,6 @@ class BrickBreakerGame {
             this.sound.playBrickHit();
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#d0d0d0', 14);
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#888888', 8);
-            this.floatingTexts.push(
-              new FloatingText(
-                brick.x + brick.width / 2,
-                brick.y - 14,
-                'CRACKED! (1 HIT LEFT)',
-                '#ffcc00',
-                '11px "Press Start 2P"'
-              )
-            );
             break;
           }
 
@@ -3582,15 +3501,6 @@ class BrickBreakerGame {
             const sparkColor = brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff';
             const textColor = brick.specialType === 'saigo' ? '#ff5533' : '#df40ff';
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 16);
-            this.floatingTexts.push(
-              new FloatingText(
-                brick.x + brick.width / 2,
-                brick.y - 14,
-                `${brick.hitsRemaining} HIT${brick.hitsRemaining > 1 ? 'S' : ''} LEFT!`,
-                textColor,
-                '11px "Press Start 2P"'
-              )
-            );
             break;
           }
 
@@ -3667,18 +3577,12 @@ class BrickBreakerGame {
             this.lives = Math.min(MAX_LIVES, this.lives + 1);
             this.updateHUD();
             this.sound.playSpecialHit();
-            this.floatingTexts.push(
-              new FloatingText(heart.x, this.bat.y - 20, '+1 LIFE!', '#00ff88', '14px "Press Start 2P"')
-            );
             this.spawnExplosion(heart.x, this.bat.y, '#88d629', 32);
             this.spawnExplosion(heart.x, this.bat.y, '#00ff88', 24);
             this.spawnExplosion(heart.x, this.bat.y, '#ffe600', 16);
           } else {
             // Already at max 3 lives
             this.sound.playSpecialHit();
-            this.floatingTexts.push(
-              new FloatingText(heart.x, this.bat.y - 20, 'MAX LIVES (3/3)!', '#00ff88', '11px "Press Start 2P"')
-            );
             this.spawnExplosion(heart.x, this.bat.y, '#88d629', 20);
           }
 
@@ -3697,25 +3601,12 @@ class BrickBreakerGame {
           this.sound.playWallBounce();
           this.spawnExplosion(heart.x, this.bat.y, '#ff3366', 16);
           this.spawnExplosion(heart.x, this.bat.y, '#00ff88', 10);
-          const remaining = 3 - heart.bounces;
-          this.floatingTexts.push(
-            new FloatingText(
-              heart.x,
-              this.bat.y - 18,
-              `HEART ${heart.bounces}/3! (${remaining} LEFT)`,
-              '#ff3366',
-              '10px "Press Start 2P"'
-            )
-          );
         }
       }
 
       // Heart falls off bottom of screen:
       // Note: Heart does NOT destroy Kazuki shield if fallen off (shield is only destroyed by balls)
       if (heart.y - heart.radius > CANVAS_HEIGHT) {
-        this.floatingTexts.push(
-          new FloatingText(heart.x, CANVAS_HEIGHT - 35, 'HEART LOST', '#ff4466', '10px "Press Start 2P"')
-        );
         this.hearts.splice(hi, 1);
       }
     }
@@ -4008,15 +3899,6 @@ class BrickBreakerGame {
             this.sound.playBrickHit();
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#d0d0d0', 14);
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#888888', 8);
-            this.floatingTexts.push(
-              new FloatingText(
-                brick.x + brick.width / 2,
-                brick.y - 14,
-                'CRACKED! (1 HIT LEFT)',
-                '#ffcc00',
-                '11px "Press Start 2P"'
-              )
-            );
             break;
           }
 
@@ -4028,15 +3910,6 @@ class BrickBreakerGame {
             const sparkColor = brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff';
             const textColor = brick.specialType === 'saigo' ? '#ff5533' : '#df40ff';
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 16);
-            this.floatingTexts.push(
-              new FloatingText(
-                brick.x + brick.width / 2,
-                brick.y - 14,
-                `${brick.hitsRemaining} HIT${brick.hitsRemaining > 1 ? 'S' : ''} LEFT!`,
-                textColor,
-                '11px "Press Start 2P"'
-              )
-            );
             break;
           }
 
@@ -4091,9 +3964,6 @@ class BrickBreakerGame {
 
       if (this.suiContainerRain.timer <= 0) {
         this.suiContainerRain.active = false;
-        this.floatingTexts.push(
-          new FloatingText(CANVAS_WIDTH / 2, HEADER_HEIGHT + 40, 'CONTAINER RAIN ENDED', '#00ff88', '11px "Press Start 2P"')
-        );
       }
     }
 
@@ -4560,15 +4430,6 @@ class BrickBreakerGame {
         this.ctx.stroke();
       }
 
-      // Live HUD indicator label inside the field
-      this.ctx.shadowColor = '#ff1493';
-      this.ctx.shadowBlur = 8;
-      this.ctx.fillStyle = 'rgba(255, 200, 230, 0.85)';
-      this.ctx.font = '10px "Press Start 2P"';
-      this.ctx.textAlign = 'right';
-      this.ctx.textBaseline = 'top';
-      const secLeft = Math.ceil(this.gravityField.timer);
-      this.ctx.fillText(`GRAVITY FIELD: ${secLeft}s`, CANVAS_WIDTH - 20, GRAVITY_FIELD_Y + 12);
 
       this.ctx.restore();
     }
