@@ -1788,6 +1788,7 @@ class BrickBreakerGame {
       : this.getDefaultMagataComments();
 
     const lanes = [280, 315, 350, 385, 420, 455, 490, 525, 560, 595, 630];
+    const commentCanvasCache = new Map();
 
     // Spawn the comments across the lanes with staggered X positions running from right to left
     templates.forEach((tmpl, idx) => {
@@ -1809,7 +1810,7 @@ class BrickBreakerGame {
         x = -80 + (idx * 36) + Math.random() * 45;
       }
 
-      this.magataComments.push({
+      const comment = {
         text: tmpl.text,
         color,
         size,
@@ -1817,8 +1818,34 @@ class BrickBreakerGame {
         standout: isStandout,
         x,
         y,
-        width: 0
-      });
+        width: 0,
+        canvas: null,
+        canvasWidth: 0,
+        canvasHeight: 0,
+        renderOffset: 0
+      };
+
+      // Reuse pre-rendered offscreen canvas for matching templates to minimize memory & rasterization
+      const cacheKey = `${tmpl.text}_${size}_${color}_${isStandout}`;
+      if (commentCanvasCache.has(cacheKey)) {
+        const cached = commentCanvasCache.get(cacheKey);
+        comment.canvas = cached.canvas;
+        comment.width = cached.width;
+        comment.canvasWidth = cached.canvasWidth;
+        comment.canvasHeight = cached.canvasHeight;
+        comment.renderOffset = cached.renderOffset;
+      } else {
+        this.createCommentCanvas(comment);
+        commentCanvasCache.set(cacheKey, {
+          canvas: comment.canvas,
+          width: comment.width,
+          canvasWidth: comment.canvasWidth,
+          canvasHeight: comment.canvasHeight,
+          renderOffset: comment.renderOffset
+        });
+      }
+
+      this.magataComments.push(comment);
     });
 
     this.floatingTexts.push(
@@ -1828,6 +1855,60 @@ class BrickBreakerGame {
     this.spawnExplosion(bx, by, '#ff007f', 32);
     this.spawnExplosion(bx, by, '#ff69b4', 22);
     this.spawnExplosion(bx, by, '#ffffff', 14);
+  }
+
+  // Pre-render a Danmaku comment text once onto an offscreen canvas for zero-overhead GPU drawImage blitting
+  createCommentCanvas(c) {
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d');
+    const font = `900 ${c.size}px "Impact", "Hiragino Kaku Gothic Pro", "Meiryo", "Arial Black", sans-serif`;
+    offCtx.font = font;
+
+    const strokeWidth = c.standout ? Math.max(5, c.size * 0.16) : Math.max(3, c.size * 0.12);
+    const textMetrics = offCtx.measureText(c.text);
+    const textWidth = Math.ceil(textMetrics.width);
+    const pad = Math.ceil(strokeWidth * 2 + 12);
+    const textHeight = Math.ceil(c.size * 1.35);
+
+    offCanvas.width = textWidth + pad * 2;
+    offCanvas.height = textHeight + pad * 2;
+
+    offCtx.font = font;
+    offCtx.textBaseline = 'middle';
+    offCtx.textAlign = 'left';
+
+    const textX = pad;
+    const textY = offCanvas.height / 2;
+
+    if (c.standout) {
+      // Dark pink outline
+      offCtx.lineWidth = strokeWidth;
+      offCtx.strokeStyle = '#280014';
+      offCtx.strokeText(c.text, textX, textY);
+
+      // Neon pink fill
+      offCtx.fillStyle = c.color || '#ff007f';
+      offCtx.fillText(c.text, textX, textY);
+
+      // Bright inner shine
+      offCtx.lineWidth = 1.6;
+      offCtx.strokeStyle = '#ffffff';
+      offCtx.strokeText(c.text, textX, textY);
+    } else {
+      // Classic Nico Nico Douga text: thick black outline + solid color fill
+      offCtx.lineWidth = strokeWidth;
+      offCtx.strokeStyle = '#000000';
+      offCtx.strokeText(c.text, textX, textY);
+
+      offCtx.fillStyle = c.color || '#ffffff';
+      offCtx.fillText(c.text, textX, textY);
+    }
+
+    c.canvas = offCanvas;
+    c.width = textWidth;
+    c.canvasWidth = offCanvas.width;
+    c.canvasHeight = offCanvas.height;
+    c.renderOffset = pad;
   }
 
   triggerRuriiroDebuff(brick) {
@@ -5490,7 +5571,7 @@ class BrickBreakerGame {
     }
   }
 
-  // Render Nico Nico Douga running comments blocking the brick playfield area
+  // Render Nico Nico Douga running comments blocking the brick playfield area (GPU accelerated)
   drawMagataDanmaku() {
     this.ctx.save();
 
@@ -5499,52 +5580,37 @@ class BrickBreakerGame {
     this.ctx.rect(0, HEADER_HEIGHT, CANVAS_WIDTH, BAT_Y - HEADER_HEIGHT - 35);
     this.ctx.clip();
 
-    // 1. Draw regular background running comments (Nico Nico Douga text with black outline)
-    for (const c of this.magataComments) {
+    // 1. Draw regular background running comments using fast GPU drawImage blits
+    for (let i = 0; i < this.magataComments.length; i++) {
+      const c = this.magataComments[i];
       if (c.standout) continue;
 
-      this.ctx.font = `900 ${c.size}px "Impact", "Hiragino Kaku Gothic Pro", "Meiryo", "Arial Black", sans-serif`;
-      if (!c.width) {
-        c.width = this.ctx.measureText(c.text).width;
+      // Frustum culling: skip drawing if completely outside canvas horizontally
+      if (c.x > CANVAS_WIDTH + 15 || c.x + (c.width || 300) < -20) continue;
+
+      if (c.canvas) {
+        const drawY = c.y - c.canvasHeight / 2;
+        this.ctx.drawImage(c.canvas, c.x - c.renderOffset, drawY);
       }
-
-      this.ctx.lineWidth = Math.max(3, c.size * 0.12);
-      this.ctx.strokeStyle = '#000000';
-      this.ctx.strokeText(c.text, c.x, c.y);
-
-      this.ctx.fillStyle = c.color || '#ffffff';
-      this.ctx.fillText(c.text, c.x, c.y);
     }
 
-    // 2. Draw standout "MA☆GA☆TA" comment ON TOP of all other comments in neon pink, moving very slowly!
-    for (const c of this.magataComments) {
+    // 2. Draw standout "MA☆GA☆TA" comment ON TOP of all other comments in neon pink
+    for (let i = 0; i < this.magataComments.length; i++) {
+      const c = this.magataComments[i];
       if (!c.standout) continue;
 
-      this.ctx.save();
-      this.ctx.font = `900 ${c.size}px "Impact", "Hiragino Kaku Gothic Pro", "Meiryo", "Arial Black", sans-serif`;
-      if (!c.width) {
-        c.width = this.ctx.measureText(c.text).width;
+      if (c.x > CANVAS_WIDTH + 30 || c.x + (c.width || 500) < -30) continue;
+
+      if (c.canvas) {
+        this.ctx.save();
+        const pulse = 0.85 + 0.15 * Math.sin(Date.now() / 80);
+        this.ctx.shadowColor = '#ff007f';
+        this.ctx.shadowBlur = 18 * pulse;
+
+        const drawY = c.y - c.canvasHeight / 2;
+        this.ctx.drawImage(c.canvas, c.x - c.renderOffset, drawY);
+        this.ctx.restore();
       }
-
-      const pulse = 0.85 + 0.15 * Math.sin(Date.now() / 80);
-      this.ctx.shadowColor = '#ff007f';
-      this.ctx.shadowBlur = 24 * pulse;
-
-      // Dark pink outline
-      this.ctx.lineWidth = Math.max(5, c.size * 0.16);
-      this.ctx.strokeStyle = '#280014';
-      this.ctx.strokeText(c.text, c.x, c.y);
-
-      // Neon pink fill
-      this.ctx.fillStyle = c.color || '#ff007f';
-      this.ctx.fillText(c.text, c.x, c.y);
-
-      // Bright inner shine
-      this.ctx.lineWidth = 1.6;
-      this.ctx.strokeStyle = '#ffffff';
-      this.ctx.strokeText(c.text, c.x, c.y);
-
-      this.ctx.restore();
     }
 
     this.ctx.restore();
