@@ -11,7 +11,7 @@ This document provides a breakdown of the grid architecture and each brick type 
   - **Left & Right Corridors**: Centered 7-column layout with 111px open gaps on both left (`x = 0..111px`) and right (`x = 789..900px`), giving ample space for balls to slide past either side and loop behind the brick formation.
 - **Special Bricks per Round**: **Minimum half the bricks are special bricks** (at least 18 out of 35 bricks, randomly 18 to 22 special bricks, ~51%–63% of the grid).
 - **Debuff Brick Guarantee**: **Each round is guaranteed to have at least one debuff brick** (`ichinose`, `akuta`, `sui`, `magata`, or `ruriiro`).
-- **Normal Bricks**: **13–17 normal bricks** per round (~37%–49% of the grid). Out of these normal bricks, a random count (between 3 and 6) are reinforced as **Hard Bricks** (`images/brick_hard.png`).
+- **Normal Bricks**: **13–17 normal bricks** per round (~37%–49% of the grid). Out of these normal bricks, a random count (between 3 and 6) are reinforced as **Hard Bricks** (`images/brick_hard.webp`).
 - **Individual Randomization**: Each of the special brick slots is individually randomized across the weighted special types pool.
 - **Explosion Interaction**: When a special brick is caught in an explosion (from a **Q Brick**), **its special skill effect activates immediately** as well (including cascading Q bomb explosions, board extensions, multiball spawns, shields, and magnetism)!
 
@@ -21,35 +21,35 @@ This document provides a breakdown of the grid architecture and each brick type 
 
 | Brick Type | Image Asset | Effect Summary | Duration / Limit | Special Slot Chance | SFX Triggered |
 | :--- | :---: | :--- | :--- | :---: | :--- |
-| **Normal Brick** | `images/brick_normal.png` | Standard brick. Grants +10 points when destroyed. | Permanent | ~7–14 of 35 | `audio/hit.mp3` |
-| **Hard Brick** *(2-Hit Normal Brick)* | `images/brick_hard.png` → `images/brick_cracked.png` | Reinforced normal brick requiring **2 hits** to break. Turns into cracked brick (`images/brick_cracked.png`) on 1st hit; destroys on 2nd hit. Grants **+30 points** instead of 10. | Permanent (2 Hits) | Random 3–6 of Normal pool | `audio/hit.mp3` |
-| **Yo Brick** *(Board Extender)* | `images/brick_yo.png` | Widens paddle from 215px to 284px and equips extended sprite. | **30 Seconds** (Timer resets if another Yo brick is broken) | ~15.5% | `audio/special_brick.mp3` |
-| **Zero Brick** *(3-Bounce Zero Heart Extra Life)* | `images/brick_zero.png` | Drops a **Zero Heart** (`images/zero_heart.webp`, resized to ball size) that must be bounced on the paddle **3 times** to transform into an extra life (max 3 lives). Heavy physics; does not hit bricks; does not destroy Kazuki shield; unaffected by gravity field. | **3 Paddle Bounces** (Max 3 Lives) | **~7.0%** (Rarest special brick) | `audio/special_brick.mp3` |
-| **Tsuki Brick** *(Magnetism)* | `images/brick_tsuki.png` | Grants magnetism to the **next 1 closest brick** to the paddle. | **1 Brick** (Single ball binding) | ~15.5% | `audio/special_brick.mp3` |
-| **Q Brick** *(Bomb Blast)* | `images/brick_q.png` | Explodes all adjacent bricks (activates special skills on hit!). | Instant | ~15.5% | `audio/explode.mp3` |
-| **Kazuki Brick** *(Neon Shield)* | `images/brick_kazuki.png` | Deploys an animated digital jagged neon light blue shield line beneath player board that scrolls to the right and loops. Deflects ball safely; disappears after **1 hit** or **15 seconds**. | **15 Seconds or 1 Hit** | ~15.5% | `audio/special_brick.mp3` |
-| **Miu Brick** *(Dual Turrets)* | `images/brick_miu.png` | Summons dual side turrets on the board that fire upward lasers every time a ball bounces on the board. | **30 Seconds** | ~15.5% | `audio/special_brick.mp3` & `audio/laser.mp3` |
-| **Jio Brick** *(Toxic Poison)* | `images/brick_jio.png` | Poisons 1 adjacent brick (destroys it after 5s; if not hit by ball, breaks and spreads poison to another adjacent brick!). | **5s per brick** (Cascades if unhit) | ~13.4% | `audio/special_brick.mp3` & `audio/hit.mp3` |
-| **Enoki Brick** *(X-Line Blast)* | `images/brick_enoki.png` | Takes 3 hits (displays countdown badge, flashes and glows in purple neon). On 3rd hit, destroys every brick along diagonal X lines! | **3 Hits** (Countdown: 3 -> 2 -> 1) | ~11.8% | `audio/explode.mp3` & `audio/hit.mp3` |
-| **Koishi Brick** *(Multiball)* | `images/brick_koishi.png` | Launches an extra active ball into play immediately. | Instant / Ball stays until lost | ~10.6% | `audio/special_brick.mp3` |
-| **Eiji Brick** *(Golden Treasure)* | `images/brick_eiji.png` | Awards **+1000 bonus points** immediately upon destruction! | Instant | ~9.6% | `audio/special_brick.mp3` |
-| **Saigo Brick** *(+ Shape Blast)* | `images/brick_saigo.png` | Takes 3 hits (displays live countdown badge & flashes). On 3rd hit, breaks all bricks in + shape across its row and column! | **3 Hits** (Countdown: 3 -> 2 -> 1) | ~8.7% | `audio/explode.mp3` & `audio/hit.mp3` |
-| **Hyakuichitaro Brick** *(Fire Ball Pierce)* | `images/brick_hyakuichitaro.png` | Turns ball into a **Fire Ball** that pierces straight through bricks without bouncing back for **5 hits**! | **5 Hits** (Ball piercing) | ~8.0% | `audio/special_brick.mp3` & `audio/hit.mp3` |
-| **Tsuruko Brick** *(Gravity Field)* | `images/brick_tsuruko.png` | Activates a pink transparent gravity field in bottom 30% of playfield (`Y = 1120-1600`) for **8s**; balls slow down while falling. | **8 Seconds** | ~8.0% | `audio/special_brick.mp3` |
-| **Ichinose Brick** *(Debuff Brick)* | `images/brick_ichinose.png` | **DEBUFF BRICK**: Clamps **all points gained for the next 1 minute (60s) to strictly 1 point**. Displays curved red corner glow across screen. | **60 Seconds (1 Min)** | ~7.3% | `audio/special_brick_debuff.mp3` |
-| **Mita Brick** *(Board Speed Boost)* | `images/brick_mita.png` | Accelerates paddle movement speed (75% faster keyboard velocity + accelerated touch/mouse tracking) for **20 seconds**. Surrounded by vibrant golden neon electric aura. | **20 Seconds** | ~7.2% | `audio/special_brick.mp3` |
-| **Manami Brick** *(Warp Jump + Cross Blast)* | `images/brick_manami.png` | Physically leaps through the air to a random alive brick with a rotating 3D parabolic jump arc and ground shadow, detonating **5 bricks in a + sign** on landing! | Instant / 0.48s flight | ~6.8% | `audio/special_brick.mp3` & `audio/explode.mp3` |
-| **Saori Brick** *(5-Rapid White Bullets)* | `images/brick_saori.png` | Fires **5 sequential white round bullets** from the center of the player board straight up that break bricks in line! | Instant / 5-Shot Burst | ~6.5% | `audio/laser.mp3` & `audio/hit.mp3` |
-| **Akuta Brick** *(Damaged Board Debuff)* | `images/brick_akuta.png` | **DEBUFF BRICK**: Shrinks board to half-paddle (`images/bat_half.png`, width 146px) for **1 minute (60s)**. Damaged board continuously emits billows of smoke and crackling electric sparks! | **60 Seconds (1 Min)** | ~6.0% | `audio/special_brick_debuff.mp3` |
-| **Taiga Brick** *(Green Gale Updraft)* | `images/brick_taiga.png` | Summons a powerful **Green Wind** surging up from the bottom of the screen for 1 second that bounces every ball upwards once! | Instant / 1.0s Wind Surge | ~5.8% | `audio/special_brick.mp3` & Wind Gale SFX |
-| **Sui Brick** *(Container Drop Debuff)* | `images/brick_sui.png` | **DEBUFF BRICK**: Drops a random **1–3 red shipping containers** (`images/container.png`) sequentially from random places. If the board catches a container, it becomes **very slow for 2 seconds**! | **2 Seconds Slow** | ~5.5% | `audio/special_brick_debuff.mp3` |
-| **Magata Brick** *(Danmaku Comments Debuff)* | `images/brick_magata.png` | **DEBUFF BRICK**: Floods brick area with flying **Nico Nico Douga** style comments moving from right to left for 30s! Standout **MA☆GA☆TA** comment moves slowly in neon pink. Customizable via `magata_comments.json`. | **30 Seconds** | ~5.3% | `audio/special_brick_debuff.mp3` |
-| **Ruriiro Brick** *(Illusion Swapper Debuff)* | `images/brick_ruriiro.png` | **DEBUFF BRICK**: When broken, swaps a random brick with the **"Real" Ruriiro** brick and turns the rest into **fake Ruriiro** bricks! Fakes act like normal bricks. Destroying the Real one reverts all surviving bricks to their original state! | **Until Real Brick Destroyed / Cleared** | ~5.0% | `audio/special_brick_debuff.mp3` & `audio/special_brick.mp3` |
-| **Haru Brick** *(Power Resonance)* | `images/brick_haru.png` | Activates **Power Resonance**: slows down all balls and falling items (Zero Hearts, Containers) in **slow motion for 2 seconds**, then resets all ball speeds to normal base speed (`BASE_BALL_SPEED`)! | **2s Slow Motion + Speed Reset** | ~5.0% | `audio/special_brick.mp3` |
+| **Normal Brick** | `images/brick_normal.webp` | Standard brick. Grants +10 points when destroyed. | Permanent | ~7–14 of 35 | `audio/hit.mp3` |
+| **Hard Brick** *(2-Hit Normal Brick)* | `images/brick_hard.webp` → `images/brick_cracked.webp` | Reinforced normal brick requiring **2 hits** to break. Turns into cracked brick (`images/brick_cracked.webp`) on 1st hit; destroys on 2nd hit. Grants **+30 points** instead of 10. | Permanent (2 Hits) | Random 3–6 of Normal pool | `audio/hit.mp3` |
+| **Yo Brick** *(Board Extender)* | `images/brick_yo.webp` | Widens paddle from 215px to 284px and equips extended sprite. | **30 Seconds** (Timer resets if another Yo brick is broken) | ~15.5% | `audio/special_brick.mp3` |
+| **Zero Brick** *(3-Bounce Zero Heart Extra Life)* | `images/brick_zero.webp` | Drops a **Zero Heart** (`images/zero_heart.webp`, resized to ball size) that must be bounced on the paddle **3 times** to transform into an extra life (max 3 lives). Heavy physics; does not hit bricks; does not destroy Kazuki shield; unaffected by gravity field. | **3 Paddle Bounces** (Max 3 Lives) | **~7.0%** (Rarest special brick) | `audio/special_brick.mp3` |
+| **Tsuki Brick** *(Magnetism)* | `images/brick_tsuki.webp` | Grants magnetism to the **next 1 closest brick** to the paddle. | **1 Brick** (Single ball binding) | ~15.5% | `audio/special_brick.mp3` |
+| **Q Brick** *(Bomb Blast)* | `images/brick_q.webp` | Explodes all adjacent bricks (activates special skills on hit!). | Instant | ~15.5% | `audio/explode.mp3` |
+| **Kazuki Brick** *(Neon Shield)* | `images/brick_kazuki.webp` | Deploys an animated digital jagged neon light blue shield line beneath player board that scrolls to the right and loops. Deflects ball safely; disappears after **1 hit** or **15 seconds**. | **15 Seconds or 1 Hit** | ~15.5% | `audio/special_brick.mp3` |
+| **Miu Brick** *(Dual Turrets)* | `images/brick_miu.webp` | Summons dual side turrets on the board that fire upward lasers every time a ball bounces on the board. | **30 Seconds** | ~15.5% | `audio/special_brick.mp3` & `audio/laser.mp3` |
+| **Jio Brick** *(Toxic Poison)* | `images/brick_jio.webp` | Poisons 1 adjacent brick (destroys it after 5s; if not hit by ball, breaks and spreads poison to another adjacent brick!). | **5s per brick** (Cascades if unhit) | ~13.4% | `audio/special_brick.mp3` & `audio/hit.mp3` |
+| **Enoki Brick** *(X-Line Blast)* | `images/brick_enoki.webp` | Takes 3 hits (displays countdown badge, flashes and glows in purple neon). On 3rd hit, destroys every brick along diagonal X lines! | **3 Hits** (Countdown: 3 -> 2 -> 1) | ~11.8% | `audio/explode.mp3` & `audio/hit.mp3` |
+| **Koishi Brick** *(Multiball)* | `images/brick_koishi.webp` | Launches an extra active ball into play immediately. | Instant / Ball stays until lost | ~10.6% | `audio/special_brick.mp3` |
+| **Eiji Brick** *(Golden Treasure)* | `images/brick_eiji.webp` | Awards **+1000 bonus points** immediately upon destruction! | Instant | ~9.6% | `audio/special_brick.mp3` |
+| **Saigo Brick** *(+ Shape Blast)* | `images/brick_saigo.webp` | Takes 3 hits (displays live countdown badge & flashes). On 3rd hit, breaks all bricks in + shape across its row and column! | **3 Hits** (Countdown: 3 -> 2 -> 1) | ~8.7% | `audio/explode.mp3` & `audio/hit.mp3` |
+| **Hyakuichitaro Brick** *(Fire Ball Pierce)* | `images/brick_hyakuichitaro.webp` | Turns ball into a **Fire Ball** that pierces straight through bricks without bouncing back for **5 hits**! | **5 Hits** (Ball piercing) | ~8.0% | `audio/special_brick.mp3` & `audio/hit.mp3` |
+| **Tsuruko Brick** *(Gravity Field)* | `images/brick_tsuruko.webp` | Activates a pink transparent gravity field in bottom 30% of playfield (`Y = 1120-1600`) for **8s**; balls slow down while falling. | **8 Seconds** | ~8.0% | `audio/special_brick.mp3` |
+| **Ichinose Brick** *(Debuff Brick)* | `images/brick_ichinose.webp` | **DEBUFF BRICK**: Clamps **all points gained for the next 1 minute (60s) to strictly 1 point**. Displays curved red corner glow across screen. | **60 Seconds (1 Min)** | ~7.3% | `audio/special_brick_debuff.mp3` |
+| **Mita Brick** *(Board Speed Boost)* | `images/brick_mita.webp` | Accelerates paddle movement speed (75% faster keyboard velocity + accelerated touch/mouse tracking) for **20 seconds**. Surrounded by vibrant golden neon electric aura. | **20 Seconds** | ~7.2% | `audio/special_brick.mp3` |
+| **Manami Brick** *(Warp Jump + Cross Blast)* | `images/brick_manami.webp` | Physically leaps through the air to a random alive brick with a rotating 3D parabolic jump arc and ground shadow, detonating **5 bricks in a + sign** on landing! | Instant / 0.48s flight | ~6.8% | `audio/special_brick.mp3` & `audio/explode.mp3` |
+| **Saori Brick** *(5-Rapid White Bullets)* | `images/brick_saori.webp` | Fires **5 sequential white round bullets** from the center of the player board straight up that break bricks in line! | Instant / 5-Shot Burst | ~6.5% | `audio/laser.mp3` & `audio/hit.mp3` |
+| **Akuta Brick** *(Damaged Board Debuff)* | `images/brick_akuta.webp` | **DEBUFF BRICK**: Shrinks board to half-paddle (`images/bat_half.webp`, width 146px) for **1 minute (60s)**. Damaged board continuously emits billows of smoke and crackling electric sparks! | **60 Seconds (1 Min)** | ~6.0% | `audio/special_brick_debuff.mp3` |
+| **Taiga Brick** *(Green Gale Updraft)* | `images/brick_taiga.webp` | Summons a powerful **Green Wind** surging up from the bottom of the screen for 1 second that bounces every ball upwards once! | Instant / 1.0s Wind Surge | ~5.8% | `audio/special_brick.mp3` & Wind Gale SFX |
+| **Sui Brick** *(Container Drop Debuff)* | `images/brick_sui.webp` | **DEBUFF BRICK**: Drops a random **1–3 red shipping containers** (`images/container.webp`) sequentially from random places. If the board catches a container, it becomes **very slow for 2 seconds**! | **2 Seconds Slow** | ~5.5% | `audio/special_brick_debuff.mp3` |
+| **Magata Brick** *(Danmaku Comments Debuff)* | `images/brick_magata.webp` | **DEBUFF BRICK**: Floods brick area with flying **Nico Nico Douga** style comments moving from right to left for 30s! Standout **MA☆GA☆TA** comment moves slowly in neon pink. Customizable via `magata_comments.json`. | **30 Seconds** | ~5.3% | `audio/special_brick_debuff.mp3` |
+| **Ruriiro Brick** *(Illusion Swapper Debuff)* | `images/brick_ruriiro.webp` | **DEBUFF BRICK**: When broken, swaps a random brick with the **"Real" Ruriiro** brick and turns the rest into **fake Ruriiro** bricks! Fakes act like normal bricks. Destroying the Real one reverts all surviving bricks to their original state! | **Until Real Brick Destroyed / Cleared** | ~5.0% | `audio/special_brick_debuff.mp3` & `audio/special_brick.mp3` |
+| **Haru Brick** *(Power Resonance)* | `images/brick_haru.webp` | Activates **Power Resonance**: slows down all balls and falling items (Zero Hearts, Containers) in **slow motion for 2 seconds**, then resets all ball speeds to normal base speed (`BASE_BALL_SPEED`)! | **2s Slow Motion + Speed Reset** | ~5.0% | `audio/special_brick.mp3` |
 
 ---
 
-## 1. Yo Brick (`brick_yo.png`) - *Board Extender (Timed)*
+## 1. Yo Brick (`brick_yo.webp`) - *Board Extender (Timed)*
 
 ### Purpose & Concept
 The **Yo Brick** is a temporary defensive power-up designed to dramatically expand the paddle intercept area for 30 seconds.
@@ -70,7 +70,7 @@ The **Yo Brick** is a temporary defensive power-up designed to dramatically expa
 * **Pre-Revert Warning Blink**:
   * During the **last 3 seconds** (`extendedTimer <= 3.0s`), the paddle blinks to warn the player before returning to normal size.
 * **Reversion**:
-  * Automatically returns to normal width (`215px`) and sprite `images/bat.png` once the 30 seconds expire.
+  * Automatically returns to normal width (`215px`) and sprite `images/bat.webp` once the 30 seconds expire.
   * Displays floating text `BOARD NORMALIZED` and plays laser SFX.
   * Also resets immediately if all balls are lost (life lost) or on game restart.
 * **Explosion Trigger**: If destroyed by an adjacent Q Brick explosion, the 30-second paddle extension still activates!
@@ -83,7 +83,7 @@ The **Yo Brick** is a temporary defensive power-up designed to dramatically expa
 
 ---
 
-## 2. Zero Brick (`brick_zero.png`) - *Zero Heart (3-Bounce Extra Life)*
+## 2. Zero Brick (`brick_zero.webp`) - *Zero Heart (3-Bounce Extra Life)*
 
 ### Purpose & Concept
 The **Zero Brick** introduces an interactive recovery minigame. Rather than granting an instant life upon impact, destroying a Zero brick drops a heavy, radiant **Zero Heart** item (`images/zero_heart.webp`, resized to the exact size of the ball: 16px radius, 32px diameter). The player must successfully bounce the Zero Heart on their paddle **3 times** before it crystallizes into an extra life!
@@ -117,7 +117,7 @@ The **Zero Brick** introduces an interactive recovery minigame. Rather than gran
 
 ---
 
-## 3. Tsuki Brick (`brick_tsuki.png`) - *Magnetism (Single Ball & Single Brick)*
+## 3. Tsuki Brick (`brick_tsuki.webp`) - *Magnetism (Single Ball & Single Brick)*
 
 ### Purpose & Concept
 The **Tsuki Brick** activates an electromagnetic tractor-beam. It magnetizes the **single closest brick to the player board**, causing the ball that broke the Tsuki brick to lock onto and fly straight towards that magnetized brick.
@@ -146,7 +146,7 @@ The **Tsuki Brick** activates an electromagnetic tractor-beam. It magnetizes the
 
 ---
 
-## 4. Q Brick (`brick_q.png`) - *Adjacent Brick Explosion*
+## 4. Q Brick (`brick_q.webp`) - *Adjacent Brick Explosion*
 
 ### Purpose & Concept
 The **Q Brick** is a high-yield explosive cluster brick. Hitting it triggers a shockwave that obliterates all adjacent alive bricks in the grid.
@@ -167,7 +167,7 @@ The **Q Brick** is a high-yield explosive cluster brick. Hitting it triggers a s
 
 ---
 
-## 5. Kazuki Brick (`brick_kazuki.png`) - *Neon Safety Shield*
+## 5. Kazuki Brick (`brick_kazuki.webp`) - *Neon Safety Shield*
 
 ### Purpose & Concept
 The **Kazuki Brick** summons an emergency neon safety barrier beneath the player's board, preventing balls from falling down into the death zone and instead bouncing them safely back up into the playfield.
@@ -194,7 +194,7 @@ The **Kazuki Brick** summons an emergency neon safety barrier beneath the player
 
 ---
 
-## 6. Miu Brick (`brick_miu.png`) - *Dual Turrets (30 Seconds)*
+## 6. Miu Brick (`brick_miu.webp`) - *Dual Turrets (30 Seconds)*
 
 ### Purpose & Concept
 The **Miu Brick** mounts high-tech cyber turrets on the left and right flanks of the player's board. Whenever a ball bounces off the board, both turrets simultaneously fire upward-traveling neon plasma laser bolts that obliterate bricks on impact.
@@ -234,7 +234,7 @@ The **Miu Brick** mounts high-tech cyber turrets on the left and right flanks of
 
 ---
 
-## 7. Jio Brick (`brick_jio.png`) - *Toxic Poison Chain*
+## 7. Jio Brick (`brick_jio.webp`) - *Toxic Poison Chain*
 
 ### Purpose & Concept
 The **Jio Brick** unleashes an infectious toxic bio-agent across the grid. When destroyed, it infects an adjacent brick with poison. A countdown begins: if the player fails to break the poisoned brick with a ball within 5 seconds, it breaks on its own and infects another adjacent brick!
@@ -261,7 +261,7 @@ The **Jio Brick** unleashes an infectious toxic bio-agent across the grid. When 
 
 ---
 
-## 8. Enoki Brick (`brick_enoki.png`) - *3-Hit Countdown & Diagonal X-Line Detonation*
+## 8. Enoki Brick (`brick_enoki.webp`) - *3-Hit Countdown & Diagonal X-Line Detonation*
 
 ### Purpose & Concept
 The **Enoki Brick** is a fortified tactical cluster bomb brick with glowing purple neon cyber aesthetics. Unlike standard bricks that break in a single impact, Enoki requires **3 hits** to detonate. Every hit decrements a live on-brick countdown badge with vibrant purple neon flash effects. Upon the 3rd hit, it unleashes an **X-Line Detonation**, destroying all alive bricks along the intersecting diagonal axes across the entire grid!
@@ -292,7 +292,7 @@ The **Enoki Brick** is a fortified tactical cluster bomb brick with glowing purp
 
 ---
 
-## 9. Koishi Brick (`brick_koishi.png`) - *Debuff Cleanser*
+## 9. Koishi Brick (`brick_koishi.webp`) - *Debuff Cleanser*
 
 ### Purpose & Concept
 The **Koishi Brick** is a purifying support brick. Upon destruction, it detects and **clears any running debuff** currently hindering the player. If no debuff is active, it does nothing special upon breaking.
@@ -308,7 +308,7 @@ The **Koishi Brick** is a purifying support brick. Upon destruction, it detects 
 * **Conditional Activation ("Don't do anything if there is no debuff")**:
   * If **no debuff is currently running**, the Koishi brick simply breaks with standard hit sound and lime hit sparks without triggering any special cleanse sequence or notification.
 * **On-Brick Display**:
-  * Displays cleanly as is with its original sprite asset (`images/brick_koishi.png`), with no borders or overlays.
+  * Displays cleanly as is with its original sprite asset (`images/brick_koishi.webp`), with no borders or overlays.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` when debuffs are cleansed; standard `audio/hit.mp3` if no debuff was active.
@@ -317,7 +317,7 @@ The **Koishi Brick** is a purifying support brick. Upon destruction, it detects 
 
 ---
 
-## 10. Eiji Brick (`brick_eiji.png`) - *Golden Treasure (+1000 Points)*
+## 10. Eiji Brick (`brick_eiji.webp`) - *Golden Treasure (+1000 Points)*
 
 ### Purpose & Concept
 The **Eiji Brick** is a high-value treasure brick adorned in glittering cyber-gold. Destroying an Eiji brick immediately awards a massive jackpot bonus of **+1000 points** to accelerate the player's score and trigger new high score records.
@@ -338,7 +338,7 @@ The **Eiji Brick** is a high-value treasure brick adorned in glittering cyber-go
 
 ---
 
-## 11. Saigo Brick (`brick_saigo.png`) - *3-Hit Countdown & + Shape Cross Blast*
+## 11. Saigo Brick (`brick_saigo.webp`) - *3-Hit Countdown & + Shape Cross Blast*
 
 ### Purpose & Concept
 The **Saigo Brick** is a fortified cybernetic heavy artillery brick with mechanized goggles and fiery crimson neon aesthetics. Like the Enoki brick, Saigo possesses fortified armor that requires **3 hits** to break. Every hit decrements a live on-brick countdown badge with fiery crimson flash effects. Upon the 3rd hit, it detonates a **+ Shape Blast**, breaking all alive bricks in the same row and column across the board!
@@ -369,7 +369,7 @@ The **Saigo Brick** is a fortified cybernetic heavy artillery brick with mechani
 
 ---
 
-## 12. Hyakuichitaro Brick (`brick_hyakuichitaro.png`) - *Fire Ball Pierce (5 Hits)*
+## 12. Hyakuichitaro Brick (`brick_hyakuichitaro.webp`) - *Fire Ball Pierce (5 Hits)*
 
 ### Purpose & Concept
 The **Hyakuichitaro Brick** is an intense offensive power-up featuring vivid purple hair, glowing pink eyes, and fierce determination. Breaking this brick transforms the ball into a blazing **Fire Ball** that shears through defenses without bouncing back for the next **5 bricks** it contacts!
@@ -395,7 +395,7 @@ The **Hyakuichitaro Brick** is an intense offensive power-up featuring vivid pur
 
 ---
 
-## 13. Tsuruko Brick (`brick_tsuruko.png`) - *Pink Gravity Field (8s)*
+## 13. Tsuruko Brick (`brick_tsuruko.webp`) - *Pink Gravity Field (8s)*
 
 ### Purpose & Concept
 The **Tsuruko Brick** is a strategic spatial manipulation power-up featuring charming pink hair and radiant pink eyes with a chic black beret. Breaking a Tsuruko brick generates a translucent **Pink Gravity Field** across the bottom 30% of the playfield (`Y = 1120 to 1600`, 480px height) for **8 seconds**, applying anti-gravity drag that significantly slows down balls while falling!
@@ -423,7 +423,7 @@ The **Tsuruko Brick** is a strategic spatial manipulation power-up featuring cha
 
 ---
 
-## 14. Ichinose Brick (`brick_ichinose.png`) - *Debuff Brick (1-Point Penalty & Red Corner Glow)*
+## 14. Ichinose Brick (`brick_ichinose.webp`) - *Debuff Brick (1-Point Penalty & Red Corner Glow)*
 
 ### Purpose & Concept
 The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike beneficial power-ups, breaking a debuff brick inflicts a severe handicap upon the player, drastically reducing scoring potential for a sustained period while draping the arena in an ominous red vignette.
@@ -463,7 +463,7 @@ The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike ben
 
 ---
 
-## 15. Mita Brick (`brick_mita.png`) - *Board Speed Boost (Timed)*
+## 15. Mita Brick (`brick_mita.webp`) - *Board Speed Boost (Timed)*
 
 ### Purpose & Concept
 The **Mita Brick** is an agile defensive and positioning power-up. Upon destruction, it supercharges the player's board / paddle, fastening its movement speed and agility for **20 seconds** to effortlessly track fast-moving balls and multi-ball clusters.
@@ -490,7 +490,7 @@ The **Mita Brick** is an agile defensive and positioning power-up. Upon destruct
 
 ---
 
-## 16. Manami Brick (`brick_manami.png`) - *Warp Jump + Cross Blast*
+## 16. Manami Brick (`brick_manami.webp`) - *Warp Jump + Cross Blast*
 
 ### Purpose & Concept
 The **Manami Brick** is an offensive jumping explosive power-up. Upon destruction, the brick itself physically leaps across the board along a high parabolic arc to a random alive brick and detonates **5 bricks in a + sign** centered around that chosen brick on impact!
@@ -526,7 +526,7 @@ The **Manami Brick** is an offensive jumping explosive power-up. Upon destructio
 
 ---
 
-## 17. Saori Brick (`brick_saori.png`) - *5-Rapid White Bullets*
+## 17. Saori Brick (`brick_saori.webp`) - *5-Rapid White Bullets*
 
 ### Purpose & Concept
 The **Saori Brick** is a high-firepower offensive barrage power-up. Upon destruction, it immediately initiates a rapid-fire sequence of **5 white round bullets** shot upward from the center of the player's board, drilling straight through bricks in vertical line.
@@ -552,15 +552,15 @@ The **Saori Brick** is a high-firepower offensive barrage power-up. Upon destruc
 
 ---
 
-## 18. Akuta Brick (`brick_akuta.png`) - *Debuff Brick: Damaged Board (1 Minute)*
+## 18. Akuta Brick (`brick_akuta.webp`) - *Debuff Brick: Damaged Board (1 Minute)*
 
 ### Purpose & Concept
-The **Akuta Brick** is a hazardous debuff brick. Destroying it damages the player's board, immediately shrinking its width in half into the broken paddle sprite (`images/bat_half.png`) for **1 full minute (60 seconds)**, requiring precision control while smoke and erratic electric sparks plume from the broken board.
+The **Akuta Brick** is a hazardous debuff brick. Destroying it damages the player's board, immediately shrinking its width in half into the broken paddle sprite (`images/bat_half.webp`) for **1 full minute (60 seconds)**, requiring precision control while smoke and erratic electric sparks plume from the broken board.
 
 ### Core Mechanics
 * **Board Shortening (Half-Paddle)**:
-  * Normal Paddle Width: `215px` (`BAT_WIDTH`, sprite `images/bat.png`)
-  * Half Paddle Width: `146px` (`BAT_HALF_WIDTH`, sprite `images/bat_half.png`)
+  * Normal Paddle Width: `215px` (`BAT_WIDTH`, sprite `images/bat.webp`)
+  * Half Paddle Width: `146px` (`BAT_HALF_WIDTH`, sprite `images/bat_half.webp`)
   * When Akuta is destroyed, `shortenBat()` shrinks the paddle to 146px, preserves paddle center position, and activates `bat.isShortened = true` with a **60-second countdown timer** (`shortenedTimer = 60.0s`).
   * If the paddle is currently extended by Yo Brick, the extension is cancelled and overridden by the damage.
   * If Akuta is destroyed again while already damaged, the 60-second timer resets back to 60s.
@@ -583,7 +583,7 @@ The **Akuta Brick** is a hazardous debuff brick. Destroying it damages the playe
 
 ---
 
-## 19. Taiga Brick (`brick_taiga.png`) - *Green Gale Updraft*
+## 19. Taiga Brick (`brick_taiga.webp`) - *Green Gale Updraft*
 
 ### Purpose & Concept
 The **Taiga Brick** is a high-utility rescue and repositioning power-up. Upon destruction, it unleashes a surging updraft of **Green Wind** rushing from the bottom of the screen that pushes all active balls straight back up into the brick area instead of falling down into the void.
@@ -597,7 +597,7 @@ The **Taiga Brick** is a high-utility rescue and repositioning power-up. Upon de
     * Each ball is strictly bounced **once** per Taiga wind event (`ball.bouncedByWind = true`), ensuring no multiple or infinite bouncing.
   * **Strict 1-Second Lifetime**: After exactly 1.0 second, `this.taigaWind.active = false` and the wind completely ceases, with balls continuing their natural physics trajectory.
 * **On-Brick Display**:
-  * Displays cleanly as is with its original sprite asset (`images/brick_taiga.png`), with no distracting border overlays.
+  * Displays cleanly as is with its original sprite asset (`images/brick_taiga.webp`), with no distracting border overlays.
 
 ### Sensory Feedback
 * **Audio**: Plays synthesized rushing wind gale SFX (`playWindGale()`) alongside `audio/special_brick.mp3`.
@@ -606,7 +606,7 @@ The **Taiga Brick** is a high-utility rescue and repositioning power-up. Upon de
 
 ---
 
-## 20. Sui Brick (`brick_sui.png`) - *Container Drop Debuff*
+## 20. Sui Brick (`brick_sui.webp`) - *Container Drop Debuff*
 
 ### Purpose & Concept
 The **Sui Brick** is a continuous hazardous debuff obstacle. Upon destruction, it activates a 30-second hazard cycle where **one shipping container falls every few seconds for about 30 seconds**. In addition, containers **spin around dynamically in mid-air** instead of falling flat. If the player board catches a falling container, the paddle is weighed down and becomes **extremely slow for 2 seconds**.
@@ -626,7 +626,7 @@ The **Sui Brick** is a continuous hazardous debuff obstacle. Upon destruction, i
   * The board radiates an intense pulsing **red neon glow aura behind the paddle** without distracting square outlines or overlays.
   * If the container misses the paddle and exits the bottom of the screen, the player successfully evades the debuff!
 * **On-Brick Display**:
-  * Displays cleanly as is with its original sprite asset (`images/brick_sui.png`), with no distracting border overlays.
+  * Displays cleanly as is with its original sprite asset (`images/brick_sui.webp`), with no distracting border overlays.
 
 ### Sensory Feedback
 * **Audio**: Plays debuff warning SFX (`audio/special_brick_debuff.mp3`) on break and on container catch.
@@ -634,7 +634,7 @@ The **Sui Brick** is a continuous hazardous debuff obstacle. Upon destruction, i
 * **Screen Visuals**: Full **red corner glow vignette** pulses around all 4 corners and perimeter of the screen while the container rain hazard is active, and an intense red neon glow radiates from behind the paddle board.
 * **Particles**: Deep red and white spark burst at the brick and on container impact; reddish heavy sludge dragging behind paddle during debuff.
 
-## 21. Shun Brick (`brick_shun.png`) - *Multiball*
+## 21. Shun Brick (`brick_shun.webp`) - *Multiball*
 
 ### Purpose & Concept
 The **Shun Brick** is an offensive multiball power-up featuring Shun. Upon destruction, it immediately launches an extra active ball into play with bright ice cyan & silver starburst effects to multiply the player's brick clearing speed.
@@ -657,14 +657,14 @@ The **Shun Brick** is an offensive multiball power-up featuring Shun. Upon destr
   * Multiple balls stay active simultaneously. You do not lose a life as long as at least one ball remains on screen.
 * **Explosion Trigger**: If destroyed by an adjacent Q blast, Jio poison cascade, or Saigo/Enoki laser beam, the extra active ball launches into play immediately!
 * **On-Brick Display**:
-  * Displays cleanly as is with its original sprite asset (`images/brick_shun.png`), with no distracting border overlays.
+  * Displays cleanly as is with its original sprite asset (`images/brick_shun.webp`), with no distracting border overlays.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3`.
 * **Floating Text**: Displays `EXTRA BALL!` in icy cyan (`#00c3e3`).
 * **Particles**: Emits 24 electric ice cyan & silver starburst sparks (`#00c3e3`, `#ffffff`).
 
-## 22. Magata Brick (`brick_magata.png`) - *Nico Nico Danmaku Comments Debuff*
+## 22. Magata Brick (`brick_magata.webp`) - *Nico Nico Danmaku Comments Debuff*
 
 ### Purpose & Concept
 The **Magata Brick** is a sensory obstruction debuff brick featuring Magata. When broken, it activates a 30-second hazard that blocks the brick playfield area with a continuous stream of random **Nico Nico Douga** style flying comments moving from right to left, obscuring vision of bricks and balls. All comments, colors, sizes, and speeds are easily customizable via `magata_comments.json`.
@@ -692,7 +692,7 @@ The **Magata Brick** is a sensory obstruction debuff brick featuring Magata. Whe
 * **Cleansable by Koishi Brick**:
   * If the player breaks a Koishi Brick while the Danmaku debuff is active, all comments are immediately purified and cleared!
 * **On-Brick Display**:
-  * Displays cleanly as is with its original sprite asset (`images/brick_magata.png`), without distracting overlays.
+  * Displays cleanly as is with its original sprite asset (`images/brick_magata.webp`), without distracting overlays.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick_debuff.mp3`.
@@ -701,7 +701,7 @@ The **Magata Brick** is a sensory obstruction debuff brick featuring Magata. Whe
 * **Screen Visuals**: Full **pulsing debuff corner glow vignette** radiates across all 4 screen corners and borders for the full 30 seconds of the Danmaku hazard.
 * **Particles**: 32 neon pink, magenta, and white sparks at the brick location upon destruction.
 
-## 23. Ruriiro Brick (`brick_ruriiro.png`) - *Illusion Swapper Debuff*
+## 23. Ruriiro Brick (`brick_ruriiro.webp`) - *Illusion Swapper Debuff*
 
 ### Purpose & Concept
 The **Ruriiro Brick** is an illusionary deception debuff brick. When broken, it turns the entire remaining brick field into an identical field of Ruriiro bricks. Among all the swapped bricks, exactly **one** is chosen as the **"Real" Ruriiro brick**, while all others become **"fake" Ruriiro bricks**. The player must find and destroy the Real Ruriiro brick to dispel the illusion and revert all surviving bricks back to their original types!
@@ -712,7 +712,7 @@ The **Ruriiro Brick** is an illusionary deception debuff brick. When broken, it 
   * Selects 1 random alive brick on the board to become the **"Real" Ruriiro brick** (`specialType: 'ruriiro_real'`).
   * Transforms all other surviving alive bricks into **"fake" Ruriiro bricks** (`specialType: 'ruriiro_fake'`).
   * Saves each brick's `previousState` (including original `isSpecial`, `isDebuff`, `specialType`, `image`, `hitsRequired`, and `hitsRemaining`).
-  * All fake and real bricks display `images/brick_ruriiro.png` so they look completely identical.
+  * All fake and real bricks display `images/brick_ruriiro.webp` so they look completely identical.
 * **Fake Ruriiro Bricks (Normal Brick Behavior)**:
   * Fake Ruriiro bricks act strictly like normal bricks:
     * They award standard brick points (+100).
@@ -735,7 +735,7 @@ The **Ruriiro Brick** is an illusionary deception debuff brick. When broken, it 
 
 ---
 
-## 23. Hard Brick (`brick_hard.png` & `brick_cracked.png`) - *Reinforced 2-Hit Normal Brick*
+## 23. Hard Brick (`brick_hard.webp` & `brick_cracked.webp`) - *Reinforced 2-Hit Normal Brick*
 
 ### Purpose & Concept
 The **Hard Brick** is a sturdy normal brick variant. Unlike special bricks, it does not grant skills or debuffs, but introduces durability variety into the normal brick pool. It requires **2 hits** to completely destroy, cracking upon the first hit and yielding higher points (+30) upon destruction.
@@ -743,12 +743,12 @@ The **Hard Brick** is a sturdy normal brick variant. Unlike special bricks, it d
 ### Core Mechanics
 * **Spawn Distribution**:
   * Generated exclusively from the **normal brick pool** (36 normal bricks).
-  * A random count between **5 and 10 bricks** per wave are selected as Hard Bricks (`images/brick_hard.png`).
+  * A random count between **5 and 10 bricks** per wave are selected as Hard Bricks (`images/brick_hard.webp`).
   * Normal brick classification (`isSpecial: false`), meaning it does not trigger skill cutin banners when broken.
 * **Durability (2 Hits)**:
   * **Hit 1**:
     * Ball, turret laser, or Saori bullet reduces remaining hits from 2 to 1 (`hitsRemaining = 1`).
-    * Instantly transmutes its sprite to **Cracked Brick** (`images/brick_cracked.png`).
+    * Instantly transmutes its sprite to **Cracked Brick** (`images/brick_cracked.webp`).
     * Triggers a momentary white hit flash wash (`hitFlashTimer = 0.35`).
     * Emits stone rubble and sparks (`#d0d0d0`, `#888888`).
     * Spawns floating indicator text: `CRACKED! (1 HIT LEFT)` in gold (`#ffcc00`).
@@ -766,11 +766,11 @@ The **Hard Brick** is a sturdy normal brick variant. Unlike special bricks, it d
 ### Sensory Feedback
 * **Audio**: Plays `audio/hit.mp3` on both the 1st crack hit and final destruction hit.
 * **Floating Text**: `CRACKED! (1 HIT LEFT)` on 1st hit; `+30` on final destruction.
-* **Visuals**: Distinct reinforced metal/stone plate sprite (`brick_hard.png`) transitioning to fractured fissure sprite (`brick_cracked.png`). White hit flash overlay on crack.
+* **Visuals**: Distinct reinforced metal/stone plate sprite (`brick_hard.webp`) transitioning to fractured fissure sprite (`brick_cracked.webp`). White hit flash overlay on crack.
 
 ---
 
-## 24. Haru Brick (`brick_haru.png`) - *Power Resonance (Slow Motion & Ball Speed Reset)*
+## 24. Haru Brick (`brick_haru.webp`) - *Power Resonance (Slow Motion & Ball Speed Reset)*
 
 ### Purpose & Concept
 The **Haru Brick** introduces the **Power Resonance** skill. Breaking a Haru brick dilates time across the entire playfield, placing all active balls and falling items (Zero Hearts and Containers) into **slow motion for 2 seconds**. Once the 2-second slow motion completes, harmonic resonance normalizes all active balls back to their baseline default speed (`BASE_BALL_SPEED = 11.5`) and resets the global wave speed multiplier (`speedMultiplier = 1.0`).
@@ -792,7 +792,7 @@ The **Haru Brick** introduces the **Power Resonance** skill. Breaking a Haru bri
     ```
   * Resets `this.speedMultiplier = 1.0`.
 * **Skill Cutin Integration**:
-  * Triggers the animated skill cutin banner from the left side with Haru's icon (`images/brick_haru.png`) and title `"POWER RESONANCE"`.
+  * Triggers the animated skill cutin banner from the left side with Haru's icon (`images/brick_haru.webp`) and title `"POWER RESONANCE"`.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` on hit; plays resonance chime when speed normalization triggers.
@@ -877,39 +877,39 @@ flowchart TD
   - Audio: `playWindGale()`, `playDebuff()`, `playLaser()`, `playExplode()`, `playSpecialHit()`
   - Countdown badges & hit flashes: Enoki (`#bf00ff`) and Saigo (`#ff3300`) with live hits remaining counter (all other special bricks display cleanly as is)
 - **Assets**:
-  - `images/brick_yo.png`
-  - `images/brick_zero.png`
-  - `images/brick_tsuki.png`
-  - `images/brick_q.png`
-  - `images/brick_kazuki.png`
-  - `images/brick_miu.png`
-  - `images/brick_jio.png`
-  - `images/brick_enoki.png`
-  - `images/brick_koishi.png`
-  - `images/brick_shun.png`
-  - `images/brick_eiji.png`
-  - `images/brick_saigo.png`
-  - `images/brick_hyakuichitaro.png`
-  - `images/brick_tsuruko.png`
-  - `images/brick_ichinose.png`
-  - `images/brick_mita.png`
-  - `images/brick_manami.png`
-  - `images/brick_saori.png`
-  - `images/brick_akuta.png`
-  - `images/brick_taiga.png`
-  - `images/brick_sui.png`
-  - `images/brick_magata.png`
-  - `images/brick_ruriiro.png`
-  - `images/buff_skill_cutin.png`
-  - `images/debuff_skill_cutin.png`
-  - `images/container.png`
-  - `images/bat_half.png`
+  - `images/brick_yo.webp`
+  - `images/brick_zero.webp`
+  - `images/brick_tsuki.webp`
+  - `images/brick_q.webp`
+  - `images/brick_kazuki.webp`
+  - `images/brick_miu.webp`
+  - `images/brick_jio.webp`
+  - `images/brick_enoki.webp`
+  - `images/brick_koishi.webp`
+  - `images/brick_shun.webp`
+  - `images/brick_eiji.webp`
+  - `images/brick_saigo.webp`
+  - `images/brick_hyakuichitaro.webp`
+  - `images/brick_tsuruko.webp`
+  - `images/brick_ichinose.webp`
+  - `images/brick_mita.webp`
+  - `images/brick_manami.webp`
+  - `images/brick_saori.webp`
+  - `images/brick_akuta.webp`
+  - `images/brick_taiga.webp`
+  - `images/brick_sui.webp`
+  - `images/brick_magata.webp`
+  - `images/brick_ruriiro.webp`
+  - `images/buff_skill_cutin.webp`
+  - `images/debuff_skill_cutin.webp`
+  - `images/container.webp`
+  - `images/bat_half.webp`
   - `images/zero_heart.webp`
-  - `images/turret.png`
-  - `images/bat_extended.png`
-  - `images/brick_hard.png`
-  - `images/brick_cracked.png`
-  - `images/brick_haru.png`
+  - `images/turret.webp`
+  - `images/bat_extended.webp`
+  - `images/brick_hard.webp`
+  - `images/brick_cracked.webp`
+  - `images/brick_haru.webp`
   - `audio/special_brick_debuff.mp3`
   - `audio/System_Reserve.mp3`
 

@@ -2,126 +2,126 @@
   "yo": {
     "name": "OVERDRIVE",
     "type": "buff",
-    "icon": "images/brick_yo.png"
+    "icon": "images/brick_yo.webp"
   },
   "tsuki": {
     "name": "IROHA BALL",
     "type": "buff",
-    "icon": "images/brick_tsuki.png"
+    "icon": "images/brick_tsuki.webp"
   },
   "q": {
     "name": "BROKEN MORAL",
     "type": "buff",
-    "icon": "images/brick_q.png"
+    "icon": "images/brick_q.webp"
   },
   "kazuki": {
     "name": "DEFLECT SERVER",
     "type": "buff",
-    "icon": "images/brick_kazuki.png"
+    "icon": "images/brick_kazuki.webp"
   },
   "miu": {
     "name": "LUMINOUS CRYSTAL",
     "type": "buff",
-    "icon": "images/brick_miu.png"
+    "icon": "images/brick_miu.webp"
   },
   "jio": {
     "name": "POISON RAIN",
     "type": "buff",
-    "icon": "images/brick_jio.png"
+    "icon": "images/brick_jio.webp"
   },
   "enoki": {
     "name": "IGNITION",
     "type": "buff",
-    "icon": "images/brick_enoki.png"
+    "icon": "images/brick_enoki.webp"
   },
   "koishi": {
     "name": "TIME TO EAT",
     "type": "buff",
-    "icon": "images/brick_koishi.png"
+    "icon": "images/brick_koishi.webp"
   },
   "shun": {
     "name": "PLAY BALL",
     "type": "buff",
-    "icon": "images/brick_shun.png"
+    "icon": "images/brick_shun.webp"
   },
   "eiji": {
     "name": "MONEY IS POWER!",
     "type": "buff",
-    "icon": "images/brick_eiji.png"
+    "icon": "images/brick_eiji.webp"
   },
   "saigo": {
     "name": "ROAR OF OUTRAGE",
     "type": "buff",
-    "icon": "images/brick_saigo.png"
+    "icon": "images/brick_saigo.webp"
   },
   "hyakuichitaro": {
     "name": "FIGHTING SPIRIT",
     "type": "buff",
-    "icon": "images/brick_hyakuichitaro.png"
+    "icon": "images/brick_hyakuichitaro.webp"
   },
   "tsuruko": {
     "name": "TWILIGHT'S EMBRACE",
     "type": "buff",
-    "icon": "images/brick_tsuruko.png"
+    "icon": "images/brick_tsuruko.webp"
   },
   "ichinose": {
     "name": "POWER HARASSMENT",
     "type": "debuff",
-    "icon": "images/brick_ichinose.png"
+    "icon": "images/brick_ichinose.webp"
   },
   "mita": {
     "name": "ENERGIZE",
     "type": "buff",
-    "icon": "images/brick_mita.png"
+    "icon": "images/brick_mita.webp"
   },
   "manami": {
     "name": "HEAVY METAL",
     "type": "buff",
-    "icon": "images/brick_manami.png"
+    "icon": "images/brick_manami.webp"
   },
   "saori": {
     "name": "INSTANT PERCEPTION",
     "type": "buff",
-    "icon": "images/brick_saori.png"
+    "icon": "images/brick_saori.webp"
   },
   "akuta": {
     "name": "TOKIMEKI TIME",
     "type": "debuff",
-    "icon": "images/brick_akuta.png"
+    "icon": "images/brick_akuta.webp"
   },
   "taiga": {
     "name": "BREAKTHROUGH",
     "type": "buff",
-    "icon": "images/brick_taiga.png"
+    "icon": "images/brick_taiga.webp"
   },
   "sui": {
     "name": "LEBENSTRIEB",
     "type": "debuff",
-    "icon": "images/brick_sui.png"
+    "icon": "images/brick_sui.webp"
   },
   "magata": {
     "name": "REJECTION IMPULSE",
     "type": "debuff",
-    "icon": "images/brick_magata.png"
+    "icon": "images/brick_magata.webp"
   },
   "ruriiro": {
     "name": "HEAVEN OR HELL",
     "type": "debuff",
-    "icon": "images/brick_ruriiro.png"
+    "icon": "images/brick_ruriiro.webp"
   },
   "ruriiro_real": {
     "name": "THE REAL RURIIRO",
     "type": "buff",
-    "icon": "images/brick_ruriiro.png"
+    "icon": "images/brick_ruriiro.webp"
   },
   "zero": {
     "name": "ITS YOUR CUTE ZERO!",
     "type": "buff",
-    "icon": "images/brick_zero.png"
+    "icon": "images/brick_zero.webp"
   },
   "haru": {
     "name": "POWER RESONANCE",
     "type": "buff",
-    "icon": "images/brick_haru.png"
+    "icon": "images/brick_haru.webp"
   }
 }
