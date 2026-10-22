@@ -911,7 +911,7 @@ flowchart TD
   - `images/brick_cracked.webp`
   - `images/brick_haru.webp`
   - `audio/special_brick_debuff.mp3`
-  - `audio/System_Reserve.mp3`
+  - `audio/System_Breach_3.mp3`
 
 
 

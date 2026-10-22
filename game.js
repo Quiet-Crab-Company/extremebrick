@@ -70,7 +70,7 @@ class SoundSystem {
     }
   }
 
-  initBGM(url = 'audio/System_Reserve.mp3') {
+  initBGM(url = 'audio/System_Breach_3.mp3') {
     if (!this.bgm) {
       this.bgm = new Audio(url);
       this.bgm.loop = true;
@@ -80,7 +80,7 @@ class SoundSystem {
     }
   }
 
-  async loadBGM(url = 'audio/System_Reserve.mp3') {
+  async loadBGM(url = 'audio/System_Breach_3.mp3') {
     this.initBGM(url);
     return new Promise((resolve) => {
       if (this.bgm.readyState >= 2) {
@@ -927,7 +927,7 @@ class BrickBreakerGame {
       { type: 'audio', key: 'explode', src: 'audio/explode.mp3', label: 'Explosion SFX' },
       { type: 'audio', key: 'special_brick_debuff', src: 'audio/special_brick_debuff.mp3', label: 'Debuff SFX' },
       { type: 'audio', key: 'gameover', src: 'audio/gameover.mp3', label: 'Game Over SFX' },
-      { type: 'bgm', key: 'bgm', src: 'audio/System_Reserve.mp3', label: 'BGM (System Reserve)' }
+      { type: 'bgm', key: 'bgm', src: 'audio/System_Breach_3.mp3', label: 'BGM (System Breach 3)' }
     ];
 
     const total = assets.length;
