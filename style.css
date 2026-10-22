@@ -250,8 +250,15 @@ body {
 /* Right Controls & Lives */
 .hud-right {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.hud-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 #lives-container {
@@ -757,3 +764,65 @@ body {
   font-size: 14px;
 }
 
+/* Mobile Responsive HUD Adjustments */
+@media (max-width: 768px) {
+  #game-hud {
+    padding: 16px 18px;
+  }
+
+  .hud-left {
+    gap: 6px;
+  }
+
+  .score-row {
+    gap: 8px;
+  }
+
+  .current-score-row .hud-label {
+    font-size: 11px;
+  }
+
+  #score-val.score-main {
+    font-size: clamp(16px, 4.2vw, 20px);
+  }
+
+  .high-score-row .hud-label {
+    font-size: 9px;
+  }
+
+  .high-score-row .pixel-val {
+    font-size: 11px;
+  }
+
+  /* Ball lives placed below mute and pause options on mobile view */
+  .hud-right {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .hud-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  #lives-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .life-icon {
+    width: 20px;
+    height: 20px;
+  }
+}

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=9.18">
 </head>
 <body>
   <div id="game-container">
@@ -32,11 +32,13 @@
 
 
       <div class="hud-right">
+        <div class="hud-btn-group">
+          <button id="btn-sound" class="icon-btn" aria-label="Toggle Sound" title="Sound On/Off">🔊</button>
+          <button id="btn-pause" class="icon-btn" aria-label="Pause Game" title="Pause">⏸</button>
+        </div>
         <div id="lives-container" title="Remaining Lives">
           <!-- Live icons rendered dynamically -->
         </div>
-        <button id="btn-sound" class="icon-btn" aria-label="Toggle Sound" title="Sound On/Off">🔊</button>
-        <button id="btn-pause" class="icon-btn" aria-label="Pause Game" title="Pause">⏸</button>
       </div>
     </header>
 
@@ -107,6 +109,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=9.17"></script>
+  <script src="game.js?v=9.18"></script>
 </body>
 </html>
