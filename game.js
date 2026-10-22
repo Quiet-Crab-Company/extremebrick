@@ -4471,6 +4471,43 @@ class BrickBreakerGame {
       this.ctx.restore();
     }
 
+    // Red glow behind board during Container Slow debuff (Sui)
+    if (this.boardSlowDebuff && this.boardSlowDebuff.active) {
+      this.ctx.save();
+      const pulse = 0.75 + 0.25 * Math.sin(Date.now() / 110);
+      const rx = 10;
+      const bx = this.bat.x - 4;
+      const by = this.bat.y - 4;
+      const bw = this.bat.width + 8;
+      const bh = this.bat.height + 8;
+
+      // Soft intense red back-glow aura
+      this.ctx.shadowColor = '#ff1e38';
+      this.ctx.shadowBlur = 24 * pulse;
+      this.ctx.fillStyle = `rgba(255, 30, 56, ${0.65 * pulse})`;
+      this.ctx.beginPath();
+      if (this.ctx.roundRect) {
+        this.ctx.roundRect(bx, by, bw, bh, rx);
+      } else {
+        this.ctx.rect(bx, by, bw, bh);
+      }
+      this.ctx.fill();
+
+      // Ambient outer red halo diffusion
+      this.ctx.shadowColor = '#ff0033';
+      this.ctx.shadowBlur = 38 * pulse;
+      this.ctx.fillStyle = `rgba(255, 20, 40, ${0.35 * pulse})`;
+      this.ctx.beginPath();
+      if (this.ctx.roundRect) {
+        this.ctx.roundRect(bx - 4, by - 4, bw + 8, bh + 8, rx + 4);
+      } else {
+        this.ctx.rect(bx - 4, by - 4, bw + 8, bh + 8);
+      }
+      this.ctx.fill();
+
+      this.ctx.restore();
+    }
+
     // 3. Draw Bat / Paddle
     let batImg = this.images.bat;
     if (this.bat.isExtended && this.images.bat_extended) {
@@ -4689,27 +4726,6 @@ class BrickBreakerGame {
         this.ctx.restore();
       }
 
-      this.ctx.restore();
-    }
-
-    // 3c. Heavy Slow Mud / Hazard Warning Glow on Board (Sui Debuff)
-    if (this.boardSlowDebuff && this.boardSlowDebuff.active) {
-      this.ctx.save();
-      const pulse = 0.8 + 0.2 * Math.sin(Date.now() / 90);
-      this.ctx.strokeStyle = '#ff3344';
-      this.ctx.lineWidth = 2.5;
-      this.ctx.shadowColor = '#ff2233';
-      this.ctx.shadowBlur = 14 * pulse;
-      this.ctx.strokeRect(this.bat.x - 2, this.bat.y - 2, this.bat.width + 4, this.bat.height + 4);
-
-      // Warning text over paddle
-      this.ctx.fillStyle = '#ff3344';
-      this.ctx.shadowColor = '#000000';
-      this.ctx.shadowBlur = 6;
-      this.ctx.font = '8px "Press Start 2P"';
-      this.ctx.textAlign = 'center';
-      this.ctx.textBaseline = 'bottom';
-      this.ctx.fillText(`SLOW ${this.boardSlowDebuff.timer.toFixed(1)}s`, this.bat.x + this.bat.width / 2, this.bat.y - 4);
       this.ctx.restore();
     }
 

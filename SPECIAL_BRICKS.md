@@ -623,7 +623,7 @@ The **Sui Brick** is a continuous hazardous debuff obstacle. Upon destruction, i
 * **Board Slow Debuff (Catching a Container)**:
   * If the player paddle catches any spinning container, the board enters a **Heavy Slow** debuff for **2 seconds** (`this.boardSlowDebuff = { active: true, timer: 2.0 }`).
   * Both keyboard velocity and mouse/touch interpolation are clamped to a crawling pace (~4.5px/frame) so the sluggishness cannot be bypassed.
-  * The board glows with a red hazard border and emits trailing red sludge drag motes, with a countdown timer above the board (`SLOW 2.0s`).
+  * The board radiates an intense pulsing **red neon glow aura behind the paddle** without distracting square outlines or overlays.
   * If the container misses the paddle and exits the bottom of the screen, the player successfully evades the debuff!
 * **On-Brick Display**:
   * Displays cleanly as is with its original sprite asset (`images/brick_sui.png`), with no distracting border overlays.
@@ -631,7 +631,7 @@ The **Sui Brick** is a continuous hazardous debuff obstacle. Upon destruction, i
 ### Sensory Feedback
 * **Audio**: Plays debuff warning SFX (`audio/special_brick_debuff.mp3`) on break and on container catch.
 * **Floating Text**: Displays `CONTAINER RAIN (30S)!` on break, `HEAVY SLOW (2s)!` on catch, and `CONTAINER RAIN ENDED` upon completion.
-* **Screen Visuals**: Full **red corner glow vignette** pulses around all 4 corners and perimeter of the screen while the container rain hazard is active, with a live countdown warning indicator under the header (`⚠️ CONTAINER HAZARD! (Xs)`).
+* **Screen Visuals**: Full **red corner glow vignette** pulses around all 4 corners and perimeter of the screen while the container rain hazard is active, and an intense red neon glow radiates from behind the paddle board.
 * **Particles**: Deep red and white spark burst at the brick and on container impact; reddish heavy sludge dragging behind paddle during debuff.
 
 ## 21. Shun Brick (`brick_shun.png`) - *Multiball*
