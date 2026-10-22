@@ -2246,7 +2246,7 @@ class BrickBreakerGame {
   }
 
   // --- Special Brick Hook ---
-  onSpecialBrickDestroyed(brick, sourceBall) {
+  onSpecialBrickDestroyed(brick, sourceBall, isDirectHit = false) {
     if (brick && brick.specialType) {
       this.triggerSkillCutin(brick.specialType);
     }
@@ -2312,7 +2312,7 @@ class BrickBreakerGame {
 
         if (adj.isSpecial) {
           // Activate special skill effect when broken by explosion!
-          this.onSpecialBrickDestroyed(adj, sourceBall);
+          this.onSpecialBrickDestroyed(adj, null, false);
         } else {
           this.spawnExplosion(adj.x + adj.width / 2, adj.y + adj.height / 2, adj.isHard ? '#e0e0e0' : '#ff5722', 20);
           if (adj.isHard) {
@@ -2411,7 +2411,7 @@ class BrickBreakerGame {
 
         // Activate special skills of any special bricks caught in the X line blast!
         if (target.isSpecial) {
-          this.onSpecialBrickDestroyed(target, sourceBall);
+          this.onSpecialBrickDestroyed(target, null, false);
         }
       }
       return;
@@ -2622,7 +2622,7 @@ class BrickBreakerGame {
 
         // Activate special skills of any special bricks caught in the + blast!
         if (target.isSpecial) {
-          this.onSpecialBrickDestroyed(target, sourceBall);
+          this.onSpecialBrickDestroyed(target, null, false);
         }
       }
       return;
@@ -2630,13 +2630,14 @@ class BrickBreakerGame {
 
     // Check if this is the "hyakuichitaro" brick: turns ball into a fire ball for 5 hits!
     if (brick.specialType === 'hyakuichitaro') {
-      const ballsToEmpower = sourceBall ? [sourceBall] : this.balls.filter(b => !b.isAttached);
-      for (const b of ballsToEmpower) {
-        b.isFireBall = true;
-        b.fireHitsRemaining = 5;
-        this.spawnExplosion(b.x, b.y, '#ff4500', 28);
-        this.spawnExplosion(b.x, b.y, '#ffcc00', 18);
-        this.spawnExplosion(b.x, b.y, '#ffffff', 10);
+      // Hyakuichitaro only turns the ball that directly destroyed the brick into a fire ball.
+      // If broken by another method (such as other brick's effect, laser, bullet, or poison), don't turn any ball into fire ball!
+      if (isDirectHit && sourceBall) {
+        sourceBall.isFireBall = true;
+        sourceBall.fireHitsRemaining = 5;
+        this.spawnExplosion(sourceBall.x, sourceBall.y, '#ff4500', 28);
+        this.spawnExplosion(sourceBall.x, sourceBall.y, '#ffcc00', 18);
+        this.spawnExplosion(sourceBall.x, sourceBall.y, '#ffffff', 10);
       }
 
       this.sound.playSpecialHit();
@@ -3183,7 +3184,7 @@ class BrickBreakerGame {
         );
 
         if (brick.isSpecial) {
-          this.onSpecialBrickDestroyed(brick, null);
+          this.onSpecialBrickDestroyed(brick, null, false);
         }
 
         // Spread poison to another adjacent brick!
@@ -3397,7 +3398,7 @@ class BrickBreakerGame {
 
           // Handle special brick vs normal brick
           if (brick.isSpecial) {
-            this.onSpecialBrickDestroyed(brick, ball);
+            this.onSpecialBrickDestroyed(brick, ball, true);
           } else {
             this.sound.playBrickHit();
             const sparkColor = wasMagnet ? '#00f3ff' : (brick.isHard ? '#e0e0e0' : '#b537f2');
@@ -3517,7 +3518,7 @@ class BrickBreakerGame {
           }
 
           if (brick.isSpecial) {
-            this.onSpecialBrickDestroyed(brick, null);
+            this.onSpecialBrickDestroyed(brick, null, false);
           } else {
             this.sound.playBrickHit();
             const sparkColor = wasMagnet ? '#00f3ff' : (brick.isHard ? '#e0e0e0' : '#ff007f');
@@ -3796,7 +3797,7 @@ class BrickBreakerGame {
           }
 
           if (target.isSpecial) {
-            this.onSpecialBrickDestroyed(target, jb.sourceBall);
+            this.onSpecialBrickDestroyed(target, null, false);
           } else {
             this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, target.isHard ? '#e0e0e0' : '#f368e0', 20);
             if (target.isHard) {
@@ -3926,7 +3927,7 @@ class BrickBreakerGame {
           }
 
           if (brick.isSpecial) {
-            this.onSpecialBrickDestroyed(brick, null);
+            this.onSpecialBrickDestroyed(brick, null, false);
           } else {
             this.sound.playBrickHit();
             const sparkColor = wasMagnet ? '#00f3ff' : (brick.isHard ? '#e0e0e0' : '#ffffff');

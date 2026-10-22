@@ -376,8 +376,8 @@ The **Hyakuichitaro Brick** is an intense offensive power-up featuring vivid pur
 
 ### Core Mechanics
 * **Fire Ball Empowerment**:
-  * Upon destruction, sets `ball.isFireBall = true` and `ball.fireHitsRemaining = 5`.
-  * If triggered via secondary blast (laser/poison), empowers all active unattached balls!
+  * Only turns the ball that directly destroyed the brick into a **Fire Ball** (`ball.isFireBall = true` and `ball.fireHitsRemaining = 5`).
+  * If the brick is broken by another method (such as another brick's effect, secondary explosions, turret bullets, lasers, or poison), no ball is turned into a Fire Ball.
 * **Non-Bouncing Piercing Impact**:
   * When hitting a brick while `isFireBall` is active, the ball **does not reflect its velocity** (`ball.vx` and `ball.vy` continue unhindered).
   * Consumes 1 hit: `ball.fireHitsRemaining--`.
