@@ -997,37 +997,3 @@ body {
   margin: 0 auto;
 }
 
-/* --- Start Card Copyright --- */
-.start-copyright {
-  margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(181, 55, 242, 0.3);
-  font-family: var(--font-ui);
-  font-size: 0.74rem;
-  line-height: 1.45;
-  color: rgba(245, 245, 252, 0.75);
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-.start-author {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-bottom: 5px;
-  color: rgba(245, 245, 252, 0.9);
-}
-
-.start-author strong {
-  color: #ffffff;
-  font-weight: 700;
-}
-
-.start-disclaimer {
-  font-size: 0.67rem;
-  color: rgba(245, 245, 252, 0.45);
-  margin: 0;
-  line-height: 1.4;
-}
