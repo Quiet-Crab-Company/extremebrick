@@ -105,7 +105,7 @@
     "icon": "images/brick_magata.webp"
   },
   "ruriiro": {
-    "name": "HEAVEN OR HELL",
+    "name": "WHERE IS THE REAL RURIIRO?",
     "type": "debuff",
     "icon": "images/brick_ruriiro.webp"
   },
@@ -123,5 +123,35 @@
     "name": "POWER RESONANCE",
     "type": "buff",
     "icon": "images/brick_haru.webp"
+  },
+  "sonoda": {
+    "name": "CHAOTIC ORDER",
+    "type": "debuff",
+    "icon": "images/brick_sonoda.webp"
+  },
+  "taito": {
+    "name": "INTERLOCKING STRATAGEMS",
+    "type": "buff",
+    "icon": "images/brick_taito.webp"
+  },
+  "akiba": {
+    "name": "SUDDEN STRIKE",
+    "type": "buff",
+    "icon": "images/brick_akiba.webp"
+  },
+  "adachi": {
+    "name": "WATCH MY SIX!",
+    "type": "buff",
+    "icon": "images/brick_adachi.webp"
+  },
+  "shinagawa": {
+    "name": "RISK MANAGEMENT",
+    "type": "buff",
+    "icon": "images/brick_shinagawa.webp"
+  },
+  "shinjuku": {
+    "name": "SWEET CHARM",
+    "type": "buff",
+    "icon": "images/brick_shinjuku.webp"
   }
 }

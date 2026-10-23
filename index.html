@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Press+Start+2P&display=swap"
     rel="stylesheet">
   <link rel="preload" as="image" href="web_background.png" media="(min-width: 600px)">
-  <link rel="stylesheet" href="style.css?v=9.27">
+  <link rel="stylesheet" href="style.css?v=9.28">
 </head>
 
 <body>
@@ -32,9 +32,10 @@
           <span class="hud-label">HIGH:</span>
           <span id="high-score-val" class="pixel-val">00000</span>
         </div>
+        <div id="lives-container" title="Remaining Lives">
+          <!-- Live icons rendered dynamically -->
+        </div>
       </div>
-
-
 
       <div class="hud-right">
         <div class="hud-btn-group">
@@ -47,9 +48,6 @@
           <button id="btn-pause" class="icon-btn" aria-label="Pause Game" title="Pause">
             <img id="pause-icon" src="images/pause-svgrepo-com.svg" alt="Pause" class="hud-btn-icon">
           </button>
-        </div>
-        <div id="lives-container" title="Remaining Lives">
-          <!-- Live icons rendered dynamically -->
         </div>
       </div>
     </header>
@@ -96,7 +94,7 @@
         <div class="info-content-scroll">
           <!-- HOW TO PLAY (OBJECTIVE ONLY) -->
           <div class="info-section">
-            <h3 class="info-section-title">🎯 OBJECTIVE</h3>
+            <h3 class="info-section-title">OBJECTIVE</h3>
             <p class="info-text">
               Deflect the XB balls with your beam bat to shatter bricks! Destroy all breakable bricks on the board to
               clear the wave and earn a <strong>+500 wave bonus</strong>.
@@ -110,7 +108,7 @@
                 <thead>
                   <tr>
                     <th class="th-brick">BRICK</th>
-                    <th class="th-skill">SKILL &amp; TYPE</th>
+                    <th class="th-skill">SKILL</th>
                     <th class="th-effect">EFFECT</th>
                   </tr>
                 </thead>
@@ -123,7 +121,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">OVERDRIVE</strong>
                     </td>
                     <td>Activate Yo's beam bat and extended the bat for 30 seconds. Timer refreshes on repeat hits.</td>
@@ -136,7 +133,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">IROHA BALL</strong>
                     </td>
                     <td>Gives magnet effect to the nearest brick, drawing the ball that breaks the brick straight into
@@ -150,7 +146,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">BROKEN MORAL</strong>
                     </td>
                     <td>Explodes and destroys all adjacent bricks in a 3x3 radius.</td>
@@ -163,7 +158,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">DEFLECT SERVER</strong>
                     </td>
                     <td>Deploys a safety shield beneath the bat for 15s. Destroyed after 1 hit.</td>
@@ -176,7 +170,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">LUMINOUS CRYSTAL</strong>
                     </td>
                     <td>Summoned luminous crystal that fire upward plasma lasers whenever a ball bounces on
@@ -190,7 +183,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">POISON RAIN</strong>
                     </td>
                     <td>Poisons 1 adjacent brick. Poison destroys the brick after 5s or cascades to another unhit brick.
@@ -204,7 +196,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">IGNITION</strong>
                     </td>
                     <td>Requires 3 hits. On 3rd hit, detonates diagonal X-line laser beams across the
@@ -218,7 +209,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">ROAR OF OUTRAGE</strong>
                     </td>
                     <td>Requires 3 hits. On 3rd hit, detonates cross-fire laser beams along its entire
@@ -232,7 +222,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">TIME TO EAT</strong>
                     </td>
                     <td>Cleanses active debuffs.
@@ -246,7 +235,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">PLAY BALL</strong>
                     </td>
                     <td>Drops extra XB Ball.
@@ -260,10 +248,9 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">MONEY IS POWER!</strong>
                     </td>
-                    <td>Drops kane. Earn up to 1000 points when collected.</td>
+                    <td>Drops 5 fluttering kane papers. Earn 200 points for each paper collected.</td>
                   </tr>
 
                   <tr class="brick-row-buff" data-type="buff">
@@ -273,10 +260,9 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">FIGHTING SPIRIT</strong>
                     </td>
-                    <td>Turns ball into a blazing Fire Ball that pierces through bricks without bouncing back for 5
+                    <td>Turns ball into a blazing Fire Ball that pierces through bricks without bouncing back for 3
                       consecutive hits!</td>
                   </tr>
 
@@ -287,7 +273,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">TWILIGHT'S EMBRACE</strong>
                     </td>
                     <td>Activates a gravity field in the bottom of playfield for 8s. Balls will slow down as they
@@ -301,7 +286,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">ENERGIZE</strong>
                     </td>
                     <td>Accelerates bat movement speed by +75% for 20s.</td>
@@ -314,7 +298,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">HEAVY METAL</strong>
                     </td>
                     <td>Leaps across the field and explodes 5-brick cross on landing!
@@ -328,7 +311,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">INSTANT PERCEPTION</strong>
                     </td>
                     <td>Fires 5 sequential BB shots from the bat straight up that pierces through bricks.</td>
@@ -341,7 +323,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">BREAKTHROUGH</strong>
                     </td>
                     <td>Summons a wind updraft from the bottom for 1s that bounces every falling ball
@@ -355,7 +336,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">ITS YOUR CUTE ZERO!</strong>
                     </td>
                     <td>Drops a Zero Ball! Catch it to earn +1 Extra Life.
@@ -369,10 +349,75 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-buff">BUFF</span>
                       <strong class="skill-name-buff">POWER RESONANCE</strong>
                     </td>
                     <td>Slow motion for 2 seconds, then resets all ball speed.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_taito.webp" class="codex-brick-img" alt="Taito">
+                      </div>
+                    </td>
+                    <td>
+                      <strong class="skill-name-buff">INTERLOCKING STRATAGEMS</strong>
+                    </td>
+                    <td>Launches celebratory fireworks around the bottom for 15s. All points scored are doubled during
+                      that time!</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_akiba.webp" class="codex-brick-img" alt="Akiba">
+                      </div>
+                    </td>
+                    <td>
+                      <strong class="skill-name-buff">SUDDEN STRIKE</strong>
+                    </td>
+                    <td>Teleports the breaking ball to the top of the arena to rain down from above! If broken by
+                      skills/explosions, awards points only.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_adachi.webp" class="codex-brick-img" alt="Adachi">
+                      </div>
+                    </td>
+                    <td>
+                      <strong class="skill-name-buff">WATCH MY SIX!</strong>
+                    </td>
+                    <td>Requires 3 hits. When destroyed, transforms all available balls into fireballs (3 piercing hits
+                      each).</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_shinagawa.webp" class="codex-brick-img" alt="Shinagawa">
+                      </div>
+                    </td>
+                    <td>
+                      <strong class="skill-name-buff">RISK MANAGEMENT</strong>
+                    </td>
+                    <td>Requires 5 hits to destroy. When broken, fires a massive charging horizontal purple laser from
+                      the left screen edge that sweeps across and obliterates 3 full rows!</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_shinjuku.webp" class="codex-brick-img" alt="Shinjuku">
+                      </div>
+                    </td>
+                    <td>
+                      <strong class="skill-name-buff">SWEET CHARM</strong>
+                    </td>
+                    <td>Requires 3 hits to destroy. When broken, plays heal SFX, summons rising pink heart bubbles from
+                      the bottom, and purifies the field by destroying all debuff bricks and clearing all running debuff
+                      effects!</td>
                   </tr>
 
                   <!-- DEBUFF BRICKS (Red Text) -->
@@ -383,7 +428,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-debuff">DEBUFF</span>
                       <strong class="skill-name-debuff">POWER HARASSMENT</strong>
                     </td>
                     <td>Clamps all points gained to strictly 1 point for 60s.</td>
@@ -396,7 +440,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-debuff">DEBUFF</span>
                       <strong class="skill-name-debuff">TOKIMEKI TIME</strong>
                     </td>
                     <td>Breaks the bat to half for 60 seconds.</td>
@@ -409,7 +452,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-debuff">DEBUFF</span>
                       <strong class="skill-name-debuff">LEBENSTRIEB</strong>
                     </td>
                     <td>Drops red shipping containers. Catching one slows the bat for 2s!</td>
@@ -422,7 +464,6 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-debuff">DEBUFF</span>
                       <strong class="skill-name-debuff">REJECTION IMPULSE</strong>
                     </td>
                     <td>Floods the brick field with livestream comments for 30s.</td>
@@ -435,12 +476,24 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge-debuff">DEBUFF</span>
-                      <strong class="skill-name-debuff">HEAVEN OR HELL</strong>
+                      <strong class="skill-name-debuff">WHERE IS THE REAL RURIIRO?</strong>
                     </td>
                     <td>Turns all other bricks into fake Ruriiro. Remove by finding the Real Ruriiro. All bricks effect
                       will remain as normal bricks until reverted.
                     </td>
+                  </tr>
+
+                  <tr class="brick-row-debuff" data-type="debuff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_sonoda.webp" class="codex-brick-img" alt="Sonoda">
+                      </div>
+                    </td>
+                    <td>
+                      <strong class="skill-name-debuff">CHAOTIC ORDER</strong>
+                    </td>
+                    <td>Drops 2 bombs. If a bomb hits the board, it explodes and stuns the board for 1s while flashing
+                      red.</td>
                   </tr>
                 </tbody>
               </table>

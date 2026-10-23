@@ -262,6 +262,11 @@ class SoundSystem {
     this.synthBatBounce();
   }
 
+  playBoing() {
+    if (this.playBuffer('boing', 0.55)) return;
+    this.synthBatBounce();
+  }
+
   synthBatBounce() {
     try {
       if (this.isMuted || this.sfxVolume === 0) return;
@@ -438,6 +443,26 @@ class SoundSystem {
   playDebuff() {
     if (this.playBuffer('special_brick_debuff', 0.65)) return;
     this.synthLifeLost();
+  }
+
+  playBomb() {
+    if (this.playBuffer('bomb', 0.6)) return;
+    this.synthLifeLost();
+  }
+
+  playFireworks() {
+    if (this.playBuffer('fireworks', 0.65)) return;
+    this.synthSpecialHit();
+  }
+
+  playHeal() {
+    if (this.playBuffer('heal', 0.8)) return;
+    this.synthSpecialHit();
+  }
+
+  playSmokeBomb() {
+    if (this.playBuffer('smoke_bomb', 0.75)) return;
+    this.synthSpecialHit();
   }
 
   synthLifeLost() {
@@ -722,6 +747,7 @@ class BrickBreakerGame {
     this.bullets = [];
     this.xBeams = [];
     this.plusBeams = [];
+    this.shinagawaLasers = [];
     this.jumpingBricks = [];
     this.gravityField = { active: false, timer: 0 };
     this.pointDebuff = { active: false, timer: 0 };
@@ -734,6 +760,9 @@ class BrickBreakerGame {
     this.taigaWind = { active: false, timer: 0, duration: 2.0, particles: [], ribbons: [] };
     this.hearts = [];
     this.containers = [];
+    this.kanes = [];
+    this.bombs = [];
+    this.boardStunTimer = 0;
     this.suiContainerRain = { active: false, timer: 0, nextDropTimer: 0 };
     this.boardSlowDebuff = { active: false, timer: 0 };
     this.magataDebuff = { active: false, timer: 0 };
@@ -741,6 +770,8 @@ class BrickBreakerGame {
     this.magataTemplates = [];
     this.ruriiroDebuff = { active: false };
     this.haruSlowMotion = { active: false, timer: 0, duration: 2.0, slowFactor: 0.25 };
+    this.interlockingStratagems = { active: false, timer: 0, duration: 15.0, nextLaunchTimer: 0, rockets: [], sparks: [] };
+    this.sweetCharmEffect = { active: false, timer: 0, duration: 4.5, spawnTimer: 0, bubbles: [] };
     this.skillCutins = [];
     this.skillsConfig = {};
 
@@ -867,7 +898,11 @@ class BrickBreakerGame {
 
   addScore(points) {
     const isDebuffed = this.pointDebuff && this.pointDebuff.active;
-    const finalPoints = isDebuffed ? 1 : points;
+    const isDoublePoints = this.interlockingStratagems && this.interlockingStratagems.active;
+    let finalPoints = isDebuffed ? 1 : points;
+    if (isDoublePoints && !isDebuffed) {
+      finalPoints *= 2;
+    }
     this.score += finalPoints;
     if (this.score > this.highScore) {
       this.highScore = this.score;
@@ -891,7 +926,8 @@ class BrickBreakerGame {
     const popup = document.createElement('span');
     popup.className = 'score-popup';
     const isDebuffed = this.pointDebuff && this.pointDebuff.active;
-    if (points >= 500) {
+    const isDouble = this.interlockingStratagems && this.interlockingStratagems.active;
+    if (points >= 500 || (isDouble && !isDebuffed)) {
       popup.classList.add('bonus-gold');
     } else if (isDebuffed || points === 1) {
       popup.classList.add('debuff');
@@ -986,6 +1022,14 @@ class BrickBreakerGame {
       { type: 'image', key: 'brick_magata', src: 'images/brick_magata.webp', label: 'Debuff Bricks (Magata)' },
       { type: 'image', key: 'brick_ruriiro', src: 'images/brick_ruriiro.webp', label: 'Debuff Bricks (Ruriiro)' },
       { type: 'image', key: 'brick_haru', src: 'images/brick_haru.webp', label: 'Special Bricks (Haru)' },
+      { type: 'image', key: 'brick_sonoda', src: 'images/brick_sonoda.webp', label: 'Debuff Bricks (Sonoda)' },
+      { type: 'image', key: 'brick_taito', src: 'images/brick_taito.webp', label: 'Special Bricks (Taito)' },
+      { type: 'image', key: 'brick_akiba', src: 'images/brick_akiba.webp', label: 'Special Bricks (Akiba)' },
+      { type: 'image', key: 'brick_adachi', src: 'images/brick_adachi.webp', label: 'Special Bricks (Adachi)' },
+      { type: 'image', key: 'brick_shinagawa', src: 'images/brick_shinagawa.webp', label: 'Special Bricks (Shinagawa)' },
+      { type: 'image', key: 'brick_shinjuku', src: 'images/brick_shinjuku.webp', label: 'Special Bricks (Shinjuku)' },
+      { type: 'image', key: 'bomb1', src: 'images/bomb1.webp', label: 'Bomb Frame 1' },
+      { type: 'image', key: 'bomb2', src: 'images/bomb2.webp', label: 'Bomb Frame 2' },
       { type: 'image', key: 'container', src: 'images/container.webp', label: 'Falling Container' },
       { type: 'image', key: 'bat_half', src: 'images/bat_half.webp', label: 'Shortened Board' },
       { type: 'image', key: 'turret', src: 'images/turret.webp', label: 'Turret Sprite' },
@@ -994,12 +1038,18 @@ class BrickBreakerGame {
       { type: 'image', key: 'debuff_skill_cutin', src: 'images/debuff_skill_cutin.webp', label: 'Debuff Skill Cutin' },
       { type: 'image', key: 'brick_hard', src: 'images/brick_hard.webp', label: 'Hard Bricks' },
       { type: 'image', key: 'brick_cracked', src: 'images/brick_cracked.webp', label: 'Cracked Bricks' },
+      { type: 'image', key: 'kane', src: 'images/kane.webp', label: 'Kane (Paper Money)' },
       { type: 'audio', key: 'bounce', src: 'audio/bounce.mp3', label: 'Bounce SFX' },
+      { type: 'audio', key: 'boing', src: 'audio/boing.mp3', label: 'Boing SFX' },
+      { type: 'audio', key: 'bomb', src: 'audio/bomb.mp3', label: 'Bomb SFX' },
+      { type: 'audio', key: 'fireworks', src: 'audio/fireworks.mp3', label: 'Fireworks SFX' },
       { type: 'audio', key: 'hit', src: 'audio/hit.mp3', label: 'Hit SFX' },
       { type: 'audio', key: 'special_brick', src: 'audio/special_brick.mp3', label: 'Special Brick SFX' },
+      { type: 'audio', key: 'heal', src: 'audio/heal.mp3', label: 'Heal SFX' },
       { type: 'audio', key: 'laser', src: 'audio/laser.mp3', label: 'Laser SFX' },
       { type: 'audio', key: 'explode', src: 'audio/explode.mp3', label: 'Explosion SFX' },
       { type: 'audio', key: 'special_brick_debuff', src: 'audio/special_brick_debuff.mp3', label: 'Debuff SFX' },
+      { type: 'audio', key: 'smoke_bomb', src: 'audio/smoke_bomb.mp3', label: 'Smoke Bomb SFX' },
       { type: 'audio', key: 'gameover', src: 'audio/gameover.mp3', label: 'Game Over SFX' },
       { type: 'bgm', key: 'bgm', src: 'audio/System_Breach_3.mp3', label: 'BGM (System Breach 3)' }
     ];
@@ -1160,6 +1210,12 @@ class BrickBreakerGame {
         magata: 1.0,
         ruriiro: (this.ruriiroDebuff && this.ruriiroDebuff.active) ? 0.1 : 1.0,
         haru: 1.0,
+        sonoda: 1.0,
+        taito: 1.0,
+        akiba: 1.0,
+        adachi: 1.0,
+        shinagawa: 1.0,
+        shinjuku: 1.0,
         zero: 0.45 // Lower percentage than others (~7% vs ~15-16% for others)
       };
 
@@ -1177,7 +1233,7 @@ class BrickBreakerGame {
     };
 
     // Pre-roll special brick types and guarantee at least one debuff brick per round
-    const debuffTypes = ['ichinose', 'akuta', 'sui', 'magata', 'ruriiro'];
+    const debuffTypes = ['ichinose', 'akuta', 'sui', 'magata', 'ruriiro', 'sonoda'];
     const specialTypeMap = new Map();
     for (const idx of specialIndices) {
       specialTypeMap.set(idx, getSpecialBrickType());
@@ -1200,7 +1256,7 @@ class BrickBreakerGame {
         const type = isSpecial ? specialTypeMap.get(index) : 'normal';
         const isHard = !isSpecial && hardIndices.has(index);
         const points = isHard ? 30 : (isSpecial ? 100 : BRICK_POINTS);
-        const hitsRequired = (type === 'enoki' || type === 'saigo') ? 3 : (isHard ? 2 : 1);
+        const hitsRequired = (type === 'shinagawa') ? 5 : ((type === 'enoki' || type === 'saigo' || type === 'adachi' || type === 'shinjuku') ? 3 : (isHard ? 2 : 1));
         const x = GRID_START_X + c * (BRICK_WIDTH + BRICK_GAP_X);
         const targetY = GRID_START_Y + r * (BRICK_HEIGHT + BRICK_GAP_Y);
         // Start so all rows are tucked completely behind the 250px header line
@@ -1231,6 +1287,12 @@ class BrickBreakerGame {
           else if (type === 'magata') brickImg = this.images.brick_magata;
           else if (type === 'ruriiro') brickImg = this.images.brick_ruriiro;
           else if (type === 'haru') brickImg = this.images.brick_haru;
+          else if (type === 'sonoda') brickImg = this.images.brick_sonoda;
+          else if (type === 'taito') brickImg = this.images.brick_taito;
+          else if (type === 'akiba') brickImg = this.images.brick_akiba;
+          else if (type === 'adachi') brickImg = this.images.brick_adachi;
+          else if (type === 'shinagawa') brickImg = this.images.brick_shinagawa;
+          else if (type === 'shinjuku') brickImg = this.images.brick_shinjuku;
           else brickImg = this.images.brick_zero;
         }
 
@@ -1246,7 +1308,7 @@ class BrickBreakerGame {
           isSpecial,
           isHard,
           points,
-          isDebuff: (type === 'ichinose' || type === 'akuta' || type === 'sui' || type === 'magata' || type === 'ruriiro'),
+          isDebuff: (type === 'ichinose' || type === 'akuta' || type === 'sui' || type === 'magata' || type === 'ruriiro' || type === 'sonoda'),
           specialType: type,
           image: brickImg,
           alive: true,
@@ -1353,6 +1415,7 @@ class BrickBreakerGame {
     };
 
     const handlePointerMove = (clientX) => {
+      if (this.boardStunTimer > 0) return;
       const targetCanvasX = getCanvasX(clientX);
       this.bat.targetX = Math.max(0, Math.min(CANVAS_WIDTH - this.bat.width, targetCanvasX - this.bat.width / 2));
     };
@@ -1571,6 +1634,7 @@ class BrickBreakerGame {
     this.bullets = [];
     this.xBeams = [];
     this.plusBeams = [];
+    this.shinagawaLasers = [];
     this.jumpingBricks = [];
     this.gravityField = { active: false, timer: 0 };
     this.pointDebuff = { active: false, timer: 0 };
@@ -1583,6 +1647,11 @@ class BrickBreakerGame {
     this.taigaWind = { active: false, timer: 0, duration: 2.0, particles: [], ribbons: [] };
     this.hearts = [];
     this.containers = [];
+    this.kanes = [];
+    this.bombs = [];
+    this.boardStunTimer = 0;
+    this.interlockingStratagems = { active: false, timer: 0, duration: 15.0, nextLaunchTimer: 0, rockets: [], sparks: [] };
+    this.sweetCharmEffect = { active: false, timer: 0, duration: 4.5, spawnTimer: 0, bubbles: [] };
     this.suiContainerRain = { active: false, timer: 0, nextDropTimer: 0 };
     this.boardSlowDebuff = { active: false, timer: 0 };
     this.magataDebuff = { active: false, timer: 0 };
@@ -1974,6 +2043,29 @@ class BrickBreakerGame {
     this.spawnExplosion(x + cWidth / 2, y + cHeight / 2, '#ff3344', 16);
   }
 
+  spawnKanePapers(cx, cy) {
+    for (let i = 0; i < 5; i++) {
+      // Fan out initial horizontal base position across the brick
+      const spread = (i - 2) * 28 + (Math.random() - 0.5) * 16;
+      const baseX = Math.max(70, Math.min(CANVAS_WIDTH - 70, cx + spread));
+      this.kanes.push({
+        baseX: baseX,
+        x: baseX,
+        y: cy - (i * 14), // staggered heights so they cascade gracefully
+        width: 56,
+        height: 31,
+        vy: 130 + Math.random() * 25, // ~130-155 px/s (slower than containers and balls)
+        swayTimer: Math.random() * Math.PI * 2,
+        swaySpeed: 2.2 + Math.random() * 0.7,
+        swayAmp: 46 + Math.random() * 22,
+        phase: i * 1.3,
+        rotation: 0,
+        flipScaleY: 1.0,
+        scoreValue: 200
+      });
+    }
+  }
+
   triggerBoardSlowDebuff(duration = 2.0) {
     this.boardSlowDebuff.active = true;
     this.boardSlowDebuff.timer = duration;
@@ -2265,6 +2357,438 @@ class BrickBreakerGame {
     }
   }
 
+  triggerSonodaDebuff(brick) {
+    this.sound.playBomb();
+
+    const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
+    const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 180);
+
+    // Floating text
+    this.floatingTexts.push(
+      new FloatingText(bx, by - 12, "CHAOTIC ORDER!", "#ff2a2a", '15px "Press Start 2P"')
+    );
+
+    // Crimson and fiery sparks
+    this.spawnExplosion(bx, by, '#ff2200', 32);
+    this.spawnExplosion(bx, by, '#ff8800', 22);
+    this.spawnExplosion(bx, by, '#ffffff', 14);
+
+    // Drop two bombs that fall toward the board
+    const bombWidth = 54;
+    const bombHeight = 44;
+    const offsets = [-26, 26];
+    const vxs = [-1.5, 1.5];
+
+    for (let i = 0; i < 2; i++) {
+      const spawnX = Math.max(30, Math.min(CANVAS_WIDTH - bombWidth - 30, bx + offsets[i] - bombWidth / 2));
+      this.bombs.push({
+        x: spawnX,
+        y: by - 10,
+        width: bombWidth,
+        height: bombHeight,
+        vx: vxs[i] + (Math.random() - 0.5) * 0.5,
+        vy: 2.2 + Math.random() * 0.6,
+        gravity: 0.12,
+        maxVy: 6.8,
+        animTimer: i * 0.5,
+        flashTimer: 0
+      });
+    }
+  }
+
+  getBombRedMask(frameIndex) {
+    if (!this.cachedBombRed) this.cachedBombRed = [];
+    if (this.cachedBombRed[frameIndex]) return this.cachedBombRed[frameIndex];
+
+    const srcImg = frameIndex === 0 ? this.images.bomb1 : this.images.bomb2;
+    if (!srcImg || !srcImg.complete || srcImg.naturalWidth === 0) return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = srcImg.naturalWidth;
+    canvas.height = srcImg.naturalHeight;
+    const ctx = canvas.getContext('2d');
+
+    // Draw original bomb
+    ctx.drawImage(srcImg, 0, 0);
+
+    // Keep only non-transparent bomb pixels and fill with bright hazard red
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = '#ff1133';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    this.cachedBombRed[frameIndex] = canvas;
+    return canvas;
+  }
+
+  getBatRedMask(batKey) {
+    if (!this.cachedBatRed) this.cachedBatRed = {};
+    if (this.cachedBatRed[batKey]) return this.cachedBatRed[batKey];
+
+    const srcImg = this.images[batKey];
+    if (!srcImg || !srcImg.complete || srcImg.naturalWidth === 0) return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = srcImg.naturalWidth;
+    canvas.height = srcImg.naturalHeight;
+    const ctx = canvas.getContext('2d');
+
+    // Draw original bat image
+    ctx.drawImage(srcImg, 0, 0);
+
+    // Keep only non-transparent bat pixels and fill with bright hazard red
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = '#ff1e38';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    this.cachedBatRed[batKey] = canvas;
+    return canvas;
+  }
+
+  triggerTaitoSkill(brick) {
+    this.sound.playFireworks();
+    this.sound.playSpecialHit();
+
+    const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
+    const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 180);
+
+    // Floating announcements
+    this.floatingTexts.push(
+      new FloatingText(bx, by - 14, "INTERLOCKING STRATAGEMS!", "#ffd700", '15px "Press Start 2P"')
+    );
+    this.floatingTexts.push(
+      new FloatingText(CANVAS_WIDTH / 2, BAT_Y - 50, "DOUBLE SCORE (15s)!", "#00f3ff", '16px "Press Start 2P"')
+    );
+
+    // Gold & cyan sparkling explosion on the brick
+    this.spawnExplosion(bx, by, '#ffd700', 36);
+    this.spawnExplosion(bx, by, '#00f3ff', 24);
+    this.spawnExplosion(bx, by, '#ffffff', 16);
+
+    // Activate 15-second double score buff & bottom fireworks
+    this.interlockingStratagems.active = true;
+    this.interlockingStratagems.timer = 15.0;
+    this.interlockingStratagems.nextLaunchTimer = 0; // Immediate initial burst
+
+    // Launch initial celebratory cluster of 3 fireworks immediately across bottom
+    for (let i = 0; i < 3; i++) {
+      this.launchBottomFirework(160 + i * 360 + (Math.random() - 0.5) * 80);
+    }
+  }
+
+  triggerAkibaSkill(brick, sourceBall, isDirectHit = false) {
+    if (isDirectHit && sourceBall) {
+      const speed = Math.hypot(sourceBall.vx, sourceBall.vy) || (BASE_BALL_SPEED * this.speedMultiplier);
+
+      // Audio & departure visual burst at the broken brick
+      this.sound.playSmokeBomb();
+      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00f3ff', 30);
+      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0055', 20);
+      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffffff', 12);
+
+      // Teleport source ball directly to top ceiling (below header)
+      sourceBall.y = HEADER_HEIGHT + sourceBall.radius + 6;
+      sourceBall.x = Math.max(sourceBall.radius + 24, Math.min(CANVAS_WIDTH - sourceBall.radius - 24, sourceBall.x));
+
+      // Reset trail so comet doesn't bridge across the screen
+      sourceBall.trail = [];
+
+      // Aim downwards: preserve existing horizontal trajectory angle or give a clean angle
+      let vx = sourceBall.vx;
+      if (Math.abs(vx) < 0.6) {
+        vx = (Math.random() > 0.5 ? 1 : -1) * (speed * 0.4);
+      }
+      let vy = Math.max(Math.abs(sourceBall.vy), speed * 0.7);
+
+      // Re-normalize velocity to ball's speed
+      const currentSpeed = Math.hypot(vx, vy);
+      if (currentSpeed > 0) {
+        sourceBall.vx = (vx / currentSpeed) * speed;
+        sourceBall.vy = (vy / currentSpeed) * speed;
+      }
+
+      // Arrival warp burst at the ceiling
+      this.spawnExplosion(sourceBall.x, sourceBall.y, '#00f3ff', 32);
+      this.spawnExplosion(sourceBall.x, sourceBall.y, '#ff0055', 22);
+      this.spawnExplosion(sourceBall.x, sourceBall.y, '#ffffff', 14);
+
+      // Floating indicator
+      this.floatingTexts.push(
+        new FloatingText(sourceBall.x, sourceBall.y + 26, 'TOP WARP!', '#00f3ff', '12px "Press Start 2P"')
+      );
+    } else {
+      // Broken by explosion / other brick skills: just gain points (no teleport)
+      this.sound.playSpecialHit();
+      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00f3ff', 24);
+      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0055', 16);
+      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffffff', 8);
+
+      const pts = brick.points || BRICK_POINTS;
+      this.floatingTexts.push(
+        new FloatingText(brick.x + brick.width / 2, brick.y, `+${pts}`, '#00f3ff', '10px "Press Start 2P"')
+      );
+    }
+  }
+
+  triggerAdachiSkill(brick) {
+    this.sound.playSpecialHit();
+
+    const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
+    const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 180);
+
+    // Fiery burst on the brick
+    this.spawnExplosion(bx, by, '#ff4500', 36);
+    this.spawnExplosion(bx, by, '#ffaa00', 24);
+    this.spawnExplosion(bx, by, '#ffffff', 16);
+
+    // Turn all available balls into fireballs (3 piercing hits each)
+    for (const ball of this.balls) {
+      ball.isFireBall = true;
+      ball.fireHitsRemaining = 3;
+      this.spawnExplosion(ball.x, ball.y, '#ff4500', 28);
+      this.spawnExplosion(ball.x, ball.y, '#ffcc00', 18);
+      this.spawnExplosion(ball.x, ball.y, '#ffffff', 10);
+    }
+  }
+
+  triggerShinagawaSkill(brick) {
+    this.sound.playLaser();
+    this.sound.playSpecialHit();
+
+    const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
+    const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 180);
+
+    // Initial spark explosion on the broken brick
+    this.spawnExplosion(bx, by, '#c026d3', 36);
+    this.spawnExplosion(bx, by, '#e879f9', 24);
+    this.spawnExplosion(bx, by, '#ffffff', 16);
+
+    // Target 3 rows: current row, plus row above and row below (clamped to ensure 3 rows)
+    const currentRow = brick ? brick.row : 2;
+    let targetRows = [currentRow - 1, currentRow, currentRow + 1];
+    if (currentRow <= 0) {
+      targetRows = [0, 1, 2];
+    } else if (currentRow >= ROWS - 1) {
+      targetRows = [ROWS - 3, ROWS - 2, ROWS - 1];
+    }
+    targetRows = targetRows.filter(r => r >= 0 && r < ROWS);
+
+    const minRow = Math.min(...targetRows);
+    const maxRow = Math.max(...targetRows);
+
+    const topY = GRID_START_Y + minRow * (BRICK_HEIGHT + BRICK_GAP_Y);
+    const bottomY = GRID_START_Y + maxRow * (BRICK_HEIGHT + BRICK_GAP_Y) + BRICK_HEIGHT;
+    const centerY = (topY + bottomY) / 2;
+    const laserHeight = bottomY - topY;
+
+    this.shinagawaLasers.push({
+      targetRows: targetRows,
+      topY: topY,
+      bottomY: bottomY,
+      centerY: centerY,
+      height: laserHeight,
+      chargeTimer: 0.35,
+      chargeDuration: 0.35,
+      fireTimer: 0.65,
+      fireDuration: 0.65,
+      sweepDuration: 0.22,
+      state: 'charging',
+      destroyedBricks: new Set()
+    });
+  }
+
+  spawnSweetCharmBubble(initialSpread = false) {
+    const startY = initialSpread
+      ? (CANVAS_HEIGHT - Math.random() * 320)
+      : (CANVAS_HEIGHT + 10 + Math.random() * 40);
+    this.sweetCharmEffect.bubbles.push({
+      x: 30 + Math.random() * (CANVAS_WIDTH - 60),
+      y: startY,
+      vy: -(120 + Math.random() * 150),
+      size: 18 + Math.random() * 26,
+      isHeart: Math.random() < 0.55,
+      color: Math.random() < 0.4 ? '#ff69b4' : (Math.random() < 0.7 ? '#ff1493' : (Math.random() < 0.9 ? '#ff80bf' : '#ffffff')),
+      wobbleSpeed: 2.2 + Math.random() * 2.5,
+      wobbleAmp: 20 + Math.random() * 30,
+      phase: Math.random() * Math.PI * 2,
+      rot: (Math.random() - 0.5) * 0.4,
+      rotSpeed: (Math.random() - 0.5) * 1.8,
+      life: 0,
+      maxLife: 3.2 + Math.random() * 1.5
+    });
+  }
+
+  triggerShinjukuSkill(brick) {
+    // 1. Play heal audio sound
+    this.sound.playHeal();
+
+    const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
+    const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 180);
+
+    // Initial sparkles on broken brick
+    this.spawnExplosion(bx, by, '#ff69b4', 36);
+    this.spawnExplosion(bx, by, '#ff1493', 24);
+    this.spawnExplosion(bx, by, '#ffffff', 16);
+
+    // 2. Activate pink bubbles heart animation effect from the bottom
+    this.sweetCharmEffect.active = true;
+    this.sweetCharmEffect.timer = 5.0;
+    this.sweetCharmEffect.duration = 5.0;
+    this.sweetCharmEffect.spawnTimer = 0;
+    for (let i = 0; i < 45; i++) {
+      this.spawnSweetCharmBubble(true);
+    }
+
+    // 3. Remove all debuff bricks on the field
+    const debuffTypes = ['ichinose', 'akuta', 'sui', 'magata', 'ruriiro', 'sonoda'];
+    for (const b of this.bricks) {
+      if (b.alive && (b.isDebuff || debuffTypes.includes(b.specialType))) {
+        b.alive = false;
+        b.isPoisoned = false;
+        const basePoints = b.points || BRICK_POINTS;
+        const ptsGained = this.addScore(basePoints);
+
+        // Sweet pink heart / sparkle purification explosion on each destroyed debuff brick
+        this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ff69b4', 26);
+        this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ffb6c1', 18);
+        this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ffffff', 10);
+
+        this.floatingTexts.push(
+          new FloatingText(b.x + b.width / 2, b.y, `+${ptsGained}`, '#ff69b4', '10px "Press Start 2P"')
+        );
+
+        if (b.hasMagnet) {
+          this.magnetBricksRemaining--;
+          b.hasMagnet = false;
+          this.updateMagnetBrick();
+        }
+      }
+    }
+
+    // 4. Remove all currently running debuff effects
+    // Point debuff (Ichinose)
+    if (this.pointDebuff) {
+      this.pointDebuff.active = false;
+      this.pointDebuff.timer = 0;
+    }
+
+    // Shortened bat (Akuta)
+    if (this.bat && this.bat.isShortened) {
+      this.resetBatSize();
+    }
+
+    // Container hit slow debuff
+    if (this.boardSlowDebuff) {
+      this.boardSlowDebuff.active = false;
+      this.boardSlowDebuff.timer = 0;
+    }
+
+    // Sui container rain & falling containers
+    if (this.suiContainerRain) {
+      this.suiContainerRain.active = false;
+      this.suiContainerRain.timer = 0;
+    }
+    if (this.containers && this.containers.length > 0) {
+      for (const c of this.containers) {
+        this.spawnExplosion(c.x + c.width / 2, c.y + c.height / 2, '#ff69b4', 16);
+      }
+      this.containers = [];
+    }
+
+    // Poison on bricks (Sui)
+    for (const b of this.bricks) {
+      if (b.alive && b.isPoisoned) {
+        b.isPoisoned = false;
+        b.poisonTimer = 0;
+        this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ff69b4', 12);
+      }
+    }
+
+    // Magata Danmaku debuff
+    if (this.magataDebuff) {
+      this.magataDebuff.active = false;
+      this.magataDebuff.timer = 0;
+    }
+    this.magataComments = [];
+
+    // Sonoda stun debuff & falling bombs
+    this.boardStunTimer = 0;
+    if (this.bombs && this.bombs.length > 0) {
+      for (const b of this.bombs) {
+        this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ff69b4', 16);
+      }
+      this.bombs = [];
+    }
+
+    // Ruriiro illusion debuff
+    if (this.ruriiroDebuff && this.ruriiroDebuff.active) {
+      this.ruriiroDebuff.active = false;
+      for (const b of this.bricks) {
+        if (b.alive && b.previousState) {
+          b.isSpecial = b.previousState.isSpecial;
+          b.isHard = b.previousState.isHard;
+          b.points = b.previousState.points;
+          b.isDebuff = b.previousState.isDebuff;
+          b.specialType = b.previousState.specialType;
+          b.image = b.previousState.image;
+          b.hitsRequired = b.previousState.hitsRequired;
+          b.hitsRemaining = b.previousState.hitsRemaining;
+          delete b.previousState;
+          this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ff69b4', 14);
+        } else if (b.previousState) {
+          delete b.previousState;
+        }
+      }
+    }
+  }
+
+  launchBottomFirework(customX = null) {
+    const x = customX !== null ? customX : (80 + Math.random() * (CANVAS_WIDTH - 160));
+    const targetY = 1320 + Math.random() * 190; // Explodes around bottom area (above/around bat)
+    const palettes = [
+      ['#ffd700', '#ff8800', '#ffffff', '#ffe600'], // Radiant Gold & Amber
+      ['#00f3ff', '#00ff88', '#ffffff', '#39ff14'], // Electric Cyan & Mint
+      ['#ff007f', '#ff2a85', '#ffffff', '#ffd700'], // Neon Magenta & Pink
+      ['#bf00ff', '#00f3ff', '#ff3366', '#ffffff'], // Cyber Violet & Cyan
+      ['#ff3300', '#ffbb00', '#ffffff', '#ff0055']  // Crimson Blaze & Gold
+    ];
+    const palette = palettes[Math.floor(Math.random() * palettes.length)];
+
+    this.interlockingStratagems.rockets.push({
+      x,
+      y: CANVAS_HEIGHT + 15,
+      targetY,
+      vx: (Math.random() - 0.5) * 45,
+      vy: -(430 + Math.random() * 120),
+      palette,
+      color: palette[0]
+    });
+  }
+
+  detonateFirework(x, y, palette) {
+    const sparkCount = 30 + Math.floor(Math.random() * 10);
+    for (let i = 0; i < sparkCount; i++) {
+      const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.4;
+      const speed = 75 + Math.random() * 165;
+      const color = palette[Math.floor(Math.random() * palette.length)];
+      this.interlockingStratagems.sparks.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color,
+        size: 2.6 + Math.random() * 2.0,
+        life: 0.65 + Math.random() * 0.45,
+        maxLife: 0.65 + Math.random() * 0.45,
+        gravity: 55 + Math.random() * 35,
+        twinkle: Math.random() < 0.45
+      });
+    }
+
+    try {
+      this.sound.playWallBounce();
+    } catch (e) { }
+  }
+
   shortenBat() {
     this.bat.isShortened = true;
     this.bat.shortenedTimer = BAT_SHORTENED_DURATION;
@@ -2366,7 +2890,13 @@ class BrickBreakerGame {
       ruriiro: { name: "RURIIRO ILLUSION", type: "debuff", icon: "images/brick_ruriiro.webp" },
       ruriiro_real: { name: "ILLUSION DISPELLED", type: "buff", icon: "images/brick_ruriiro.webp" },
       zero: { name: "ZERO HEART DROP", type: "buff", icon: "images/brick_zero.webp" },
-      haru: { name: "POWER RESONANCE", type: "buff", icon: "images/brick_haru.webp" }
+      haru: { name: "POWER RESONANCE", type: "buff", icon: "images/brick_haru.webp" },
+      sonoda: { name: "CHAOTIC ORDER", type: "debuff", icon: "images/brick_sonoda.webp" },
+      taito: { name: "INTERLOCKING STRATAGEMS", type: "buff", icon: "images/brick_taito.webp" },
+      akiba: { name: "LOVELY IMPACT", type: "buff", icon: "images/brick_akiba.webp" },
+      adachi: { name: "ALL FIREBALL PIERCE", type: "buff", icon: "images/brick_adachi.webp" },
+      shinagawa: { name: "RISK MANAGEMENT", type: "buff", icon: "images/brick_shinagawa.webp" },
+      shinjuku: { name: "SWEET CHARM", type: "buff", icon: "images/brick_shinjuku.webp" }
     };
   }
 
@@ -2496,7 +3026,9 @@ class BrickBreakerGame {
   // --- Special Brick Hook ---
   onSpecialBrickDestroyed(brick, sourceBall, isDirectHit = false) {
     if (brick && brick.specialType) {
-      this.triggerSkillCutin(brick.specialType);
+      if (brick.specialType !== 'akiba' || (isDirectHit && sourceBall)) {
+        this.triggerSkillCutin(brick.specialType);
+      }
     }
     // Check if this is the "yo" brick that extends the paddle
     if (brick.specialType === 'yo') {
@@ -2690,19 +3222,20 @@ class BrickBreakerGame {
       return;
     }
 
-    // Check if this is the "eiji" brick: awards +1000 bonus points!
+    // Check if this is the "eiji" brick: drops 5 fluttering Kane papers!
     if (brick.specialType === 'eiji') {
-      const gained = this.addScore(1000);
       this.sound.playSpecialHit();
-      const txtColor = gained === 1 ? '#ff3344' : '#ffe600';
       this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, `+${gained} PTS!`, txtColor, '15px "Press Start 2P"')
+        new FloatingText(brick.x + brick.width / 2, brick.y, 'KANE DROP (x5)!', '#ffe600', '14px "Press Start 2P"')
       );
 
       // Radiant golden treasure burst
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffe600', 32);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffb700', 20);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffffff', 14);
+
+      // Spawn 5 fluttering Kane papers that float down like banknotes
+      this.spawnKanePapers(brick.x + brick.width / 2, brick.y + brick.height / 2);
       return;
     }
 
@@ -2820,6 +3353,42 @@ class BrickBreakerGame {
       return;
     }
 
+    // Check if this is the "sonoda" debuff brick: drops two bombs (Chaotic Order)!
+    if (brick.specialType === 'sonoda') {
+      this.triggerSonodaDebuff(brick);
+      return;
+    }
+
+    // Check if this is the "taito" brick: launches fireworks around the bottom and doubles score for 15s!
+    if (brick.specialType === 'taito') {
+      this.triggerTaitoSkill(brick);
+      return;
+    }
+
+    // Check if this is the "akiba" brick: teleports the breaking ball to the top!
+    if (brick.specialType === 'akiba') {
+      this.triggerAkibaSkill(brick, sourceBall, isDirectHit);
+      return;
+    }
+
+    // Check if this is the "adachi" brick: turns all available balls into fireball!
+    if (brick.specialType === 'adachi') {
+      this.triggerAdachiSkill(brick);
+      return;
+    }
+
+    // Check if this is the "shinagawa" brick: shoots charging purple lasers across row and above/below!
+    if (brick.specialType === 'shinagawa') {
+      this.triggerShinagawaSkill(brick);
+      return;
+    }
+
+    // Check if this is the "shinjuku" brick: Sweet Charm debuff purge & healing pink bubbles hearts!
+    if (brick.specialType === 'shinjuku') {
+      this.triggerShinjukuSkill(brick);
+      return;
+    }
+
     // Check if this is the "Real" Ruriiro brick: reverts all bricks to their previous state!
     if (brick.specialType === 'ruriiro_real') {
       this.revertRuriiroIllusion(brick);
@@ -2877,13 +3446,13 @@ class BrickBreakerGame {
       return;
     }
 
-    // Check if this is the "hyakuichitaro" brick: turns ball into a fire ball for 5 hits!
+    // Check if this is the "hyakuichitaro" brick: turns ball into a fire ball for 3 hits!
     if (brick.specialType === 'hyakuichitaro') {
       // Hyakuichitaro only turns the ball that directly destroyed the brick into a fire ball.
       // If broken by another method (such as other brick's effect, laser, bullet, or poison), don't turn any ball into fire ball!
       if (isDirectHit && sourceBall) {
         sourceBall.isFireBall = true;
-        sourceBall.fireHitsRemaining = 5;
+        sourceBall.fireHitsRemaining = 3;
         this.spawnExplosion(sourceBall.x, sourceBall.y, '#ff4500', 28);
         this.spawnExplosion(sourceBall.x, sourceBall.y, '#ffcc00', 18);
         this.spawnExplosion(sourceBall.x, sourceBall.y, '#ffffff', 10);
@@ -2952,8 +3521,9 @@ class BrickBreakerGame {
       const hasPoison = this.bricks && this.bricks.some(b => b.alive && b.isPoisoned);
       const hasMagataDebuff = this.magataDebuff && this.magataDebuff.active;
       const hasRuriiroDebuff = this.ruriiroDebuff && this.ruriiroDebuff.active;
+      const hasStunDebuff = this.boardStunTimer > 0 || (this.bombs && this.bombs.length > 0);
 
-      const anyDebuffRunning = hasPointDebuff || hasShortenedBat || hasSlowDebuff || hasContainerRain || hasPoison || hasMagataDebuff || hasRuriiroDebuff;
+      const anyDebuffRunning = hasPointDebuff || hasShortenedBat || hasSlowDebuff || hasContainerRain || hasPoison || hasMagataDebuff || hasRuriiroDebuff || hasStunDebuff;
 
       if (anyDebuffRunning) {
         if (hasPointDebuff) {
@@ -2990,6 +3560,15 @@ class BrickBreakerGame {
           this.magataDebuff.active = false;
           this.magataDebuff.timer = 0;
           this.magataComments = [];
+        }
+        if (hasStunDebuff) {
+          this.boardStunTimer = 0;
+          if (this.bombs && this.bombs.length > 0) {
+            for (const b of this.bombs) {
+              this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#00ff88', 14);
+            }
+            this.bombs = [];
+          }
         }
         if (hasRuriiroDebuff) {
           this.ruriiroDebuff.active = false;
@@ -3097,35 +3676,43 @@ class BrickBreakerGame {
     // Bat movement with keyboard
     const isSpeedBoosted = this.boardSpeedBoost && this.boardSpeedBoost.active;
     const isSlowDebuffed = this.boardSlowDebuff && this.boardSlowDebuff.active;
+    const isStunned = this.boardStunTimer > 0;
 
-    let baseKeySpeed = 16;
-    if (isSpeedBoosted) baseKeySpeed = 28;
-    if (isSlowDebuffed) baseKeySpeed = 4.0; // very slow crawl
-    const keySpeed = baseKeySpeed * dt * 60;
+    if (isStunned) {
+      this.boardStunTimer -= dt;
+      if (this.boardStunTimer < 0) this.boardStunTimer = 0;
+      this.bat.targetX = this.bat.x;
+      this.bat.vx = 0;
+    } else {
+      let baseKeySpeed = 16;
+      if (isSpeedBoosted) baseKeySpeed = 28;
+      if (isSlowDebuffed) baseKeySpeed = 4.0; // very slow crawl
+      const keySpeed = baseKeySpeed * dt * 60;
 
-    if (this.keys.ArrowLeft || this.keys.KeyA) {
-      this.bat.targetX = Math.max(0, this.bat.targetX - keySpeed);
+      if (this.keys.ArrowLeft || this.keys.KeyA) {
+        this.bat.targetX = Math.max(0, this.bat.targetX - keySpeed);
+      }
+      if (this.keys.ArrowRight || this.keys.KeyD) {
+        this.bat.targetX = Math.min(CANVAS_WIDTH - this.bat.width, this.bat.targetX + keySpeed);
+      }
+
+      // Smooth paddle interpolation (sluggish & clamped when slow debuff is active)
+      const prevBatX = this.bat.x;
+      let lerpFactor = 0.35;
+      if (isSpeedBoosted) lerpFactor = 0.65;
+      if (isSlowDebuffed) lerpFactor = 0.05;
+
+      let targetDelta = (this.bat.targetX - this.bat.x) * lerpFactor;
+      if (isSlowDebuffed) {
+        // Strictly clamp per-frame movement so mouse/touch cannot bypass the heavy slow
+        const maxDelta = 4.5 * dt * 60;
+        targetDelta = Math.max(-maxDelta, Math.min(maxDelta, targetDelta));
+      }
+
+      this.bat.x += targetDelta;
+      this.bat.x = Math.max(0, Math.min(CANVAS_WIDTH - this.bat.width, this.bat.x));
+      this.bat.vx = this.bat.x - prevBatX;
     }
-    if (this.keys.ArrowRight || this.keys.KeyD) {
-      this.bat.targetX = Math.min(CANVAS_WIDTH - this.bat.width, this.bat.targetX + keySpeed);
-    }
-
-    // Smooth paddle interpolation (sluggish & clamped when slow debuff is active)
-    const prevBatX = this.bat.x;
-    let lerpFactor = 0.35;
-    if (isSpeedBoosted) lerpFactor = 0.65;
-    if (isSlowDebuffed) lerpFactor = 0.05;
-
-    let targetDelta = (this.bat.targetX - this.bat.x) * lerpFactor;
-    if (isSlowDebuffed) {
-      // Strictly clamp per-frame movement so mouse/touch cannot bypass the heavy slow
-      const maxDelta = 4.5 * dt * 60;
-      targetDelta = Math.max(-maxDelta, Math.min(maxDelta, targetDelta));
-    }
-
-    this.bat.x += targetDelta;
-    this.bat.x = Math.max(0, Math.min(CANVAS_WIDTH - this.bat.width, this.bat.x));
-    this.bat.vx = this.bat.x - prevBatX;
 
     // Bat extension timer countdown (revert back to normal after 30 seconds)
     if (this.bat.isExtended) {
@@ -3610,18 +4197,17 @@ class BrickBreakerGame {
               break;
             }
 
-            // Check if this is a 3-hit brick (Enoki or Saigo) that still requires more hits
-            if ((brick.specialType === 'enoki' || brick.specialType === 'saigo') && brick.hitsRemaining > 1) {
+            // Check if this is a multi-hit special brick (Shinagawa: 5 hits; Enoki, Saigo, Adachi, Shinjuku: 3 hits) that still requires more hits
+            if ((brick.specialType === 'shinagawa' || brick.specialType === 'enoki' || brick.specialType === 'saigo' || brick.specialType === 'adachi' || brick.specialType === 'shinjuku') && brick.hitsRemaining > 1) {
               brick.hitsRemaining--;
               brick.hitFlashTimer = 0.45;
               this.sound.playBrickHit();
-              const sparkColor = brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff';
-              const textColor = brick.specialType === 'saigo' ? '#ff5533' : '#df40ff';
+              const sparkColor = brick.specialType === 'shinjuku' ? '#ff69b4' : (brick.specialType === 'shinagawa' ? '#c026d3' : (brick.specialType === 'adachi' ? '#ff4500' : (brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff')));
               this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 18);
               break;
             }
           } else {
-            // FIRE BALL PIERCE: does not bounce back when hitting bricks for next 5 bricks!
+            // FIRE BALL PIERCE: does not bounce back when hitting bricks for next 3 bricks!
             ball.fireHitsRemaining--;
             if (ball.fireHitsRemaining <= 0) {
               ball.isFireBall = false;
@@ -3753,13 +4339,12 @@ class BrickBreakerGame {
             break;
           }
 
-          // If this is an enoki or saigo brick that still requires more hits:
-          if ((brick.specialType === 'enoki' || brick.specialType === 'saigo') && brick.hitsRemaining > 1) {
+          // If this is a shinagawa, enoki, saigo, adachi, or shinjuku brick that still requires more hits:
+          if ((brick.specialType === 'shinagawa' || brick.specialType === 'enoki' || brick.specialType === 'saigo' || brick.specialType === 'adachi' || brick.specialType === 'shinjuku') && brick.hitsRemaining > 1) {
             brick.hitsRemaining--;
             brick.hitFlashTimer = 0.45;
             this.sound.playBrickHit();
-            const sparkColor = brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff';
-            const textColor = brick.specialType === 'saigo' ? '#ff5533' : '#df40ff';
+            const sparkColor = brick.specialType === 'shinjuku' ? '#ff69b4' : (brick.specialType === 'shinagawa' ? '#c026d3' : (brick.specialType === 'adachi' ? '#ff4500' : (brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff')));
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 16);
             break;
           }
@@ -3832,24 +4417,25 @@ class BrickBreakerGame {
         heart.bounces++;
 
         if (heart.bounces >= 3) {
-          // 3rd bounce achieved: transforms into an extra life!
+          // 3rd bounce achieved: transforms into an extra life! Play special_brick.mp3 instead of boing.mp3
+          this.sound.playSpecialHit();
+
           if (this.lives < MAX_LIVES) {
             this.lives = Math.min(MAX_LIVES, this.lives + 1);
             this.updateHUD();
-            this.sound.playSpecialHit();
             this.spawnExplosion(heart.x, this.bat.y, '#88d629', 32);
             this.spawnExplosion(heart.x, this.bat.y, '#00ff88', 24);
             this.spawnExplosion(heart.x, this.bat.y, '#ffe600', 16);
           } else {
             // Already at max 3 lives
-            this.sound.playSpecialHit();
             this.spawnExplosion(heart.x, this.bat.y, '#88d629', 20);
           }
 
           this.hearts.splice(hi, 1);
           continue;
         } else {
-          // 1st or 2nd bounce: bounce upward with higher arc to make it easier to catch
+          // 1st or 2nd bounce: play boing.mp3 and bounce upward with higher arc
+          this.sound.playBoing();
           heart.y = this.bat.y - heart.radius;
           heart.vy = ZERO_HEART_BOUNCE_VY;
 
@@ -3858,7 +4444,6 @@ class BrickBreakerGame {
           const hitOffset = (heart.x - batCenter) / (this.bat.width / 2);
           heart.vx = hitOffset * 5 + (this.bat.vx ? this.bat.vx * 0.25 : 0);
 
-          this.sound.playWallBounce();
           this.spawnExplosion(heart.x, this.bat.y, '#ff3366', 16);
           this.spawnExplosion(heart.x, this.bat.y, '#00ff88', 10);
         }
@@ -3889,6 +4474,7 @@ class BrickBreakerGame {
       this.bullets = [];
       this.xBeams = [];
       this.plusBeams = [];
+      this.shinagawaLasers = [];
       this.jumpingBricks = [];
       this.gravityField.active = false;
       this.gravityField.timer = 0;
@@ -3907,6 +4493,7 @@ class BrickBreakerGame {
       this.taigaWind.ribbons = [];
       this.hearts = [];
       this.containers = [];
+      this.kanes = [];
       this.suiContainerRain = { active: false, timer: 0, nextDropTimer: 0 };
       this.boardSlowDebuff = { active: false, timer: 0 };
       this.magataDebuff = { active: false, timer: 0 };
@@ -3990,6 +4577,76 @@ class BrickBreakerGame {
       this.plusBeams[pbi].timer -= dt;
       if (this.plusBeams[pbi].timer <= 0) {
         this.plusBeams.splice(pbi, 1);
+      }
+    }
+
+    // Update Shinagawa Charging Horizontal Purple Lasers (Risk Management - Massive 3-Row Laser)
+    for (let sli = this.shinagawaLasers.length - 1; sli >= 0; sli--) {
+      const sl = this.shinagawaLasers[sli];
+
+      if (sl.state === 'charging') {
+        sl.chargeTimer -= dt;
+
+        // Converging plasma charge particles gathering at left cannon breach along the 3-row height
+        if (Math.random() < 0.85) {
+          const py = sl.centerY + (Math.random() - 0.5) * sl.height * 1.1;
+          this.spawnExplosion(Math.random() * 50, py, '#d946ef', 3);
+          this.spawnExplosion(Math.random() * 25, py, '#ffffff', 2);
+        }
+
+        if (sl.chargeTimer <= 0) {
+          sl.state = 'firing';
+          this.sound.playLaser();
+          this.sound.playExplode();
+          this.container.classList.add('shake');
+          setTimeout(() => this.container.classList.remove('shake'), 400);
+        }
+      } else if (sl.state === 'firing') {
+        sl.fireTimer -= dt;
+
+        const timeElapsedFiring = sl.fireDuration - sl.fireTimer;
+        const progress = Math.min(1.0, timeElapsedFiring / sl.sweepDuration);
+        const beamFrontX = progress * (CANVAS_WIDTH + 80);
+
+        // Destroy bricks in targeted rows as the massive beam front sweeps across
+        for (const b of this.bricks) {
+          if (b.alive && (sl.targetRows.includes(b.row) || (b.y + b.height >= sl.topY && b.y <= sl.bottomY)) && !sl.destroyedBricks.has(b)) {
+            // Check if laser beam front has reached this brick
+            if (beamFrontX >= b.x) {
+              sl.destroyedBricks.add(b);
+              b.alive = false;
+              b.isPoisoned = false;
+
+              const basePoints = b.points || BRICK_POINTS;
+              const ptsGained = this.addScore(basePoints);
+
+              // Spectacular purple/violet laser vaporization sparks
+              this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#c026d3', 28);
+              this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#e879f9', 20);
+              this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ffffff', 12);
+
+              const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (b.isHard ? '#ffcc00' : '#e879f9');
+              this.floatingTexts.push(
+                new FloatingText(b.x + b.width / 2, b.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
+              );
+
+              if (b.hasMagnet) {
+                this.magnetBricksRemaining--;
+                b.hasMagnet = false;
+                this.updateMagnetBrick();
+              }
+
+              // Trigger special brick skill if caught in the laser
+              if (b.isSpecial) {
+                this.onSpecialBrickDestroyed(b, null, false);
+              }
+            }
+          }
+        }
+
+        if (sl.fireTimer <= 0) {
+          this.shinagawaLasers.splice(sli, 1);
+        }
       }
     }
 
@@ -4163,13 +4820,12 @@ class BrickBreakerGame {
             break;
           }
 
-          // If this is an enoki or saigo brick that still requires more hits:
-          if ((brick.specialType === 'enoki' || brick.specialType === 'saigo') && brick.hitsRemaining > 1) {
+          // If this is a shinagawa, enoki, saigo, adachi, or shinjuku brick that still requires more hits:
+          if ((brick.specialType === 'shinagawa' || brick.specialType === 'enoki' || brick.specialType === 'saigo' || brick.specialType === 'adachi' || brick.specialType === 'shinjuku') && brick.hitsRemaining > 1) {
             brick.hitsRemaining--;
             brick.hitFlashTimer = 0.45;
             this.sound.playBrickHit();
-            const sparkColor = brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff';
-            const textColor = brick.specialType === 'saigo' ? '#ff5533' : '#df40ff';
+            const sparkColor = brick.specialType === 'shinjuku' ? '#ff69b4' : (brick.specialType === 'shinagawa' ? '#c026d3' : (brick.specialType === 'adachi' ? '#ff4500' : (brick.specialType === 'saigo' ? '#ff3b30' : '#bf00ff')));
             this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 16);
             break;
           }
@@ -4253,6 +4909,231 @@ class BrickBreakerGame {
       // Container falls below screen bottom without being caught
       if (c.y - c.height > CANVAS_HEIGHT) {
         this.containers.splice(ci, 1);
+      }
+    }
+
+    // Update Falling Kane Papers (Eiji Skill - paper flutter & sideways sway)
+    const kaneSlowModifier = (this.haruSlowMotion && this.haruSlowMotion.active) ? this.haruSlowMotion.slowFactor : 1.0;
+    const effectiveKaneDt = dt * kaneSlowModifier;
+
+    for (let ki = this.kanes.length - 1; ki >= 0; ki--) {
+      const k = this.kanes[ki];
+      k.swayTimer += effectiveKaneDt * k.swaySpeed;
+      k.y += k.vy * effectiveKaneDt;
+      k.x = Math.max(10, Math.min(CANVAS_WIDTH - k.width - 10, k.baseX + Math.sin(k.swayTimer + k.phase) * k.swayAmp));
+
+      // Aerodynamic paper rotation and flutter tilt
+      k.rotation = Math.cos(k.swayTimer + k.phase) * 0.44;
+      k.flipScaleY = 0.65 + 0.35 * Math.abs(Math.sin(k.swayTimer * 1.4 + k.phase));
+
+      // Check collision with paddle (bat)
+      const kLeft = k.x;
+      const kRight = k.x + k.width;
+      const kTop = k.y;
+      const kBottom = k.y + k.height;
+
+      const batLeft = this.bat.x;
+      const batRight = this.bat.x + this.bat.width;
+      const batTop = this.bat.y;
+      const batBottom = this.bat.y + this.bat.height;
+
+      if (kRight >= batLeft - 6 && kLeft <= batRight + 6 &&
+          kBottom >= batTop - 6 && kTop <= batBottom + 8) {
+        // Collected Kane paper! Earn 200 points
+        const gained = this.addScore(k.scoreValue || 200);
+        this.sound.playSpecialHit();
+        const txtColor = gained === 1 ? '#ff3344' : '#ffe600';
+        this.floatingTexts.push(
+          new FloatingText(k.x + k.width / 2, k.y - 12, `+${gained} PTS!`, txtColor, '14px "Press Start 2P"')
+        );
+        this.spawnExplosion(k.x + k.width / 2, k.y + k.height / 2, '#ffe600', 16);
+        this.spawnExplosion(k.x + k.width / 2, k.y + k.height / 2, '#ffffff', 8);
+
+        this.kanes.splice(ki, 1);
+        continue;
+      }
+
+      // Falls below screen
+      if (k.y > CANVAS_HEIGHT + 50) {
+        this.kanes.splice(ki, 1);
+      }
+    }
+
+    // Update Falling Animated Bombs (Sonoda Debuff - Chaotic Order)
+    const bombSlowModifier = (this.haruSlowMotion && this.haruSlowMotion.active) ? this.haruSlowMotion.slowFactor : 1.0;
+    const effectiveBombDt = dt * bombSlowModifier;
+
+    for (let bi = this.bombs.length - 1; bi >= 0; bi--) {
+      const b = this.bombs[bi];
+      b.vy = Math.min(b.maxVy, b.vy + b.gravity * effectiveBombDt * 60);
+      b.y += b.vy * effectiveBombDt * 60;
+      b.x += b.vx * effectiveBombDt * 60;
+
+      // Wall reflections on sides
+      if (b.x <= 10) {
+        b.x = 10;
+        b.vx = Math.abs(b.vx) * 0.8;
+      } else if (b.x + b.width >= CANVAS_WIDTH - 10) {
+        b.x = CANVAS_WIDTH - b.width - 10;
+        b.vx = -Math.abs(b.vx) * 0.8;
+      }
+
+      b.animTimer += effectiveBombDt * 8.0; // Alternate between bomb1 and bomb2
+      b.flashTimer += effectiveBombDt * 10.0; // Red flash cycle
+
+      // Spark / smoke particles from fuse while falling
+      if (Math.random() < 0.25) {
+        this.spawnExplosion(b.x + b.width * 0.72, b.y + 6, '#ff3300', 3);
+      }
+
+      // Check collision with board (paddle)
+      const bLeft = b.x;
+      const bRight = b.x + b.width;
+      const bTop = b.y;
+      const bBottom = b.y + b.height;
+
+      const batLeft = this.bat.x;
+      const batRight = this.bat.x + this.bat.width;
+      const batTop = this.bat.y;
+      const batBottom = this.bat.y + this.bat.height;
+
+      if (bRight >= batLeft + 4 && bLeft <= batRight - 4 &&
+          bBottom >= batTop && bTop <= batBottom + 12 && b.vy > 0) {
+        // Bomb hits the board!
+        this.sound.playExplode();
+
+        // Exploding effect on board
+        const hitX = Math.max(this.bat.x + 12, Math.min(this.bat.x + this.bat.width - 12, b.x + b.width / 2));
+        const hitY = this.bat.y + this.bat.height / 2;
+        this.spawnExplosion(hitX, hitY, '#ff2200', 36);
+        this.spawnExplosion(hitX, hitY, '#ff7700', 26);
+        this.spawnExplosion(hitX, hitY, '#ffe600', 18);
+        this.spawnExplosion(hitX, hitY, '#ffffff', 12);
+
+        this.container.classList.add('shake');
+        setTimeout(() => this.container.classList.remove('shake'), 300);
+
+        this.floatingTexts.push(
+          new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 20, "STUNNED!", "#ff2222", '16px "Press Start 2P"')
+        );
+
+        // Board cannot move for 1 second while flashing red
+        this.boardStunTimer = 1.0;
+        this.bat.targetX = this.bat.x;
+        this.bat.vx = 0;
+
+        this.bombs.splice(bi, 1);
+        continue;
+      }
+
+      // Bomb falls off bottom of screen without hitting board
+      if (b.y - b.height > CANVAS_HEIGHT) {
+        this.bombs.splice(bi, 1);
+      }
+    }
+
+    // Update Interlocking Stratagems (Taito Buff - Bottom Fireworks & 2X Points)
+    if (this.interlockingStratagems.active || this.interlockingStratagems.rockets.length > 0 || this.interlockingStratagems.sparks.length > 0) {
+      if (this.interlockingStratagems.active) {
+        this.interlockingStratagems.timer -= dt;
+        if (this.interlockingStratagems.timer <= 0) {
+          this.interlockingStratagems.active = false;
+          this.interlockingStratagems.timer = 0;
+          this.floatingTexts.push(
+            new FloatingText(CANVAS_WIDTH / 2, BAT_Y - 35, "DOUBLE SCORE ENDED", "#888888", '13px "Press Start 2P"')
+          );
+        } else {
+          // Continuously launch new fireworks at the bottom
+          this.interlockingStratagems.nextLaunchTimer -= dt;
+          if (this.interlockingStratagems.nextLaunchTimer <= 0) {
+            this.interlockingStratagems.nextLaunchTimer = 0.28 + Math.random() * 0.28;
+            this.launchBottomFirework();
+            if (Math.random() < 0.35) {
+              this.launchBottomFirework();
+            }
+          }
+        }
+      }
+
+      // Update rockets
+      for (let ri = this.interlockingStratagems.rockets.length - 1; ri >= 0; ri--) {
+        const r = this.interlockingStratagems.rockets[ri];
+        r.x += r.vx * dt;
+        r.y += r.vy * dt;
+
+        // Smoke/trail sparks behind ascending rocket
+        if (this.interlockingStratagems.sparks.length < 180 && Math.random() < 0.8) {
+          this.interlockingStratagems.sparks.push({
+            x: r.x + (Math.random() - 0.5) * 4,
+            y: r.y + 6,
+            vx: (Math.random() - 0.5) * 20,
+            vy: 40 + Math.random() * 30,
+            color: '#ffe600',
+            size: 1.8,
+            life: 0.22,
+            maxLife: 0.22,
+            gravity: 15,
+            twinkle: false
+          });
+        }
+
+        if (r.y <= r.targetY || r.vy >= 0) {
+          this.detonateFirework(r.x, r.y, r.palette);
+          this.interlockingStratagems.rockets.splice(ri, 1);
+        }
+      }
+
+      // Update sparks
+      for (let si = this.interlockingStratagems.sparks.length - 1; si >= 0; si--) {
+        const s = this.interlockingStratagems.sparks[si];
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.vx *= (1 - 0.05 * dt * 60);
+        s.vy += (s.gravity || 45) * dt;
+        s.life -= dt;
+
+        if (s.life <= 0) {
+          this.interlockingStratagems.sparks.splice(si, 1);
+        }
+      }
+    }
+
+    // Update Sweet Charm Pink Bubbles Heart Effect (Shinjuku Skill)
+    if (this.sweetCharmEffect && (this.sweetCharmEffect.active || this.sweetCharmEffect.bubbles.length > 0)) {
+      if (this.sweetCharmEffect.active) {
+        this.sweetCharmEffect.timer -= dt;
+        if (this.sweetCharmEffect.timer <= 0) {
+          this.sweetCharmEffect.active = false;
+          this.sweetCharmEffect.timer = 0;
+        } else {
+          // Continuously stream new pink bubbles and hearts from the bottom
+          this.sweetCharmEffect.spawnTimer -= dt;
+          if (this.sweetCharmEffect.spawnTimer <= 0) {
+            this.sweetCharmEffect.spawnTimer = 0.08;
+            this.spawnSweetCharmBubble(false);
+            if (Math.random() < 0.5) {
+              this.spawnSweetCharmBubble(false);
+            }
+          }
+        }
+      }
+
+      // Update bubbles & hearts
+      for (let bi = this.sweetCharmEffect.bubbles.length - 1; bi >= 0; bi--) {
+        const b = this.sweetCharmEffect.bubbles[bi];
+        b.life += dt;
+        b.y += b.vy * dt;
+        b.phase += b.wobbleSpeed * dt;
+        b.rot += b.rotSpeed * dt;
+
+        // Pop when lifetime expired or reached top header
+        if (b.life >= b.maxLife || b.y < HEADER_HEIGHT - 30) {
+          if (Math.random() < 0.6) {
+            const effX = b.x + Math.sin(b.phase) * (b.wobbleAmp * 0.4);
+            this.spawnExplosion(effX, b.y, '#ff80bf', 4);
+          }
+          this.sweetCharmEffect.bubbles.splice(bi, 1);
+        }
       }
     }
 
@@ -4418,6 +5299,12 @@ class BrickBreakerGame {
           else if (brick.specialType === 'magata') fallback = '#ff00aa';
           else if (brick.specialType === 'ruriiro' || brick.specialType === 'ruriiro_real') fallback = '#1f4e96';
           else if (brick.specialType === 'haru') fallback = '#00e5ff';
+          else if (brick.specialType === 'sonoda') fallback = '#ff2200';
+          else if (brick.specialType === 'taito') fallback = '#ffb700';
+          else if (brick.specialType === 'akiba') fallback = '#ff0055';
+          else if (brick.specialType === 'adachi') fallback = '#ff4500';
+          else if (brick.specialType === 'shinagawa') fallback = '#9333ea';
+          else if (brick.specialType === 'shinjuku') fallback = '#ff69b4';
           else fallback = '#00f3ff';
         }
         this.ctx.fillStyle = fallback;
@@ -4575,6 +5462,162 @@ class BrickBreakerGame {
         this.ctx.fillStyle = 'rgba(40, 10, 0, 0.88)';
         this.ctx.fillRect(badgeX, badgeY, badgeWidth, badgeHeight);
         this.ctx.strokeStyle = isFlashing ? '#ffffff' : '#ff5533';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.strokeRect(badgeX, badgeY, badgeWidth, badgeHeight);
+
+        // Badge text
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '10px "Press Start 2P"';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(`${count}`, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2 + 1);
+
+        this.ctx.restore();
+      }
+
+      // Glowing flame orange neon effect and countdown for Adachi bricks (3 hits required)
+      if (brick.specialType === 'adachi') {
+        this.ctx.save();
+        const isFlashing = brick.hitFlashTimer > 0;
+        const pulse = 0.75 + 0.25 * Math.sin(Date.now() / 90);
+        const glowColor = isFlashing ? '#ffaa00' : '#ff4500';
+        const glowBlur = isFlashing ? 32 : (16 * pulse + 6);
+
+        // Fiery flame neon glow border
+        this.ctx.shadowColor = glowColor;
+        this.ctx.shadowBlur = glowBlur;
+        this.ctx.strokeStyle = glowColor;
+        this.ctx.lineWidth = isFlashing ? 4.5 : 3;
+        this.ctx.strokeRect(brick.x - 2, brick.y - 2, brick.width + 4, brick.height + 4);
+
+        // Inner neon highlight border
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
+
+        // If flashing from a hit, add a fiery orange flash wash
+        if (isFlashing) {
+          this.ctx.fillStyle = 'rgba(255, 69, 0, 0.35)';
+          this.ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+        }
+
+        // Countdown indicator badge in top-right showing hits remaining (3, 2, or 1)
+        const count = brick.hitsRemaining !== undefined ? brick.hitsRemaining : 3;
+        const badgeWidth = 24;
+        const badgeHeight = 18;
+        const badgeX = brick.x + brick.width - badgeWidth - 3;
+        const badgeY = brick.y + 3;
+
+        // Badge background
+        this.ctx.shadowColor = '#ff4500';
+        this.ctx.shadowBlur = 8;
+        this.ctx.fillStyle = 'rgba(40, 15, 0, 0.88)';
+        this.ctx.fillRect(badgeX, badgeY, badgeWidth, badgeHeight);
+        this.ctx.strokeStyle = isFlashing ? '#ffffff' : '#ffaa00';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.strokeRect(badgeX, badgeY, badgeWidth, badgeHeight);
+
+        // Badge text
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '10px "Press Start 2P"';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(`${count}`, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2 + 1);
+
+        this.ctx.restore();
+      }
+
+      // Glowing charging purple neon effect and countdown for Shinagawa bricks (5 hits required)
+      if (brick.specialType === 'shinagawa') {
+        this.ctx.save();
+        const isFlashing = brick.hitFlashTimer > 0;
+        const pulse = 0.75 + 0.25 * Math.sin(Date.now() / 90);
+        const glowColor = isFlashing ? '#f0abfc' : '#c026d3';
+        const glowBlur = isFlashing ? 32 : (16 * pulse + 6);
+
+        // Purple laser glow border
+        this.ctx.shadowColor = glowColor;
+        this.ctx.shadowBlur = glowBlur;
+        this.ctx.strokeStyle = glowColor;
+        this.ctx.lineWidth = isFlashing ? 4.5 : 3;
+        this.ctx.strokeRect(brick.x - 2, brick.y - 2, brick.width + 4, brick.height + 4);
+
+        // Inner neon highlight border
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
+
+        // If flashing from a hit, add a vivid purple flash wash
+        if (isFlashing) {
+          this.ctx.fillStyle = 'rgba(192, 38, 211, 0.35)';
+          this.ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+        }
+
+        // Countdown indicator badge in top-right showing hits remaining (5, 4, 3, 2, or 1)
+        const count = brick.hitsRemaining !== undefined ? brick.hitsRemaining : 5;
+        const badgeWidth = 24;
+        const badgeHeight = 18;
+        const badgeX = brick.x + brick.width - badgeWidth - 3;
+        const badgeY = brick.y + 3;
+
+        // Badge background
+        this.ctx.shadowColor = '#c026d3';
+        this.ctx.shadowBlur = 8;
+        this.ctx.fillStyle = 'rgba(25, 5, 35, 0.88)';
+        this.ctx.fillRect(badgeX, badgeY, badgeWidth, badgeHeight);
+        this.ctx.strokeStyle = isFlashing ? '#ffffff' : '#d946ef';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.strokeRect(badgeX, badgeY, badgeWidth, badgeHeight);
+
+        // Badge text
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '10px "Press Start 2P"';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(`${count}`, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2 + 1);
+
+        this.ctx.restore();
+      }
+
+      // Glowing Sweet Charm pink neon effect and countdown for Shinjuku bricks (3 hits required)
+      if (brick.specialType === 'shinjuku') {
+        this.ctx.save();
+        const isFlashing = brick.hitFlashTimer > 0;
+        const pulse = 0.75 + 0.25 * Math.sin(Date.now() / 90);
+        const glowColor = isFlashing ? '#ffffff' : '#ff69b4';
+        const glowBlur = isFlashing ? 32 : (16 * pulse + 6);
+
+        // Pink neon glow border
+        this.ctx.shadowColor = glowColor;
+        this.ctx.shadowBlur = glowBlur;
+        this.ctx.strokeStyle = glowColor;
+        this.ctx.lineWidth = isFlashing ? 4.5 : 3;
+        this.ctx.strokeRect(brick.x - 2, brick.y - 2, brick.width + 4, brick.height + 4);
+
+        // Inner white/pink highlight border
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
+
+        // If flashing from a hit, add a sweet pink flash wash
+        if (isFlashing) {
+          this.ctx.fillStyle = 'rgba(255, 105, 180, 0.35)';
+          this.ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+        }
+
+        // Countdown indicator badge in top-right showing hits remaining (3, 2, or 1)
+        const count = brick.hitsRemaining !== undefined ? brick.hitsRemaining : 3;
+        const badgeWidth = 24;
+        const badgeHeight = 18;
+        const badgeX = brick.x + brick.width - badgeWidth - 3;
+        const badgeY = brick.y + 3;
+
+        // Badge background
+        this.ctx.shadowColor = '#ff1493';
+        this.ctx.shadowBlur = 8;
+        this.ctx.fillStyle = 'rgba(40, 5, 25, 0.88)';
+        this.ctx.fillRect(badgeX, badgeY, badgeWidth, badgeHeight);
+        this.ctx.strokeStyle = isFlashing ? '#ffffff' : '#ff69b4';
         this.ctx.lineWidth = 1.5;
         this.ctx.strokeRect(badgeX, badgeY, badgeWidth, badgeHeight);
 
@@ -4796,39 +5839,54 @@ class BrickBreakerGame {
       this.ctx.restore();
     }
 
-    // Red glow behind board during Container Slow debuff (Sui)
-    if (this.boardSlowDebuff && this.boardSlowDebuff.active) {
+    // Red glow around board image during Container Slow debuff (Sui) or Bomb Stun (Sonoda) - follows exact board silhouette
+    const isSlowGlow = Boolean(this.boardSlowDebuff && this.boardSlowDebuff.active);
+    const isStunGlow = this.boardStunTimer > 0;
+
+    if (isSlowGlow || isStunGlow) {
       this.ctx.save();
-      const pulse = 0.75 + 0.25 * Math.sin(Date.now() / 110);
-      const rx = 10;
-      const bx = this.bat.x - 4;
-      const by = this.bat.y - 4;
-      const bw = this.bat.width + 8;
-      const bh = this.bat.height + 8;
+      const isRedStun = isStunGlow ? (Math.floor(this.boardStunTimer * 14) % 2 === 0) : false;
+      const pulse = isStunGlow
+        ? (isRedStun ? 1.0 : 0.35)
+        : (0.75 + 0.25 * Math.sin(Date.now() / 110));
+      const batKey = this.bat.isExtended ? 'bat_extended' : (this.bat.isShortened ? 'bat_half' : 'bat');
+      const redMask = this.getBatRedMask(batKey);
 
-      // Soft intense red back-glow aura
-      this.ctx.shadowColor = '#ff1e38';
-      this.ctx.shadowBlur = 24 * pulse;
-      this.ctx.fillStyle = `rgba(255, 30, 56, ${0.65 * pulse})`;
-      this.ctx.beginPath();
-      if (this.ctx.roundRect) {
-        this.ctx.roundRect(bx, by, bw, bh, rx);
-      } else {
-        this.ctx.rect(bx, by, bw, bh);
-      }
-      this.ctx.fill();
+      if (redMask) {
+        // Broad atmospheric outer red halo diffusion following the board's shape
+        this.ctx.save();
+        this.ctx.shadowColor = '#ff0033';
+        this.ctx.shadowBlur = (isStunGlow ? 40 : 36) * pulse + 10;
+        this.ctx.globalAlpha = (isStunGlow ? (isRedStun ? 0.8 : 0.25) : 0.55) * pulse;
+        this.ctx.drawImage(redMask, this.bat.x - 3, this.bat.y - 3, this.bat.width + 6, this.bat.height + 6);
+        this.ctx.restore();
 
-      // Ambient outer red halo diffusion
-      this.ctx.shadowColor = '#ff0033';
-      this.ctx.shadowBlur = 38 * pulse;
-      this.ctx.fillStyle = `rgba(255, 20, 40, ${0.35 * pulse})`;
-      this.ctx.beginPath();
-      if (this.ctx.roundRect) {
-        this.ctx.roundRect(bx - 4, by - 4, bw + 8, bh + 8, rx + 4);
+        // High-intensity edge neon glow hugging the board silhouette
+        this.ctx.save();
+        this.ctx.shadowColor = '#ff1e38';
+        this.ctx.shadowBlur = (isStunGlow ? 24 : 20) * pulse + 6;
+        this.ctx.globalAlpha = (isStunGlow ? (isRedStun ? 0.95 : 0.35) : 0.75) * pulse;
+        this.ctx.drawImage(redMask, this.bat.x - 1, this.bat.y - 1, this.bat.width + 2, this.bat.height + 2);
+        this.ctx.drawImage(redMask, this.bat.x, this.bat.y, this.bat.width, this.bat.height);
+        this.ctx.restore();
       } else {
-        this.ctx.rect(bx - 4, by - 4, bw + 8, bh + 8);
+        // Fallback if image not ready
+        const rx = 10;
+        const bx = this.bat.x - 4;
+        const by = this.bat.y - 4;
+        const bw = this.bat.width + 8;
+        const bh = this.bat.height + 8;
+        this.ctx.shadowColor = '#ff1e38';
+        this.ctx.shadowBlur = 24 * pulse;
+        this.ctx.fillStyle = `rgba(255, 30, 56, ${0.65 * pulse})`;
+        this.ctx.beginPath();
+        if (this.ctx.roundRect) {
+          this.ctx.roundRect(bx, by, bw, bh, rx);
+        } else {
+          this.ctx.rect(bx, by, bw, bh);
+        }
+        this.ctx.fill();
       }
-      this.ctx.fill();
 
       this.ctx.restore();
     }
@@ -4850,6 +5908,21 @@ class BrickBreakerGame {
       this.ctx.save();
       this.ctx.globalAlpha = batAlpha;
       this.ctx.drawImage(batImg, this.bat.x, this.bat.y, this.bat.width, this.bat.height);
+
+      // If slow debuff or bomb stun is active, overlay a pulsating red hazard wash over the board silhouette
+      if (isSlowGlow || isStunGlow) {
+        const isRedStun = isStunGlow ? (Math.floor(this.boardStunTimer * 14) % 2 === 0) : false;
+        const pulse = isStunGlow
+          ? (isRedStun ? 1.0 : 0.35)
+          : (0.75 + 0.25 * Math.sin(Date.now() / 110));
+        const batKey = this.bat.isExtended ? 'bat_extended' : (this.bat.isShortened ? 'bat_half' : 'bat');
+        const redMask = this.getBatRedMask(batKey);
+        if (redMask) {
+          this.ctx.globalAlpha = isStunGlow ? (isRedStun ? 0.55 : 0.2) : (0.22 * pulse);
+          this.ctx.drawImage(redMask, this.bat.x, this.bat.y, this.bat.width, this.bat.height);
+        }
+      }
+
       this.ctx.restore();
     } else {
       this.ctx.save();
@@ -5377,6 +6450,256 @@ class BrickBreakerGame {
       this.ctx.restore();
     }
 
+    // 4d. Draw Falling Kane Papers (Eiji Skill - Paper bills fluttering down)
+    if (this.kanes && this.kanes.length > 0) {
+      for (const k of this.kanes) {
+        this.ctx.save();
+        this.ctx.translate(k.x + k.width / 2, k.y + k.height / 2);
+        this.ctx.rotate(k.rotation || 0);
+        this.ctx.scale(1.0, k.flipScaleY || 1.0);
+
+        // Radiant golden glow
+        this.ctx.shadowColor = '#ffe600';
+        this.ctx.shadowBlur = 10;
+
+        if (this.images.kane && this.images.kane.complete && this.images.kane.naturalWidth !== 0) {
+          this.ctx.drawImage(this.images.kane, -k.width / 2, -k.height / 2, k.width, k.height);
+        } else {
+          this.ctx.fillStyle = '#ffe600';
+          this.ctx.fillRect(-k.width / 2, -k.height / 2, k.width, k.height);
+          this.ctx.fillStyle = '#111';
+          this.ctx.font = '10px "Press Start 2P"';
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText('¥', 0, 0);
+        }
+
+        this.ctx.restore();
+      }
+    }
+
+    // 4e. Draw Falling Animated Bombs (Sonoda Debuff - Chaotic Order)
+    if (this.bombs && this.bombs.length > 0) {
+      for (const b of this.bombs) {
+        this.ctx.save();
+        this.ctx.translate(b.x + b.width / 2, b.y + b.height / 2);
+
+        // Frame animation between bomb1 and bomb2
+        const frameIndex = Math.floor(b.animTimer) % 2;
+        const bombImg = (frameIndex === 0 ? this.images.bomb1 : this.images.bomb2) || this.images.bomb1;
+        const redMask = this.getBombRedMask(frameIndex);
+
+        // Flash in red: pulsing red contour following the exact curved shape of the bomb
+        const flashPhase = Math.sin(b.flashTimer * 12);
+        const isRedFlash = flashPhase > 0;
+        const flashIntensity = Math.max(0, flashPhase); // 0.0 to 1.0
+
+        if (bombImg && bombImg.complete && bombImg.naturalWidth !== 0) {
+          if (isRedFlash && redMask) {
+            // Draw glowing outer aura following the exact curved silhouette of the bomb
+            this.ctx.save();
+            this.ctx.shadowColor = '#ff0033';
+            this.ctx.shadowBlur = 12 + 10 * flashIntensity;
+            this.ctx.globalAlpha = 0.55 * flashIntensity;
+            const auraScale = 1.08 + 0.04 * flashIntensity;
+            const auraW = b.width * auraScale;
+            const auraH = b.height * auraScale;
+            this.ctx.drawImage(redMask, -auraW / 2, -auraH / 2, auraW, auraH);
+            this.ctx.restore();
+          }
+
+          // Draw the base bomb sprite cleanly
+          this.ctx.drawImage(bombImg, -b.width / 2, -b.height / 2, b.width, b.height);
+
+          // If flashing in red, overlay the red silhouette on the bomb itself
+          if (isRedFlash && redMask) {
+            this.ctx.save();
+            this.ctx.globalAlpha = 0.42 * flashIntensity;
+            this.ctx.drawImage(redMask, -b.width / 2, -b.height / 2, b.width, b.height);
+            this.ctx.restore();
+          }
+        } else {
+          this.ctx.fillStyle = isRedFlash ? '#ff0033' : '#333333';
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, b.width / 2, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+
+        this.ctx.restore();
+      }
+    }
+
+    // 4f. Draw Bottom Fireworks & Festive Celebration (Taito Skill - Interlocking Stratagems)
+    if (this.interlockingStratagems.active || this.interlockingStratagems.rockets.length > 0 || this.interlockingStratagems.sparks.length > 0) {
+      this.ctx.save();
+
+      // Soft celebratory ambient glow along the bottom
+      if (this.interlockingStratagems.active) {
+        const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 150);
+        const grad = this.ctx.createLinearGradient(0, 1340, 0, CANVAS_HEIGHT);
+        grad.addColorStop(0, 'rgba(255, 215, 0, 0)');
+        grad.addColorStop(0.6, `rgba(255, 180, 0, ${0.08 + 0.06 * pulse})`);
+        grad.addColorStop(1, `rgba(0, 243, 255, ${0.12 + 0.08 * pulse})`);
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(0, 1340, CANVAS_WIDTH, CANVAS_HEIGHT - 1340);
+      }
+
+      // Draw ascending rocket streaks
+      for (const r of this.interlockingStratagems.rockets) {
+        this.ctx.save();
+        this.ctx.shadowColor = r.color;
+        this.ctx.shadowBlur = 12;
+        this.ctx.strokeStyle = r.color;
+        this.ctx.lineWidth = 2.5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(r.x, r.y);
+        this.ctx.lineTo(r.x - r.vx * 0.04, r.y - r.vy * 0.04);
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+
+      // Draw exploding firework sparks
+      for (const s of this.interlockingStratagems.sparks) {
+        const alpha = Math.max(0, s.life / s.maxLife);
+        const effAlpha = s.twinkle ? (alpha * (Math.random() > 0.25 ? 1.0 : 0.4)) : alpha;
+        this.ctx.save();
+        this.ctx.globalAlpha = effAlpha;
+        this.ctx.fillStyle = s.color;
+        this.ctx.shadowColor = s.color;
+        this.ctx.shadowBlur = 8;
+        this.ctx.beginPath();
+        this.ctx.arc(s.x, s.y, Math.max(0.5, s.size * (0.4 + 0.6 * alpha)), 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+
+      // Draw glowing 2X POINTS indicator badge right above the bat during active time
+      if (this.interlockingStratagems.active) {
+        const remainingSec = Math.ceil(this.interlockingStratagems.timer);
+        const badgeY = this.bat.y - 18;
+        const badgeX = this.bat.x + this.bat.width / 2;
+        const pulse = 0.85 + 0.15 * Math.sin(Date.now() / 90);
+
+        this.ctx.save();
+        this.ctx.font = '11px "Press Start 2P"';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillStyle = '#ffd700';
+        this.ctx.shadowColor = '#ff8800';
+        this.ctx.shadowBlur = 14 * pulse;
+        this.ctx.fillText(`★ 2X SCORE (${remainingSec}s) ★`, badgeX, badgeY);
+        this.ctx.restore();
+      }
+
+      this.ctx.restore();
+    }
+
+    // 4g. Draw Sweet Charm Pink Bubbles Heart Effect (Shinjuku Skill)
+    if (this.sweetCharmEffect && (this.sweetCharmEffect.active || this.sweetCharmEffect.bubbles.length > 0)) {
+      this.ctx.save();
+
+      // Soft warm pink ambient upward glow from the bottom
+      if (this.sweetCharmEffect.active) {
+        const glowProgress = Math.min(1.0, this.sweetCharmEffect.timer / this.sweetCharmEffect.duration);
+        const pulse = 0.8 + 0.2 * Math.sin(Date.now() / 120);
+        const bottomGlow = this.ctx.createLinearGradient(0, 1280, 0, CANVAS_HEIGHT);
+        bottomGlow.addColorStop(0, 'rgba(255, 105, 180, 0)');
+        bottomGlow.addColorStop(0.5, `rgba(255, 105, 180, ${0.08 * glowProgress * pulse})`);
+        bottomGlow.addColorStop(1, `rgba(255, 20, 147, ${0.16 * glowProgress * pulse})`);
+        this.ctx.fillStyle = bottomGlow;
+        this.ctx.fillRect(0, 1280, CANVAS_WIDTH, CANVAS_HEIGHT - 1280);
+      }
+
+      // Draw each bubble and heart
+      for (const b of this.sweetCharmEffect.bubbles) {
+        const effX = b.x + Math.sin(b.phase) * (b.wobbleAmp * 0.4);
+        const fadeIn = Math.min(1.0, b.life / 0.35);
+        const fadeOut = Math.max(0, 1.0 - (b.life / b.maxLife));
+        const topFade = b.y < 350 ? Math.max(0, (b.y - 250) / 100) : 1.0;
+        const alpha = fadeIn * fadeOut * topFade;
+
+        if (alpha <= 0.01) continue;
+
+        this.ctx.save();
+        this.ctx.globalAlpha = alpha;
+        this.ctx.translate(effX, b.y);
+        this.ctx.rotate(b.rot);
+
+        if (b.isHeart) {
+          // Render Glowing Floating Pink Heart
+          this.ctx.shadowColor = '#ff1493';
+          this.ctx.shadowBlur = 14;
+          this.ctx.fillStyle = b.color;
+
+          this.ctx.beginPath();
+          const s = b.size;
+          this.ctx.scale(s / 32, s / 32);
+          this.ctx.moveTo(0, -6);
+          this.ctx.bezierCurveTo(-15, -24, -30, 0, 0, 24);
+          this.ctx.bezierCurveTo(30, 0, 15, -24, 0, -6);
+          this.ctx.fill();
+
+          // Glossy highlight arc on left lobe
+          this.ctx.shadowBlur = 0;
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+          this.ctx.lineWidth = 2.5;
+          this.ctx.beginPath();
+          this.ctx.arc(-8, -10, 6, Math.PI * 0.9, Math.PI * 1.6);
+          this.ctx.stroke();
+        } else {
+          // Render Iridescent Translucent Pink Soap Bubble
+          const r = b.size / 2;
+          this.ctx.shadowColor = '#ff69b4';
+          this.ctx.shadowBlur = 12;
+
+          // Translucent bubble gradient body
+          const bubbleGrad = this.ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.1, 0, 0, r);
+          bubbleGrad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+          bubbleGrad.addColorStop(0.6, 'rgba(255, 105, 180, 0.25)');
+          bubbleGrad.addColorStop(0.9, 'rgba(255, 20, 147, 0.55)');
+          bubbleGrad.addColorStop(1, 'rgba(255, 182, 193, 0.85)');
+          this.ctx.fillStyle = bubbleGrad;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, r, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          // Bubble thin rim
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+          this.ctx.lineWidth = 1.5;
+          this.ctx.stroke();
+
+          // Crescent reflection gloss highlight at top-left
+          this.ctx.strokeStyle = '#ffffff';
+          this.ctx.lineWidth = 2.2;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, r * 0.75, Math.PI * 1.15, Math.PI * 1.65);
+          this.ctx.stroke();
+
+          // Miniature cute heart floating inside the bubble
+          this.ctx.save();
+          this.ctx.shadowColor = '#ffffff';
+          this.ctx.shadowBlur = 4;
+          this.ctx.fillStyle = '#ff1493';
+          this.ctx.scale(r * 0.024, r * 0.024);
+          this.ctx.beginPath();
+          this.ctx.moveTo(0, -6);
+          this.ctx.bezierCurveTo(-15, -24, -30, 0, 0, 24);
+          this.ctx.bezierCurveTo(30, 0, 15, -24, 0, -6);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+
+        this.ctx.restore();
+      }
+
+      this.ctx.restore();
+    }
+
     // 4d. Draw Magata Nico Nico Douga Running Comments (blocks brick area)
     if (this.magataDebuff && this.magataDebuff.active && this.magataComments.length > 0) {
       this.drawMagataDanmaku();
@@ -5603,6 +6926,163 @@ class BrickBreakerGame {
       this.ctx.stroke();
 
       this.ctx.restore();
+    }
+
+    // 9a-2. Draw Shinagawa Charging Horizontal Purple Laser (Risk Management - One Big 3-Row Laser)
+    for (const sl of this.shinagawaLasers) {
+      if (sl.state === 'charging') {
+        // Charging phase: giant vertical plasma cannon gate gathering energy at left edge covering 3 rows
+        const chargeProgress = 1 - Math.max(0, sl.chargeTimer / sl.chargeDuration);
+        const pulse = 0.85 + 0.15 * Math.sin(Date.now() / 45);
+        const corridorW = CANVAS_WIDTH * (0.35 + 0.65 * chargeProgress);
+        const pad = 12;
+        const gateRadiusY = (sl.height / 2 + pad) * (0.8 + 0.2 * chargeProgress);
+        const gateRadiusX = (24 + 32 * chargeProgress) * pulse;
+
+        this.ctx.save();
+
+        // 1. Translucent aiming corridor covering all 3 rows
+        this.ctx.fillStyle = `rgba(217, 70, 239, ${0.07 + 0.10 * chargeProgress})`;
+        this.ctx.fillRect(0, sl.topY, corridorW, sl.height);
+
+        // 2. Top and bottom containment guide lines
+        this.ctx.strokeStyle = `rgba(240, 171, 252, ${0.35 + 0.45 * chargeProgress})`;
+        this.ctx.lineWidth = 2 + 2 * chargeProgress;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, sl.topY);
+        this.ctx.lineTo(corridorW, sl.topY);
+        this.ctx.moveTo(0, sl.bottomY);
+        this.ctx.lineTo(corridorW, sl.bottomY);
+        this.ctx.stroke();
+
+        // 3. Central aiming tracer beam
+        this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.45 + 0.5 * chargeProgress})`;
+        this.ctx.lineWidth = 2 + 3 * chargeProgress;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, sl.centerY);
+        this.ctx.lineTo(corridorW, sl.centerY);
+        this.ctx.stroke();
+
+        // 4. Giant Left Cannon Emitter Gate (vertical half-ellipse spanning 3 rows)
+        // Outer glowing purple aura
+        this.ctx.shadowColor = '#d946ef';
+        this.ctx.shadowBlur = 32 * chargeProgress + 10;
+        this.ctx.fillStyle = `rgba(192, 38, 211, ${0.4 + 0.4 * chargeProgress})`;
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, sl.centerY, gateRadiusX * 1.4, gateRadiusY * 1.15, 0, -Math.PI / 2, Math.PI / 2);
+        this.ctx.fill();
+
+        // Intense violet-magenta core
+        this.ctx.fillStyle = `rgba(232, 121, 249, ${0.7 + 0.3 * chargeProgress})`;
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, sl.centerY, gateRadiusX, gateRadiusY, 0, -Math.PI / 2, Math.PI / 2);
+        this.ctx.fill();
+
+        // White-hot emitter aperture
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, sl.centerY, gateRadiusX * 0.45, gateRadiusY * 0.6, 0, -Math.PI / 2, Math.PI / 2);
+        this.ctx.fill();
+
+        this.ctx.restore();
+      } else if (sl.state === 'firing') {
+        // Firing phase: ONE BIG roaring horizontal purple laser beam sweeping across the 3 rows
+        const timeElapsed = sl.fireDuration - sl.fireTimer;
+        const sweepProgress = Math.min(1.0, timeElapsed / sl.sweepDuration);
+        const beamEnd = Math.min(CANVAS_WIDTH, sweepProgress * CANVAS_WIDTH);
+        const fadeProgress = Math.max(0, sl.fireTimer / sl.fireDuration);
+        const alpha = Math.pow(fadeProgress, 0.55);
+        const pad = 16;
+        const beamH = sl.height;
+        const topY = sl.topY;
+        const bottomY = sl.bottomY;
+        const centerY = sl.centerY;
+
+        this.ctx.save();
+        this.ctx.globalAlpha = alpha;
+
+        // 1. Massive vertical gradient plasma body covering all 3 rows
+        const grad = this.ctx.createLinearGradient(0, topY - pad, 0, bottomY + pad);
+        grad.addColorStop(0, 'rgba(147, 51, 234, 0)');
+        grad.addColorStop(0.10, 'rgba(147, 51, 234, 0.6)');
+        grad.addColorStop(0.26, 'rgba(217, 70, 239, 0.85)');
+        grad.addColorStop(0.42, 'rgba(240, 171, 252, 0.95)');
+        grad.addColorStop(0.50, 'rgba(255, 255, 255, 1)');
+        grad.addColorStop(0.58, 'rgba(240, 171, 252, 0.95)');
+        grad.addColorStop(0.74, 'rgba(217, 70, 239, 0.85)');
+        grad.addColorStop(0.90, 'rgba(147, 51, 234, 0.6)');
+        grad.addColorStop(1, 'rgba(147, 51, 234, 0)');
+
+        this.ctx.shadowColor = '#d946ef';
+        this.ctx.shadowBlur = 40 * alpha + 10;
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(0, topY - pad, beamEnd, beamH + pad * 2);
+
+        // 2. Powerful horizontal core energy streams centered along the 3 rows
+        // Outer deep violet plasma beam
+        this.ctx.strokeStyle = '#9333ea';
+        this.ctx.lineWidth = beamH * 0.8;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, centerY);
+        this.ctx.lineTo(beamEnd, centerY);
+        this.ctx.stroke();
+
+        // Hot magenta energy core
+        this.ctx.strokeStyle = '#d946ef';
+        this.ctx.lineWidth = beamH * 0.52;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, centerY);
+        this.ctx.lineTo(beamEnd, centerY);
+        this.ctx.stroke();
+
+        // High-frequency lilac core
+        this.ctx.strokeStyle = '#f0abfc';
+        this.ctx.lineWidth = beamH * 0.28;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, centerY);
+        this.ctx.lineTo(beamEnd, centerY);
+        this.ctx.stroke();
+
+        // Blinding white-hot central laser line
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = Math.max(5, beamH * 0.12);
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, centerY);
+        this.ctx.lineTo(beamEnd, centerY);
+        this.ctx.stroke();
+
+        // 3. Containment shockwave lines along top and bottom rows
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 3;
+        this.ctx.shadowColor = '#f0abfc';
+        this.ctx.shadowBlur = 14;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, topY);
+        this.ctx.lineTo(beamEnd, topY);
+        this.ctx.moveTo(0, bottomY);
+        this.ctx.lineTo(beamEnd, bottomY);
+        this.ctx.stroke();
+
+        // 4. Giant Left Cannon Emitter Gate
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.shadowColor = '#d946ef';
+        this.ctx.shadowBlur = 35;
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, centerY, 52, (beamH / 2) + pad, 0, -Math.PI / 2, Math.PI / 2);
+        this.ctx.fill();
+
+        // 5. Leading-edge Wavefront Impact / Crescent when sweeping
+        if (sweepProgress < 1.0) {
+          this.ctx.fillStyle = '#ffffff';
+          this.ctx.shadowColor = '#e879f9';
+          this.ctx.shadowBlur = 30;
+          this.ctx.beginPath();
+          this.ctx.ellipse(beamEnd, centerY, 24, (beamH / 2) + pad * 0.85, 0, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+
+        this.ctx.restore();
+      }
     }
 
     // 9b. Draw Jumping Bricks (Manami)

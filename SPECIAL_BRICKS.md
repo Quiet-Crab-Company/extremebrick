@@ -32,9 +32,9 @@ This document provides a breakdown of the grid architecture and each brick type 
 | **Jio Brick** *(Toxic Poison)* | `images/brick_jio.webp` | Poisons 1 adjacent brick (destroys it after 5s; if not hit by ball, breaks and spreads poison to another adjacent brick!). | **5s per brick** (Cascades if unhit) | ~13.4% | `audio/special_brick.mp3` & `audio/hit.mp3` |
 | **Enoki Brick** *(X-Line Blast)* | `images/brick_enoki.webp` | Takes 3 hits (displays countdown badge, flashes and glows in purple neon). On 3rd hit, destroys every brick along diagonal X lines! | **3 Hits** (Countdown: 3 -> 2 -> 1) | ~11.8% | `audio/explode.mp3` & `audio/hit.mp3` |
 | **Koishi Brick** *(Multiball)* | `images/brick_koishi.webp` | Launches an extra active ball into play immediately. | Instant / Ball stays until lost | ~10.6% | `audio/special_brick.mp3` |
-| **Eiji Brick** *(Golden Treasure)* | `images/brick_eiji.webp` | Awards **+1000 bonus points** immediately upon destruction! | Instant | ~9.6% | `audio/special_brick.mp3` |
+| **Eiji Brick** *(Golden Treasure)* | `images/brick_eiji.webp` | Drops 5 fluttering **Kane papers** (`images/kane.webp`) that sway sideways like banknotes; catch with paddle for **+200 pts each** (up to +1000)! | Instant / Collectible | ~9.6% | `audio/special_brick.mp3` & `audio/laser.mp3` |
 | **Saigo Brick** *(+ Shape Blast)* | `images/brick_saigo.webp` | Takes 3 hits (displays live countdown badge & flashes). On 3rd hit, breaks all bricks in + shape across its row and column! | **3 Hits** (Countdown: 3 -> 2 -> 1) | ~8.7% | `audio/explode.mp3` & `audio/hit.mp3` |
-| **Hyakuichitaro Brick** *(Fire Ball Pierce)* | `images/brick_hyakuichitaro.webp` | Turns ball into a **Fire Ball** that pierces straight through bricks without bouncing back for **5 hits**! | **5 Hits** (Ball piercing) | ~8.0% | `audio/special_brick.mp3` & `audio/hit.mp3` |
+| **Hyakuichitaro Brick** *(Fire Ball Pierce)* | `images/brick_hyakuichitaro.webp` | Turns ball into a **Fire Ball** that pierces straight through bricks without bouncing back for **3 hits**! | **3 Hits** (Ball piercing) | ~8.0% | `audio/special_brick.mp3` & `audio/hit.mp3` |
 | **Tsuruko Brick** *(Gravity Field)* | `images/brick_tsuruko.webp` | Activates a pink transparent gravity field in bottom 30% of playfield (`Y = 1120-1600`) for **8s**; balls slow down while falling. | **8 Seconds** | ~8.0% | `audio/special_brick.mp3` |
 | **Ichinose Brick** *(Debuff Brick)* | `images/brick_ichinose.webp` | **DEBUFF BRICK**: Clamps **all points gained for the next 1 minute (60s) to strictly 1 point**. Displays curved red corner glow across screen. | **60 Seconds (1 Min)** | ~7.3% | `audio/special_brick_debuff.mp3` |
 | **Mita Brick** *(Board Speed Boost)* | `images/brick_mita.webp` | Accelerates paddle movement speed (75% faster keyboard velocity + accelerated touch/mouse tracking) for **20 seconds**. Surrounded by vibrant golden neon electric aura. | **20 Seconds** | ~7.2% | `audio/special_brick.mp3` |
@@ -100,9 +100,9 @@ The **Zero Brick** introduces an interactive recovery minigame. Rather than gran
   * The heart **never collides with or destroys bricks**.
 * **3-Bounce Extra Life Conversion**:
   * The Zero Heart renders cleanly as-is during its drop and bounce arc (floating badge omitted).
-  * **Hit 1**: Paddle bounce displays `ZERO HEART 1/3! (2 LEFT)`, playing a bounce chime and deflecting upward.
-  * **Hit 2**: Paddle bounce displays `ZERO HEART 2/3! (1 LEFT)`.
-  * **Hit 3**: Transmutes into a life pickup!
+  * **Hit 1**: Paddle bounce displays `ZERO HEART 1/3! (2 LEFT)`, playing `audio/boing.mp3` and deflecting upward.
+  * **Hit 2**: Paddle bounce displays `ZERO HEART 2/3! (1 LEFT)`, playing `audio/boing.mp3`.
+  * **Hit 3**: Transmutes into a life pickup! Plays `audio/special_brick.mp3` instead of `audio/boing.mp3`.
     * If `this.lives < 3`: Awards `+1 LIFE!`, restores a HUD life slot, plays celebratory fanfare, and erupts in cyan, magenta & gold healing particles.
     * If `this.lives >= 3`: Plays sound, triggers particles, and displays `MAX LIVES (3/3)!` without exceeding the 3-life ceiling.
 * **Kazuki Shield Immunity**:
@@ -111,7 +111,7 @@ The **Zero Brick** introduces an interactive recovery minigame. Rather than gran
   * The heart is **unaffected by Tsuruko's Pink Gravity Field**, maintaining its authentic heavy gravitational drop rate without artificial slow-motion drag.
 
 ### Sensory Feedback
-* **Audio**: Plays `audio/special_brick.mp3` on drop and on final 3rd bounce; `audio/bounce.mp3` on paddle deflections.
+* **Audio**: Plays `audio/special_brick.mp3` on drop and on final 3rd bounce (instead of boing); `audio/boing.mp3` on 1st and 2nd paddle bounces.
 * **Floating Text**: `BOUNCE HEART 3x!` on spawn, `ZERO HEART N/3!` on paddle bounce, and `+1 LIFE!` on 3rd bounce.
 * **Visuals**: Rendered cleanly with `images/zero_heart.webp` as is (sized to 22px radius, 44px diameter), accompanied by paddle hit sparks.
 
@@ -318,24 +318,26 @@ The **Koishi Brick** is a purifying support brick. Upon destruction, it detects 
 
 ---
 
-## 10. Eiji Brick (`brick_eiji.webp`) - *Golden Treasure (+1000 Points)*
+## 10. Eiji Brick (`brick_eiji.webp`) - *Golden Treasure (Kane Paper Drop)*
 
 ### Purpose & Concept
-The **Eiji Brick** is a high-value treasure brick adorned in glittering cyber-gold. Destroying an Eiji brick immediately awards a massive jackpot bonus of **+1000 points** to accelerate the player's score and trigger new high score records.
+The **Eiji Brick** is a high-value treasure brick adorned in glittering cyber-gold. Destroying an Eiji brick drops **5 fluttering Kane papers** (`images/kane.webp`) that float gracefully down like banknotes, swaying sideways in the air. Catching each Kane paper with your paddle awards **+200 bonus points** (up to **+1000 points** in total)!
 
 ### Core Mechanics
-* **Instant +1000 Point Jackpot**:
-  * Upon destruction, immediately adds `+1000` points (`this.addScore(1000)`).
-  * Plays rewarding chime `this.sound.playSpecialHit()`.
-  * Displays floating text `+1000 PTS!` in bold radiant neon gold (`#ffe600`).
+* **5 Fluttering Kane Papers**:
+  * Upon destruction, spawns 5 Kane paper bills cascading down from the brick's position.
+  * Slower than balls or containers (`vy ~ 130-155 px/s`) with aerodynamic sideways swaying (`Math.sin(...) * swayAmp`) and paper tumbling tilt.
+  * When caught by the paddle, awards **+200 points** per paper bill collected (`this.addScore(200)`).
+  * Plays `audio/special_brick.mp3` pickup chime and displays floating `+200 PTS!` text in radiant gold.
+  * Uncollected papers float past the bottom of the screen harmlessly.
 * **Explosion Trigger**:
-  * If destroyed by a Q bomb blast, Jio poison cascade, or Enoki diagonal X-blast, the +1000 bonus points are awarded immediately!
+  * If destroyed by a Q bomb blast, Jio poison cascade, or Enoki diagonal X-blast, the 5 Kane papers still shower down across the playfield!
 
 ### Sensory Feedback
-* **Audio**: Plays `audio/special_brick.mp3`.
-* **Floating Text**: Displays `+1000 PTS!` in brilliant neon gold (`#ffe600`).
+* **Audio**: Plays `audio/special_brick.mp3` on brick shatter and on each Kane paper collected.
+* **Floating Text**: Displays `KANE DROP (x5)!` on brick shatter, and `+200 PTS!` per collected paper.
 * **Particles**: Radiant golden treasure burst emitting gold (`#ffe600`), amber (`#ffb700`), and white-hot spark particles (`#ffffff`).
-* **Visuals**: Pulsing radiant golden neon aura (`#ffe600`) and golden border.
+* **Visuals**: Fluttering Kane banknotes with golden halos, paper tilt angles, and dynamic tumbling scale.
 
 ---
 
@@ -370,27 +372,27 @@ The **Saigo Brick** is a fortified cybernetic heavy artillery brick with mechani
 
 ---
 
-## 12. Hyakuichitaro Brick (`brick_hyakuichitaro.webp`) - *Fire Ball Pierce (5 Hits)*
+## 12. Hyakuichitaro Brick (`brick_hyakuichitaro.webp`) - *Fire Ball Pierce (3 Hits)*
 
 ### Purpose & Concept
-The **Hyakuichitaro Brick** is an intense offensive power-up featuring vivid purple hair, glowing pink eyes, and fierce determination. Breaking this brick transforms the ball into a blazing **Fire Ball** that shears through defenses without bouncing back for the next **5 bricks** it contacts!
+The **Hyakuichitaro Brick** is an intense offensive power-up featuring vivid purple hair, glowing pink eyes, and fierce determination. Breaking this brick transforms the ball into a blazing **Fire Ball** that shears through defenses without bouncing back for the next **3 bricks** it contacts!
 
 ### Core Mechanics
 * **Fire Ball Empowerment**:
-  * Only turns the ball that directly destroyed the brick into a **Fire Ball** (`ball.isFireBall = true` and `ball.fireHitsRemaining = 5`).
+  * Only turns the ball that directly destroyed the brick into a **Fire Ball** (`ball.isFireBall = true` and `ball.fireHitsRemaining = 3`).
   * If the brick is broken by another method (such as another brick's effect, secondary explosions, turret bullets, lasers, or poison), no ball is turned into a Fire Ball.
 * **Non-Bouncing Piercing Impact**:
   * When hitting a brick while `isFireBall` is active, the ball **does not reflect its velocity** (`ball.vx` and `ball.vy` continue unhindered).
   * Consumes 1 hit: `ball.fireHitsRemaining--`.
   * The struck brick is shattered on impact, points are awarded (+10), and special brick skills trigger normally.
-  * Once 5 bricks are pierced (`fireHitsRemaining === 0`), `isFireBall` turns `false` and the ball resumes normal reflective physics.
+  * Once 3 bricks are pierced (`fireHitsRemaining === 0`), `isFireBall` turns `false` and the ball resumes normal reflective physics.
 * **Fire Comet Visuals**:
   * The ball's comet tail shifts from electric cyan to blazing incandescent orange and white-hot flame cores.
   * An animated dual-layer solar corona rotates around the ball accompanied by a floating `🔥x[hits]` indicator.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` upon brick destruction and `audio/hit.mp3` with fiery impact sparks per brick pierced.
-* **Floating Text**: Displays `FIRE BALL! (x5)` on activation, and `PIERCE! (N LEFT)` on each brick sliced through.
+* **Floating Text**: Displays `FIRE BALL! (x3)` on activation, and `PIERCE! (N LEFT)` on each brick sliced through.
 * **Particles**: Heavy eruption of crimson (`#ff3b30`), flame orange (`#ffa500`), and golden sparks (`#ffcc00`).
 * **Visuals**: Pulsing flame orange border (`#ff5500`) and glowing fiery aura.
 
@@ -633,7 +635,7 @@ The **Sui Brick** is a continuous hazardous debuff obstacle. Upon destruction, i
 * **Board Slow Debuff (Catching a Container)**:
   * If the player paddle catches any spinning container, the board enters a **Heavy Slow** debuff for **2 seconds** (`this.boardSlowDebuff = { active: true, timer: 2.0 }`).
   * Both keyboard velocity and mouse/touch interpolation are clamped to a crawling pace (~4.5px/frame) so the sluggishness cannot be bypassed.
-  * The board radiates an intense pulsing **red neon glow aura behind the paddle** without distracting square outlines or overlays.
+  * The board radiates an intense pulsing **red hazard glow aura conforming directly to the contours and silhouette of the board image** (with a subtle pulsating red wash on the board itself), replacing rectangular box borders.
   * If the container misses the paddle and exits the bottom of the screen, the player successfully evades the debuff!
 * **On-Brick Display**:
   * Displays cleanly as is with its original sprite asset (`images/brick_sui.webp`), with no distracting border overlays.
@@ -815,6 +817,164 @@ The **Haru Brick** introduces the **Power Resonance** skill. Breaking a Haru bri
 
 ---
 
+## 25. Sonoda Brick (`brick_sonoda.webp`) - *Chaotic Order (Falling Bombs & Board Stun)*
+
+### Purpose & Concept
+The **Sonoda Brick** is a hazardous debuff brick featuring Sonoda. When destroyed, it activates **Chaotic Order**, triggering the immediate release of two live bombs that fall toward the board. Players must dodge the falling bombs with their board; if a bomb impacts the board, it detonates with a violent explosion, immobilizing/stunning the board for 1 second while it flashes in warning red.
+
+### Core Mechanics
+* **Bomb Drop on Destruction**:
+  * Upon breaking, plays `audio/bomb.mp3` and spawns **two live bombs** (`bomb1.webp` and `bomb2.webp`) fanning out slightly to the left and right.
+  * The bombs fall downward under gravity toward the paddle area.
+* **2-Frame Bomb Animation & Red Flash**:
+  * The two frames (`bomb1.webp` and `bomb2.webp`) animate continuously while falling (~8 FPS).
+  * The bombs pulse and flash with a radiant red hazard glow (`#ff1122`) and a red tint overlay as they fall.
+  * While falling, fuse sparks and smoke particles drift behind each bomb.
+* **Board Collision & Stun Debuff**:
+  * If a bomb impacts the player's board:
+    * Plays explosion sound `audio/explode.mp3`.
+    * Spawns an explosion effect on the board with multi-layered fiery particles (`#ff2200`, `#ff7700`, `#ffe600`, `#ffffff`) and screen shake.
+    * Displays `STUNNED!` floating text above the board.
+    * **1-Second Immobilization**: The board is completely frozen and cannot move for 1.0 second (all mouse, touch, and keyboard inputs are locked).
+    * **Contour-Conforming Glowing Red Board**: During the 1-second stun, instead of a rectangular box, the board pulses with a vibrant neon red silhouette glow tracing the exact contour of the board image (matching the container debuff glow effect) with high-intensity edge luminescence and an alternating strobe warning wash.
+* **Clean Despawn on Miss**:
+  * If a bomb passes the board and falls off the bottom of the screen, it despawns harmlessly without causing damage or penalty.
+* **Koishi Debuff Cleanser**:
+  * Breaking a Koishi brick while the board is stunned immediately dispels the stun (`boardStunTimer = 0`) and clears any active falling bombs.
+
+### Sensory Feedback
+* **Audio**: Plays `audio/bomb.mp3` on brick break; plays `audio/explode.mp3` when a bomb detonates on the board.
+* **Floating Text**: Displays `CHAOTIC ORDER!` in crimson (`#ff2a2a`) on brick break, and `STUNNED!` (`#ff2222`) upon board detonation.
+* **Visuals**: Animated 2-frame falling bombs with organic red silhouette contour flashing (contour-conforming aura tracing the curved bomb body & fuse without rectangular box artifacts); contour-conforming neon red silhouette glow and strobing warning overlay hugging the curved board image during stun (matching the container slow glow effect without any square borders).
+
+---
+
+## 26. Taito Brick (`brick_taito.webp`) - *Interlocking Stratagems (Bottom Fireworks & Double Points)*
+
+### Purpose & Concept
+The **Taito Brick** features Fuka Kiyosumi and the Taito Tribe strategists. Breaking this brick activates **Interlocking Stratagems** (連環計), unleashing a breathtaking celebratory firework show across the bottom of the arena for 15 seconds while **doubling all points scored** during that entire duration!
+
+### Core Mechanics
+* **15-Second Double Points Buff**:
+  * For 15.0 seconds, every point scored—whether from breaking normal, cracked, or special bricks, bullet hits, beam blasts, or catching Kane paper bills—is multiplied by 2x (`finalPoints = points * 2`).
+  * If Ichinose debuff is active, Ichinose's strict 1-point penalty clamp takes priority.
+  * Score popups glitter with celebratory golden neon styling (`bonus-gold`).
+* **Celebratory Firework Show at the Bottom**:
+  * Throughout the full 15 seconds, ascending firework rockets launch continuously from the bottom edge of the screen ($Y = 1600$) and detonate in vibrant bursts around the paddle area ($Y = 1320 - 1510$).
+  * Multiple rich color palettes: Radiant Gold & Amber, Electric Cyan & Mint, Neon Magenta & Pink, Cyber Violet & Cyan, and Crimson Blaze & Gold.
+  * Fireworks burst into 30+ sparkling, twinkling embers that cascade downward with realistic air resistance, gravity, and shimmering flicker.
+  * An ambient festive gradient illumination glows along the bottom boundary.
+* **On-Screen Multiplier Banner**:
+  * A pulsating golden badge (`★ 2X SCORE (15s) ★`) tracks directly above the player's board, keeping the player informed of the remaining buff duration.
+
+### Sensory Feedback
+* **Audio**: Plays `audio/fireworks.mp3` and `audio/special_brick.mp3` when fireworks start upon brick destruction, alongside subtle mortar pops on detonations.
+* **Floating Text**: Displays `INTERLOCKING STRATAGEMS!` in radiant gold (`#ffd700`) and `DOUBLE SCORE (15s)!` in electric cyan (`#00f3ff`).
+* **Visuals**: Rising rockets with fiery trails, expanding chrysanthemum spark bursts, bottom ambient illumination, and floating golden multiplier banner above the paddle.
+
+---
+
+## 27. Akiba Brick (`brick_akiba.webp`) - *Lovely Impact (Top Ball Teleport)*
+
+### Purpose & Concept
+The **Akiba Brick** features Hinagiku Akiba from the Akiba Tribe. Destroying this buff brick triggers **Lovely Impact**, instantly teleporting the ball that broke this brick straight up to the ceiling boundary so that it shoots downward into the arena from the top! If the brick is broken by indirect skills or explosions rather than a direct ball hit, it simply awards bonus points without warping any ball.
+
+### Core Mechanics
+* **Top Ceiling Teleportation (Direct Ball Hits)**:
+  * When a ball collides with and destroys the Akiba Brick directly (`isDirectHit === true`), that exact ball is immediately warped to the top ceiling boundary ($Y = \text{HEADER\_HEIGHT} + \text{radius} + 6$).
+  * The ball's horizontal position is preserved (clamped safely within arena bounds).
+  * Its velocity is redirected downward into the playfield ($V_y > 0$, maintaining its speed magnitude) so it rains down on the bricks from above.
+  * Its motion trail history is reset upon teleportation to prevent stretching lines across the arena.
+* **Secondary / Skill Destruction Handling**:
+  * If the Akiba Brick is eliminated through indirect means (e.g., Q brick blast, Saigo cross beam, Enoki X beam, Jio poison timeout, turret lasers, or bullet volleys), no ball is teleported.
+  * The player cleanly receives the brick's score points with neon sparkles and a `+100` floating indicator.
+
+### Sensory Feedback
+* **Audio**: Plays `audio/smoke_bomb.mp3` upon warping the breaking ball behind/to the top; plays `audio/special_brick.mp3` if broken indirectly.
+* **Floating Text**: Displays `TOP WARP!` in electric cyan (`#00f3ff`) right at the ball's top arrival point.
+* **Visuals**: Heterochromatic dual-color sparks—cyan (`#00f3ff`) and vivid hot pink (`#ff0055`)—detonate at both the departure brick location and the top arrival warp point.
+
+---
+
+## 28. Adachi Brick (`brick_adachi.webp`) - *All Fireball Pierce (3-Hit Multi-Fireball)*
+
+### Purpose & Concept
+The **Adachi Brick** features the fierce Adachi Tribe led by Senju Hyakukawaji. Armored with high durability, it **requires 3 hits** to break. Once shattered, it triggers **All Fireball Pierce**, unleashing blazing flames that transform **all available balls** on screen into fiery piercing fireballs (the same piercing power as Hyakuichitaro, but simultaneously empowering every active ball)!
+
+### Core Mechanics
+* **3-Hit Durability**:
+  * Like Enoki and Saigo bricks, the Adachi Brick requires 3 direct impacts before it is destroyed (`hitsRemaining: 3`).
+  * Displays a live countdown indicator badge in the top-right corner showing remaining hits (`3`, `2`, or `1`).
+  * Emits an intense blazing orange neon border (`#ff4500`) with dynamic pulsation and orange flash wash on hit.
+* **All-Out Fireball Transformation**:
+  * Upon the 3rd hit destroying the brick, **every currently active ball** is instantly converted into a Fire Ball:
+    * `ball.isFireBall = true;`
+    * `ball.fireHitsRemaining = 3;` (allows each ball to pierce through 3 consecutive bricks without bouncing back).
+  * If only 1 ball is present in play, that single ball becomes a fireball. If multiple balls are active (from Multiball), all of them ignite at once.
+  * Each ball erupts with a fiery explosion of orange, amber, and white sparks.
+
+### Sensory Feedback
+* **Audio**: Plays `audio/special_brick.mp3`.
+* **Visuals**: 3-stage countdown badge (`3`, `2`, `1`), flashing orange impact aura, large explosion on the brick, and simultaneous fiery ignitions on all balls in play.
+
+---
+
+## 29. Shinagawa Brick (`brick_shinagawa.webp`) - *Risk Management (5-Hit Charging Massive 3-Row Purple Laser)*
+
+### Purpose & Concept
+The **Shinagawa Brick** features the Shinagawa Tribe tacticians. Possessing extreme reinforced defense, this brick **requires 5 hits** to destroy. When broken, it activates **Risk Management**, initiating a focused charge-up before firing **one massive roaring horizontal purple laser beam from the left edge of the screen** directly across the brick's row as well as the adjacent rows above and below, obliterating 3 full rows of bricks simultaneously!
+
+### Core Mechanics
+* **5-Hit Heavy Durability**:
+  * Requires 5 impacts before breaking (`hitsRemaining: 5`).
+  * Features a dynamic countdown indicator badge in the top-right corner displaying `5`, `4`, `3`, `2`, or `1`.
+  * Emits an intense glowing purple neon border (`#c026d3`) that pulsates and flashes in vivid violet (`#f0abfc`) upon impact.
+* **Massive 3-Row Charging Purple Laser Cannon**:
+  * Upon the 5th hit destroying the brick, targeted rows are calculated:
+    * The row where the Shinagawa Brick is located (`brick.row`), plus 1 row above and 1 row below (clamped to ensure 3 contiguous rows).
+    * Total vertical beam coverage spans ~196px (`sl.height`), fully enveloping all 3 brick rows.
+  * **Charging Phase (0.35s)**: A colossal vertical plasma emitter gate converges at the left screen border (`x = 0`) across the full height of the 3 rows, casting a translucent purple targeting corridor and containment guide lasers.
+  * **Firing & Sweep Phase (0.65s)**: One gigantic, screen-shattering horizontal purple laser beam bursts from the left emitter and sweeps across the entire screen width (`x = CANVAS_WIDTH`). The beam features a multi-tiered plasma body (gradient violet/magenta/lilac) with an ultra-bright white core and crackling edge shockwaves.
+  * **Chain Destruction**: Any alive bricks lying in those 3 rows are vaporized as the massive laser front cuts through them, granting full score points, purple starburst explosions, and triggering secondary special brick skills.
+
+### Sensory Feedback
+* **Audio**: Plays `audio/laser.mp3` on charge/fire and `audio/explode.mp3` on blast detonation.
+* **Visuals**: 5-stage countdown badge (`5` to `1`), screen-shaking recoil, left-side giant vertical charging plasma gate, and one massive roaring horizontal purple/magenta plasma beam with white-hot laser core enveloping 3 rows.
+
+---
+
+## 30. Shinjuku Brick (`brick_shinjuku.webp`) - *Sweet Charm (3-Hit Debuff Purge & Healing Heart Bubbles)*
+
+### Purpose & Concept
+The **Shinjuku Brick** represents the enchanting Shinjuku district. Armored with reinforced resistance, it **requires 3 hits** to break. When destroyed, it casts **Sweet Charm**, playing an uplifting heal chime (`audio/heal.mp3`), summoning a lush stream of iridescent pink bubbles and glowing hearts rising from the bottom of the arena, and **purifying the field by destroying all debuff bricks and clearing all active debuff effects**!
+
+### Core Mechanics
+* **3-Hit Heavy Durability**:
+  * Requires 3 hits before breaking (`hitsRemaining: 3`).
+  * Displays a live countdown indicator badge in the top-right corner (`3`, `2`, `1`).
+  * Emits an intense glowing pink neon border (`#ff69b4`) with white highlight trims that flashes brightly upon impact.
+* **Field Debuff Brick Purge**:
+  * Upon shattering, every remaining alive debuff brick on the field (`ichinose`, `akuta`, `sui`, `magata`, `ruriiro`, `sonoda`) is instantly safely vaporized with pink sparkle bursts.
+  * Awards full score points for each purged debuff brick without triggering their harmful debuff penalties!
+* **Active Debuff Cleansing**:
+  * Instantly dispels all running debuff statuses:
+    * **Ichinose**: Reverts 1-point penalty.
+    * **Akuta**: Restores shortened board (`bat_half`) back to full size.
+    * **Sui**: Ends container rain hazard, clears all falling containers, and cleanses brick poison.
+    * **Magata**: Dismisses the Danmaku comment flood immediately.
+    * **Sonoda**: Clears board stun and vaporizes any active falling bombs.
+    * **Ruriiro**: Dispels illusions and restores all disguised bricks back to their original forms.
+* **Pink Bubbles & Hearts Effect (5.0s)**:
+  * Soft ambient warm pink upward glow appears along the bottom.
+  * Streams of translucent iridescent soap bubbles (with miniature hearts inside) and floating glowing pink hearts gently sway and float upwards.
+  * Popping bubbles emit tiny pink sparkle glitter.
+
+### Sensory Feedback
+* **Audio**: Plays `audio/heal.mp3` on activation.
+* **Visuals**: 3-stage countdown badge (`3`, `2`, `1`), pink neon border, ascending floating pink heart bubbles, and pink starburst purges across all debuff bricks.
+
+---
+
 ## Wave Architecture & Lifecycle Flow
 
 ```mermaid
@@ -844,6 +1004,13 @@ flowchart TD
     C -->|Random Type (Debuff)| AP[Sui Brick - Container Drop Debuff]
     C -->|Random Type (Debuff)| AT[Magata Brick - Danmaku Comments Debuff]
     C -->|Random Type (Debuff)| AV[Ruriiro Brick - Illusion Swapper Debuff]
+    C -->|Random Type| AX[Haru Brick - Power Resonance]
+    C -->|Random Type (Debuff)| AY[Sonoda Brick - Chaotic Order Bombs]
+    C -->|Random Type| AZ[Taito Brick - Interlocking Stratagems]
+    C -->|Random Type| BA[Akiba Brick - Lovely Impact Warp]
+    C -->|Random Type| BF[Adachi Brick - All Fireball Pierce]
+    C -->|Random Type| BH[Shinagawa Brick - Risk Management 3-Row Laser]
+    C -->|Random Type| BJ[Shinjuku Brick - Sweet Charm Purge & Hearts]
     
     D --> O[Paddle expands to 284px for 30s]
     E --> P[Drops heavy Zero Heart; bounce 3x on paddle to convert to +1 Life (max 3)]
@@ -855,9 +1022,9 @@ flowchart TD
     K --> V[Hit 1 & 2: Countdown 2/1 in purple neon, Hit 3: X-Blast!]
     L --> W[Cleanses any active debuff; if no debuff running, does nothing!]
     AR --> AS[Spawns Extra Active Ball in play!]
-    M --> X[Awards +1000 Bonus Points & Gold Particle Burst!]
+    M --> X[Drops 5 Kane paper money bills for 200 pts each!]
     N --> Y[Hit 1 & 2: Countdown 2/1 in crimson neon, Hit 3: + Shape Blast!]
-    Z --> AA[Ball turns to Fire Ball, pierces 5 bricks without bouncing!]
+    Z --> AA[Ball turns to Fire Ball, pierces 3 bricks without bouncing!]
     AB --> AC[Pink transparent gravity field slows falling balls in bottom 30% for 15s!]
     AD --> AE[Debuff active for 60s: All points gained become 1 pt, Red corner screen glow!]
     AF --> AH[Paddle movement accelerated for 20s with golden neon aura!]
@@ -868,26 +1035,33 @@ flowchart TD
     AP --> AQ[Drops 1 container every few seconds for 30s while spinning around; catching one slows board for 2s!]
     AT --> AU[Floods brick area with Nico Nico comments for 30s; standout MA☆GA☆TA moves slowly in pink!]
     AV --> AW[Swaps 1 random brick into Real Ruriiro & rest into fake; destroying Real reverts board!]
+    AX --> BB[Piercing laser beam hits all bricks in column with slow-motion bullet time!]
+    AY --> BC[Drops 2 ticking bombs; colliding with board detonates and stuns board for 1s!]
+    AZ --> BD[Celebratory bottom fireworks for 15s with 2x score multiplier!]
+    BA --> BE[Teleports breaking ball to top ceiling to shoot downward; secondary breaks award points!]
+    BF --> BG[Hit 1 & 2: Countdown 2/1 in flame neon, Hit 3: Turns ALL available balls into Fireballs!]
+    BH --> BI[Hit 1 to 4: Countdown 4 to 1 in purple neon, Hit 5: Fires Massive Purple Laser across 3 Rows!]
+    BJ --> BK[Hit 1 & 2: Countdown 2/1 in pink neon, Hit 3: Plays heal audio, floats pink bubbles/hearts, purges all debuff bricks & cleanses running debuffs!]
 ```
 
 ---
 
 ## File Reference & Code Hooks
 - **Logic File**: `game.js`
-  - Asset preload: `brick_ichinose`, `brick_mita`, `brick_manami`, `brick_saori`, `brick_akuta`, `brick_taiga`, `brick_sui`, `brick_magata`, `brick_ruriiro`, `brick_shun`, `container`, `bat_half`, `zero_heart`, `buff_skill_cutin`, `debuff_skill_cutin` in `loadAllAssetsWithProgress()`
-  - Skill Cutin Config: `skills_config.json` dynamically loaded on startup with fallback defaults for all 24 skills, mapping skill names, buff/debuff types, and icon assets
+  - Asset preload: `brick_ichinose`, `brick_mita`, `brick_manami`, `brick_saori`, `brick_akuta`, `brick_taiga`, `brick_sui`, `brick_magata`, `brick_ruriiro`, `brick_shun`, `brick_haru`, `brick_sonoda`, `brick_taito`, `brick_akiba`, `brick_adachi`, `brick_shinagawa`, `container`, `bat_half`, `zero_heart`, `buff_skill_cutin`, `debuff_skill_cutin` in `loadAllAssetsWithProgress()`
+  - Skill Cutin Config: `skills_config.json` dynamically loaded on startup with fallback defaults for all skills, mapping skill names, buff/debuff types, and icon assets
   - Skill Cutin System: `this.skillCutins` manages active banners sliding in from left (`x: -360 -> 24`), 2-slot vertical stack ($Y = 960$ and $1057$), 1-second lifespan, and smooth fade-out
   - Comment Config: `magata_comments.json` dynamically fetched on startup with fallback defaults
-  - Special Pool: `getSpecialBrickType()` includes all 23 special types with tuned weights
-  - Debuff states: `this.pointDebuff` (Ichinose), `this.bat.isShortened` (Akuta), `this.boardSlowDebuff` & `this.suiContainerRain` (Sui), `this.magataDebuff` (Magata), and `this.ruriiroDebuff` (Ruriiro)
+  - Special Pool: `getSpecialBrickType()` includes all special types with tuned weights
+  - Debuff states: `this.pointDebuff` (Ichinose), `this.bat.isShortened` (Akuta), `this.boardSlowDebuff` & `this.suiContainerRain` (Sui), `this.magataDebuff` (Magata), `this.ruriiroDebuff` (Ruriiro), and `this.boardStunTimer` (Sonoda)
   - Speed boost state: `this.boardSpeedBoost = { active: false, timer: 0, multiplier: 1.75 }`
   - Wind surge state: `this.taigaWind` managing upward wind gale, streamer ribbons, and ball push
   - Container dropping: `this.suiContainerRain` (30s interval spawner) & `this.containers` (spinning falling entities)
   - Danmaku comments: `this.magataComments` moving right-to-left across brick area lanes
   - Illusion swapping: `this.triggerRuriiroDebuff()` saves brick states, designates Real and fake bricks, and `this.revertRuriiroIllusion()` dispels and reverts
   - Activation in `onSpecialBrickDestroyed()`: triggers `this.triggerSkillCutin(brick.specialType)`, activates skills, and manages debuff lifecycles
-  - Audio: `playWindGale()`, `playDebuff()`, `playLaser()`, `playExplode()`, `playSpecialHit()`
-  - Countdown badges & hit flashes: Enoki (`#bf00ff`) and Saigo (`#ff3300`) with live hits remaining counter (all other special bricks display cleanly as is)
+  - Audio: `playWindGale()`, `playDebuff()`, `playLaser()`, `playExplode()`, `playSpecialHit()`, `playFireworks()`
+  - Countdown badges & hit flashes: Enoki (`#bf00ff`), Saigo (`#ff3300`), Adachi (`#ff4500`), and Shinagawa (`#c026d3`, 5 hits) with live hits remaining counters
 - **Assets**:
   - `images/brick_yo.webp`
   - `images/brick_zero.webp`
@@ -912,6 +1086,13 @@ flowchart TD
   - `images/brick_sui.webp`
   - `images/brick_magata.webp`
   - `images/brick_ruriiro.webp`
+  - `images/brick_haru.webp`
+  - `images/brick_sonoda.webp`
+  - `images/brick_taito.webp`
+  - `images/brick_akiba.webp`
+  - `images/brick_adachi.webp`
+  - `images/brick_shinagawa.webp`
+  - `images/brick_shinjuku.webp`
   - `images/buff_skill_cutin.webp`
   - `images/debuff_skill_cutin.webp`
   - `images/container.webp`
@@ -921,9 +1102,16 @@ flowchart TD
   - `images/bat_extended.webp`
   - `images/brick_hard.webp`
   - `images/brick_cracked.webp`
-  - `images/brick_haru.webp`
+  - `images/bomb1.webp`
+  - `images/bomb2.webp`
+  - `images/kane.webp`
   - `audio/special_brick_debuff.mp3`
+  - `audio/bomb.mp3`
+  - `audio/fireworks.mp3`
+  - `audio/heal.mp3`
   - `audio/System_Breach_3.mp3`
+
+
 
 
 
