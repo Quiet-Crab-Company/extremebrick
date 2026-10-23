@@ -146,24 +146,29 @@ The **Tsuki Brick** activates an electromagnetic tractor-beam. It magnetizes the
 
 ---
 
-## 4. Q Brick (`brick_q.webp`) - *Adjacent Brick Explosion*
+## 4. Q Brick (`brick_q.webp`) - *Adjacent Brick Explosion (Vertical Jump Detonation)*
 
 ### Purpose & Concept
-The **Q Brick** is a high-yield explosive cluster brick. Hitting it triggers a shockwave that obliterates all adjacent alive bricks in the grid.
+The **Q Brick** is a high-yield explosive cluster brick. Hitting it triggers an acrobatic vertical jump into the air (similar to the Manami Brick), leaping up and returning right back down to its original tile before violently detonating a shockwave that obliterates all adjacent alive bricks in the grid.
 
 ### Core Mechanics
-* **Grid Adjacency Blast**:
-  * Detects all neighboring alive bricks in the grid (`Math.abs(b.col - brick.col) <= 1 && Math.abs(b.row - brick.row) <= 1`).
+* **Vertical Leap & Return (0.48s Airtime)**:
+  * Upon receiving a hit, the Q Brick launches straight upward in a high vertical jump arc (`peakHeight: 110px`, `duration: 0.48s`).
+  * Rotates a full 360 degrees mid-air with an apex scale pop, casting a dynamic ground shadow directly on its original grid slot.
+  * Emits streaming fiery red and golden ember trail particles during flight.
+  * Falls back down and lands squarely onto its original tile to trigger detonation.
+* **Grid Adjacency Blast upon Landing**:
+  * Upon impact with its home tile, obliterates all neighboring alive bricks in the grid (`Math.abs(b.col - brick.col) <= 1 && Math.abs(b.row - brick.row) <= 1`).
   * Destroys neighboring bricks simultaneously, awarding points for each and triggering explosive reactions.
 * **Special Brick Skill Activation in Blast Zone**:
-  * Any special brick caught in the blast triggers its unique power-up (e.g. adjacent Yo expands paddle, adjacent Zero spawns ball, adjacent Kazuki adds shield, adjacent Q triggers chain-reaction explosion!).
+  * Any special brick caught in the blast triggers its unique power-up (e.g. adjacent Yo expands paddle, adjacent Zero spawns ball, adjacent Kazuki adds shield, adjacent Q triggers chain-reaction jumping explosion!).
 * **Screen Shake**:
-  * Applies an intense physical screen shake to the game canvas container for immediate kinetic punch.
+  * Applies an intense physical screen shake to the game canvas container on impact for immediate kinetic punch.
 
 ### Sensory Feedback
-* **Audio**: Plays `audio/explode.mp3`.
-* **Floating Text**: Displays `BOOM!` in bold neon crimson (`#ff3b30`).
-* **Particles**: Dual-tier explosion emitting 36 fiery red and 20 hot orange particles.
+* **Audio**: Plays bounce/launch sound on takeoff, and `audio/explode.mp3` upon landing detonation.
+* **Floating Text**: Displays `BOOM!` in bold neon crimson (`#ff3b30`) on detonation.
+* **Particles**: Launch sparks upon jump, fiery ember trails in flight, and a massive triple-tier impact explosion emitting 44 crimson, 28 orange, and 16 white fiery particles upon landing.
 
 ---
 
@@ -224,8 +229,7 @@ The **Miu Brick** mounts high-tech cyber turrets on the left and right flanks of
     ```
 * **Bullet Impact & Chain Reactions**:
   * Bullets travel upward at `BULLET_SPEED = 20`.
-  * When a bullet strikes any alive brick, the brick is destroyed, awarding points (`+10`).
-  * If a struck brick is another **Special Brick**, its skill is triggered immediately via `onSpecialBrickDestroyed`!
+  * Special bricks struck by turret lasers are destroyed and award bonus score (+100) without running their special skill effect, preventing infinite cascade loops.
 * **Explosion Trigger**: If destroyed by an adjacent Q Brick explosion, the dual turrets deploy immediately!
 
 ### Sensory Feedback
@@ -325,8 +329,8 @@ The **Eiji Brick** is a high-value treasure brick adorned in glittering cyber-go
 
 ### Core Mechanics
 * **5 Fluttering Kane Papers**:
-  * Upon destruction, spawns 5 Kane paper bills cascading down from the brick's position.
-  * Slower than balls or containers (`vy ~ 130-155 px/s`) with aerodynamic sideways swaying (`Math.sin(...) * swayAmp`) and paper tumbling tilt.
+  * Upon destruction, spawns 5 Kane paper bills cascading down in a wide fanning spread across the arena.
+  * Features outward horizontal drift velocities and wide graceful aerodynamic swaying (`swayAmp: 64–92px`, `vy ~ 115–145 px/s`) with paper tumbling tilt and vertical staggering.
   * When caught by the paddle, awards **+200 points** per paper bill collected (`this.addScore(200)`).
   * Plays `audio/special_brick.mp3` pickup chime and displays floating `+200 PTS!` text in radiant gold.
   * Uncollected papers float past the bottom of the screen harmlessly.
@@ -935,7 +939,7 @@ The **Shinagawa Brick** features the Shinagawa Tribe tacticians. Possessing extr
     * Total vertical beam coverage spans ~196px (`sl.height`), fully enveloping all 3 brick rows.
   * **Charging Phase (0.35s)**: A colossal vertical plasma emitter gate converges at the left screen border (`x = 0`) across the full height of the 3 rows, casting a translucent purple targeting corridor and containment guide lasers.
   * **Firing & Sweep Phase (0.65s)**: One gigantic, screen-shattering horizontal purple laser beam bursts from the left emitter and sweeps across the entire screen width (`x = CANVAS_WIDTH`). The beam features a multi-tiered plasma body (gradient violet/magenta/lilac) with an ultra-bright white core and crackling edge shockwaves.
-  * **Chain Destruction**: Any alive bricks lying in those 3 rows are vaporized as the massive laser front cuts through them, granting full score points, purple starburst explosions, and triggering secondary special brick skills.
+  * **Clean Destruction**: Any alive bricks lying in those 3 rows are vaporized as the massive laser front cuts through them, granting full score points (+100 for specials) and purple starburst explosions. Bricks destroyed by the laser do not run their special brick effects, preventing infinite cascade loops.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/laser.mp3` on charge/fire and `audio/explode.mp3` on blast detonation.
@@ -964,14 +968,14 @@ The **Shinjuku Brick** represents the enchanting Shinjuku district. Armored with
     * **Magata**: Dismisses the Danmaku comment flood immediately.
     * **Sonoda**: Clears board stun and vaporizes any active falling bombs.
     * **Ruriiro**: Dispels illusions and restores all disguised bricks back to their original forms.
-* **Pink Bubbles & Hearts Effect (5.0s)**:
-  * Soft ambient warm pink upward glow appears along the bottom.
-  * Streams of translucent iridescent soap bubbles (with miniature hearts inside) and floating glowing pink hearts gently sway and float upwards.
+* **Pink Bubbles & Hearts Effect (1.0s)**:
+  * Soft ambient warm pink upward glow appears along the bottom for 1.0s.
+  * A light, elegant burst of floating glowing pink hearts and translucent soap bubbles floats upwards and dissipates within 1.0s.
   * Popping bubbles emit tiny pink sparkle glitter.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/heal.mp3` on activation.
-* **Visuals**: 3-stage countdown badge (`3`, `2`, `1`), pink neon border, ascending floating pink heart bubbles, and pink starburst purges across all debuff bricks.
+* **Visuals**: 3-stage countdown badge (`3`, `2`, `1`), pink neon border, ascending floating pink heart bubbles (1.0s duration), and pink starburst purges across all debuff bricks.
 
 ---
 

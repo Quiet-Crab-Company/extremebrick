@@ -771,7 +771,7 @@ class BrickBreakerGame {
     this.ruriiroDebuff = { active: false };
     this.haruSlowMotion = { active: false, timer: 0, duration: 2.0, slowFactor: 0.25 };
     this.interlockingStratagems = { active: false, timer: 0, duration: 15.0, nextLaunchTimer: 0, rockets: [], sparks: [] };
-    this.sweetCharmEffect = { active: false, timer: 0, duration: 4.5, spawnTimer: 0, bubbles: [] };
+    this.sweetCharmEffect = { active: false, timer: 0, duration: 1.0, spawnTimer: 0, bubbles: [] };
     this.skillCutins = [];
     this.skillsConfig = {};
 
@@ -1651,7 +1651,7 @@ class BrickBreakerGame {
     this.bombs = [];
     this.boardStunTimer = 0;
     this.interlockingStratagems = { active: false, timer: 0, duration: 15.0, nextLaunchTimer: 0, rockets: [], sparks: [] };
-    this.sweetCharmEffect = { active: false, timer: 0, duration: 4.5, spawnTimer: 0, bubbles: [] };
+    this.sweetCharmEffect = { active: false, timer: 0, duration: 1.0, spawnTimer: 0, bubbles: [] };
     this.suiContainerRain = { active: false, timer: 0, nextDropTimer: 0 };
     this.boardSlowDebuff = { active: false, timer: 0 };
     this.magataDebuff = { active: false, timer: 0 };
@@ -2045,20 +2045,25 @@ class BrickBreakerGame {
 
   spawnKanePapers(cx, cy) {
     for (let i = 0; i < 5; i++) {
-      // Fan out initial horizontal base position across the brick
-      const spread = (i - 2) * 28 + (Math.random() - 0.5) * 16;
-      const baseX = Math.max(70, Math.min(CANVAS_WIDTH - 70, cx + spread));
+      // Fan out initial horizontal base position across the brick and outward
+      const initialSpread = (i - 2) * 55 + (Math.random() - 0.5) * 20;
+      const baseX = Math.max(60, Math.min(CANVAS_WIDTH - 60 - 56, cx + initialSpread));
+
+      // Outward drift velocity so the bills fan out widely across the arena as they fall
+      const outwardVx = (i - 2) * (26 + Math.random() * 12) + (Math.random() - 0.5) * 10;
+
       this.kanes.push({
         baseX: baseX,
         x: baseX,
-        y: cy - (i * 14), // staggered heights so they cascade gracefully
+        y: cy - (i * 22), // staggered heights so they cascade gracefully
         width: 56,
         height: 31,
-        vy: 130 + Math.random() * 25, // ~130-155 px/s (slower than containers and balls)
+        vx: outwardVx,
+        vy: 115 + Math.random() * 30, // ~115-145 px/s (slower float speed)
         swayTimer: Math.random() * Math.PI * 2,
-        swaySpeed: 2.2 + Math.random() * 0.7,
-        swayAmp: 46 + Math.random() * 22,
-        phase: i * 1.3,
+        swaySpeed: 2.0 + Math.random() * 0.8,
+        swayAmp: 64 + Math.random() * 28, // wider graceful swaying motion
+        phase: i * 1.2,
         rotation: 0,
         flipScaleY: 1.0,
         scoreValue: 200
@@ -2598,22 +2603,22 @@ class BrickBreakerGame {
 
   spawnSweetCharmBubble(initialSpread = false) {
     const startY = initialSpread
-      ? (CANVAS_HEIGHT - Math.random() * 320)
-      : (CANVAS_HEIGHT + 10 + Math.random() * 40);
+      ? (CANVAS_HEIGHT - Math.random() * 260)
+      : (CANVAS_HEIGHT + 10 + Math.random() * 30);
     this.sweetCharmEffect.bubbles.push({
-      x: 30 + Math.random() * (CANVAS_WIDTH - 60),
+      x: 40 + Math.random() * (CANVAS_WIDTH - 80),
       y: startY,
-      vy: -(120 + Math.random() * 150),
-      size: 18 + Math.random() * 26,
-      isHeart: Math.random() < 0.55,
+      vy: -(220 + Math.random() * 160),
+      size: 18 + Math.random() * 24,
+      isHeart: Math.random() < 0.5,
       color: Math.random() < 0.4 ? '#ff69b4' : (Math.random() < 0.7 ? '#ff1493' : (Math.random() < 0.9 ? '#ff80bf' : '#ffffff')),
       wobbleSpeed: 2.2 + Math.random() * 2.5,
-      wobbleAmp: 20 + Math.random() * 30,
+      wobbleAmp: 16 + Math.random() * 24,
       phase: Math.random() * Math.PI * 2,
       rot: (Math.random() - 0.5) * 0.4,
       rotSpeed: (Math.random() - 0.5) * 1.8,
       life: 0,
-      maxLife: 3.2 + Math.random() * 1.5
+      maxLife: 0.75 + Math.random() * 0.25
     });
   }
 
@@ -2629,12 +2634,12 @@ class BrickBreakerGame {
     this.spawnExplosion(bx, by, '#ff1493', 24);
     this.spawnExplosion(bx, by, '#ffffff', 16);
 
-    // 2. Activate pink bubbles heart animation effect from the bottom
+    // 2. Activate pink bubbles heart animation effect from the bottom (1.0s duration, reduced heart count)
     this.sweetCharmEffect.active = true;
-    this.sweetCharmEffect.timer = 5.0;
-    this.sweetCharmEffect.duration = 5.0;
+    this.sweetCharmEffect.timer = 1.0;
+    this.sweetCharmEffect.duration = 1.0;
     this.sweetCharmEffect.spawnTimer = 0;
-    for (let i = 0; i < 45; i++) {
+    for (let i = 0; i < 12; i++) {
       this.spawnSweetCharmBubble(true);
     }
 
@@ -3062,48 +3067,38 @@ class BrickBreakerGame {
       return;
     }
 
-    // Check if this is the "q" brick: explodes all adjacent bricks around it!
+    // Check if this is the "q" brick: leaps into the air and returns to its original position before detonating!
     if (brick.specialType === 'q') {
-      this.sound.playExplode();
-      this.container.classList.add('shake');
-      setTimeout(() => this.container.classList.remove('shake'), 250);
+      this.sound.playBatBounce();
+      this.sound.playSpecialHit();
 
-      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff3b30', 36);
-      this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff9500', 20);
+      const sourceX = brick.x + brick.width / 2;
+      const sourceY = brick.y + brick.height / 2;
 
+      this.spawnExplosion(sourceX, sourceY, '#ff3b30', 20);
+      this.spawnExplosion(sourceX, sourceY, '#ff9500', 14);
+      this.spawnExplosion(sourceX, sourceY, '#ffffff', 8);
 
-      // Explode all adjacent bricks
-      const adjacentBricks = this.bricks.filter(
-        b => b.alive && b !== brick && Math.abs(b.col - brick.col) <= 1 && Math.abs(b.row - brick.row) <= 1
-      );
+      // Launch jumping animated Q brick that returns to its original position
+      this.jumpingBricks.push({
+        type: 'q',
+        brick: brick,
+        startX: brick.x,
+        startY: brick.y,
+        targetX: brick.x, // returns to its original position!
+        targetY: brick.y,
+        targetCol: brick.col,
+        targetRow: brick.row,
+        targetBrick: null,
+        width: brick.width,
+        height: brick.height,
+        progress: 0,
+        duration: 0.48, // 0.48s in flight (matches Manami brick)
+        peakHeight: 110, // vertical jump arc height
+        sourceBall: sourceBall,
+        trailTimer: 0
+      });
 
-      for (const adj of adjacentBricks) {
-        if (!adj.alive) continue;
-        adj.alive = false;
-        adj.isPoisoned = false;
-        const basePoints = adj.points || BRICK_POINTS;
-        const ptsGained = this.addScore(basePoints);
-
-        if (adj.hasMagnet) {
-          this.magnetBricksRemaining--;
-          adj.hasMagnet = false;
-          this.updateMagnetBrick();
-        }
-
-        if (adj.isSpecial) {
-          // Activate special skill effect when broken by explosion!
-          this.onSpecialBrickDestroyed(adj, null, false);
-        } else {
-          this.spawnExplosion(adj.x + adj.width / 2, adj.y + adj.height / 2, adj.isHard ? '#e0e0e0' : '#ff5722', 20);
-          if (adj.isHard) {
-            this.spawnExplosion(adj.x + adj.width / 2, adj.y + adj.height / 2, '#ffcc00', 10);
-          }
-          const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (adj.isHard ? '#ffcc00' : '#ff9800');
-          this.floatingTexts.push(
-            new FloatingText(adj.x + adj.width / 2, adj.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
-          );
-        }
-      }
       return;
     }
 
@@ -3271,6 +3266,7 @@ class BrickBreakerGame {
 
         // Launch jumping animated brick
         this.jumpingBricks.push({
+          type: 'manami',
           startX: brick.x,
           startY: brick.y,
           targetX: targetBrick.x,
@@ -4351,7 +4347,7 @@ class BrickBreakerGame {
 
           brick.alive = false;
           brick.isPoisoned = false;
-          const basePoints = brick.points || BRICK_POINTS;
+          const basePoints = brick.points || (brick.isSpecial ? 100 : BRICK_POINTS);
           const ptsGained = this.addScore(basePoints);
 
           const wasMagnet = brick.hasMagnet;
@@ -4361,20 +4357,17 @@ class BrickBreakerGame {
             this.updateMagnetBrick();
           }
 
-          if (brick.isSpecial) {
-            this.onSpecialBrickDestroyed(brick, null, false);
-          } else {
-            this.sound.playBrickHit();
-            const sparkColor = wasMagnet ? '#00f3ff' : (brick.isHard ? '#e0e0e0' : '#ff007f');
-            this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 14);
-            if (brick.isHard) {
-              this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffcc00', 8);
-            }
-            const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (brick.isHard ? '#ffcc00' : '#ff007f');
-            this.floatingTexts.push(
-              new FloatingText(brick.x + brick.width / 2, brick.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
-            );
+          // Do NOT run special brick effect when destroyed with laser
+          this.sound.playBrickHit();
+          const sparkColor = wasMagnet ? '#00f3ff' : (brick.isSpecial ? '#00f3ff' : (brick.isHard ? '#e0e0e0' : '#ff007f'));
+          this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 16);
+          if (brick.isHard) {
+            this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffcc00', 8);
           }
+          const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (brick.isSpecial ? '#00f3ff' : (brick.isHard ? '#ffcc00' : '#ff007f'));
+          this.floatingTexts.push(
+            new FloatingText(brick.x + brick.width / 2, brick.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
+          );
           break;
         }
       }
@@ -4516,7 +4509,7 @@ class BrickBreakerGame {
     // Check if all bricks are cleared
     if (this.state === 'PLAYING' && !this.isClearingLevel) {
       const remainingBricks = this.bricks.filter(b => b.alive).length;
-      if (remainingBricks === 0) {
+      if (remainingBricks === 0 && (!this.jumpingBricks || this.jumpingBricks.length === 0)) {
         this.isClearingLevel = true;
         this.triggerLevelClear();
       }
@@ -4617,7 +4610,7 @@ class BrickBreakerGame {
               b.alive = false;
               b.isPoisoned = false;
 
-              const basePoints = b.points || BRICK_POINTS;
+              const basePoints = b.points || (b.isSpecial ? 100 : BRICK_POINTS);
               const ptsGained = this.addScore(basePoints);
 
               // Spectacular purple/violet laser vaporization sparks
@@ -4625,7 +4618,7 @@ class BrickBreakerGame {
               this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#e879f9', 20);
               this.spawnExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ffffff', 12);
 
-              const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (b.isHard ? '#ffcc00' : '#e879f9');
+              const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (b.isSpecial ? '#00f3ff' : (b.isHard ? '#ffcc00' : '#e879f9'));
               this.floatingTexts.push(
                 new FloatingText(b.x + b.width / 2, b.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
               );
@@ -4636,10 +4629,7 @@ class BrickBreakerGame {
                 this.updateMagnetBrick();
               }
 
-              // Trigger special brick skill if caught in the laser
-              if (b.isSpecial) {
-                this.onSpecialBrickDestroyed(b, null, false);
-              }
+              // Do NOT run special brick effect when destroyed with laser!
             }
           }
         }
@@ -4650,13 +4640,14 @@ class BrickBreakerGame {
       }
     }
 
-    // Update Jumping Bricks (Manami)
+    // Update Jumping Bricks (Manami & Q)
     for (let jbi = this.jumpingBricks.length - 1; jbi >= 0; jbi--) {
       const jb = this.jumpingBricks[jbi];
       jb.progress += dt / jb.duration;
 
       const destX = jb.targetBrick ? jb.targetBrick.x : jb.targetX;
       const destY = jb.targetBrick ? jb.targetBrick.y : jb.targetY;
+      const isQ = jb.type === 'q';
 
       // Spawn trail particles while flying
       jb.trailTimer = (jb.trailTimer || 0) + dt;
@@ -4665,12 +4656,15 @@ class BrickBreakerGame {
         const t = Math.min(1, jb.progress);
         const currX = jb.startX + (destX - jb.startX) * t + jb.width / 2;
         const currY = jb.startY + (destY - jb.startY) * t - Math.sin(t * Math.PI) * jb.peakHeight + jb.height / 2;
+        const trailColor = isQ
+          ? (Math.random() < 0.4 ? '#ff3b30' : (Math.random() < 0.7 ? '#ff9500' : '#ffe600'))
+          : (Math.random() > 0.4 ? '#f368e0' : '#ffffff');
         this.particles.push(
           new Particle(
             currX + (Math.random() - 0.5) * 12,
             currY + (Math.random() - 0.5) * 12,
-            Math.random() > 0.4 ? '#f368e0' : '#ffffff',
-            3.5,
+            trailColor,
+            isQ ? 4.0 : 3.5,
             (Math.random() - 0.5) * 1.5,
             (Math.random() - 0.5) * 1.5,
             0.22
@@ -4689,41 +4683,80 @@ class BrickBreakerGame {
         this.container.classList.add('shake');
         setTimeout(() => this.container.classList.remove('shake'), 320);
 
-        // Teleport arrival explosion and announcement
-        this.spawnExplosion(impactX, impactY, '#f368e0', 36);
-        this.spawnExplosion(impactX, impactY, '#ff00aa', 24);
-        this.spawnExplosion(impactX, impactY, '#ffffff', 16);
+        if (isQ) {
+          // Q Brick landed back on its original position: detonate shockwave and explode all adjacent bricks!
+          this.spawnExplosion(impactX, impactY, '#ff3b30', 44);
+          this.spawnExplosion(impactX, impactY, '#ff9500', 28);
+          this.spawnExplosion(impactX, impactY, '#ffffff', 16);
 
-        // Find the 5 bricks in a + sign around the target (center + up, down, left, right)
-        const crossBricks = this.bricks.filter(
-          b => b.alive && ((b.col === jb.targetCol && Math.abs(b.row - jb.targetRow) <= 1) ||
-            (b.row === jb.targetRow && Math.abs(b.col - jb.targetCol) <= 1))
-        );
+          const adjacentBricks = this.bricks.filter(
+            b => b.alive && b !== jb.brick && Math.abs(b.col - jb.targetCol) <= 1 && Math.abs(b.row - jb.targetRow) <= 1
+          );
 
-        for (const target of crossBricks) {
-          if (!target.alive) continue;
-          target.alive = false;
-          target.isPoisoned = false;
-          const basePoints = target.points || BRICK_POINTS;
-          const ptsGained = this.addScore(basePoints);
+          for (const adj of adjacentBricks) {
+            if (!adj.alive) continue;
+            adj.alive = false;
+            adj.isPoisoned = false;
+            const basePoints = adj.points || BRICK_POINTS;
+            const ptsGained = this.addScore(basePoints);
 
-          if (target.hasMagnet) {
-            this.magnetBricksRemaining--;
-            target.hasMagnet = false;
-            this.updateMagnetBrick();
-          }
-
-          if (target.isSpecial) {
-            this.onSpecialBrickDestroyed(target, null, false);
-          } else {
-            this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, target.isHard ? '#e0e0e0' : '#f368e0', 20);
-            if (target.isHard) {
-              this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, '#ffcc00', 8);
+            if (adj.hasMagnet) {
+              this.magnetBricksRemaining--;
+              adj.hasMagnet = false;
+              this.updateMagnetBrick();
             }
-            const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (target.isHard ? '#ffcc00' : '#ff00aa');
-            this.floatingTexts.push(
-              new FloatingText(target.x + target.width / 2, target.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
-            );
+
+            if (adj.isSpecial) {
+              // Activate special skill effect when broken by explosion!
+              this.onSpecialBrickDestroyed(adj, null, false);
+            } else {
+              this.spawnExplosion(adj.x + adj.width / 2, adj.y + adj.height / 2, adj.isHard ? '#e0e0e0' : '#ff5722', 20);
+              if (adj.isHard) {
+                this.spawnExplosion(adj.x + adj.width / 2, adj.y + adj.height / 2, '#ffcc00', 10);
+              }
+              const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (adj.isHard ? '#ffcc00' : '#ff9800');
+              this.floatingTexts.push(
+                new FloatingText(adj.x + adj.width / 2, adj.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
+              );
+            }
+          }
+        } else {
+          // Manami Brick landed: cross blast (+ shape)
+          this.spawnExplosion(impactX, impactY, '#f368e0', 36);
+          this.spawnExplosion(impactX, impactY, '#ff00aa', 24);
+          this.spawnExplosion(impactX, impactY, '#ffffff', 16);
+
+          // Find the 5 bricks in a + sign around the target (center + up, down, left, right)
+          const crossBricks = this.bricks.filter(
+            b => b.alive && ((b.col === jb.targetCol && Math.abs(b.row - jb.targetRow) <= 1) ||
+              (b.row === jb.targetRow && Math.abs(b.col - jb.targetCol) <= 1))
+          );
+
+          for (const target of crossBricks) {
+            if (!target.alive) continue;
+            target.alive = false;
+            target.isPoisoned = false;
+            const basePoints = target.points || BRICK_POINTS;
+            const ptsGained = this.addScore(basePoints);
+
+            if (target.hasMagnet) {
+              this.magnetBricksRemaining--;
+              target.hasMagnet = false;
+              this.updateMagnetBrick();
+            }
+
+            if (target.isSpecial) {
+              this.onSpecialBrickDestroyed(target, null, false);
+            } else {
+              this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, target.isHard ? '#e0e0e0' : '#f368e0', 20);
+              if (target.isHard) {
+                this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, '#ffcc00', 8);
+              }
+              const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (target.isHard ? '#ffcc00' : '#ff00aa');
+              this.floatingTexts.push(
+                new FloatingText(target.x + target.width / 2, target.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
+              );
+            }
           }
         }
       }
@@ -4920,6 +4953,17 @@ class BrickBreakerGame {
       const k = this.kanes[ki];
       k.swayTimer += effectiveKaneDt * k.swaySpeed;
       k.y += k.vy * effectiveKaneDt;
+      if (k.vx) {
+        k.baseX += k.vx * effectiveKaneDt;
+        // Keep baseX within arena borders with soft bounce so bills stay gracefully in play
+        if (k.baseX < 50) {
+          k.baseX = 50;
+          k.vx = Math.abs(k.vx) * 0.5;
+        } else if (k.baseX > CANVAS_WIDTH - k.width - 50) {
+          k.baseX = CANVAS_WIDTH - k.width - 50;
+          k.vx = -Math.abs(k.vx) * 0.5;
+        }
+      }
       k.x = Math.max(10, Math.min(CANVAS_WIDTH - k.width - 10, k.baseX + Math.sin(k.swayTimer + k.phase) * k.swayAmp));
 
       // Aerodynamic paper rotation and flutter tilt
@@ -5109,11 +5153,8 @@ class BrickBreakerGame {
           // Continuously stream new pink bubbles and hearts from the bottom
           this.sweetCharmEffect.spawnTimer -= dt;
           if (this.sweetCharmEffect.spawnTimer <= 0) {
-            this.sweetCharmEffect.spawnTimer = 0.08;
+            this.sweetCharmEffect.spawnTimer = 0.22;
             this.spawnSweetCharmBubble(false);
-            if (Math.random() < 0.5) {
-              this.spawnSweetCharmBubble(false);
-            }
           }
         }
       }
@@ -6618,7 +6659,7 @@ class BrickBreakerGame {
       // Draw each bubble and heart
       for (const b of this.sweetCharmEffect.bubbles) {
         const effX = b.x + Math.sin(b.phase) * (b.wobbleAmp * 0.4);
-        const fadeIn = Math.min(1.0, b.life / 0.35);
+        const fadeIn = Math.min(1.0, b.life / 0.15);
         const fadeOut = Math.max(0, 1.0 - (b.life / b.maxLife));
         const topFade = b.y < 350 ? Math.max(0, (b.y - 250) / 100) : 1.0;
         const alpha = fadeIn * fadeOut * topFade;
@@ -7085,7 +7126,7 @@ class BrickBreakerGame {
       }
     }
 
-    // 9b. Draw Jumping Bricks (Manami)
+    // 9b. Draw Jumping Bricks (Manami & Q)
     for (const jb of this.jumpingBricks) {
       const t = Math.min(1, jb.progress);
       const destX = jb.targetBrick ? jb.targetBrick.x : jb.targetX;
@@ -7106,7 +7147,7 @@ class BrickBreakerGame {
       this.ctx.fill();
       this.ctx.restore();
 
-      // Draw jumping Manami brick in mid-air
+      // Draw jumping brick in mid-air
       this.ctx.save();
       this.ctx.translate(currX, currY);
 
@@ -7118,14 +7159,16 @@ class BrickBreakerGame {
       const popScale = 1 + 0.25 * altitude;
       this.ctx.scale(popScale, popScale);
 
-      // Glowing orchid aura around the flying brick
-      this.ctx.shadowColor = '#f368e0';
+      // Glowing aura around the flying brick
+      const isQ = jb.type === 'q';
+      this.ctx.shadowColor = isQ ? '#ff3b30' : '#f368e0';
       this.ctx.shadowBlur = 18;
 
-      if (this.images.brick_manami && this.images.brick_manami.complete && this.images.brick_manami.naturalWidth !== 0) {
-        this.ctx.drawImage(this.images.brick_manami, -jb.width / 2, -jb.height / 2, jb.width, jb.height);
+      const img = isQ ? this.images.brick_q : this.images.brick_manami;
+      if (img && img.complete && img.naturalWidth !== 0) {
+        this.ctx.drawImage(img, -jb.width / 2, -jb.height / 2, jb.width, jb.height);
       } else {
-        this.ctx.fillStyle = '#f368e0';
+        this.ctx.fillStyle = isQ ? '#ff3b30' : '#f368e0';
         this.ctx.fillRect(-jb.width / 2, -jb.height / 2, jb.width, jb.height);
       }
 
