@@ -38,6 +38,9 @@
 
       <div class="hud-right">
         <div class="hud-btn-group">
+          <button id="btn-info" class="icon-btn" aria-label="How to Play" title="How to Play">
+            <img id="info-icon" src="images/info-circle-svgrepo-com.svg" alt="Info" class="hud-btn-icon">
+          </button>
           <button id="btn-settings" class="icon-btn" aria-label="Settings" title="Settings">
             <img id="settings-icon" src="images/gear-svgrepo-com.svg" alt="Settings" class="hud-btn-icon">
           </button>
@@ -78,6 +81,375 @@
           <div class="tap-prompt-box">
             <div class="pixel-prompt-text blink-glow">TAP TO START</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info & How to Play Overlay -->
+    <div id="overlay-info" class="game-overlay hidden">
+      <div class="modal-card info-card">
+        <div class="info-modal-header">
+          <h2 class="modal-title info-title">HOW TO PLAY</h2>
+          <button id="btn-close-info-x" class="info-close-btn" aria-label="Close Info">&times;</button>
+        </div>
+
+        <div class="info-content-scroll">
+          <!-- HOW TO PLAY (OBJECTIVE ONLY) -->
+          <div class="info-section">
+            <h3 class="info-section-title">🎯 OBJECTIVE</h3>
+            <p class="info-text">
+              Deflect the XB balls with your beam bat to shatter bricks! Destroy all breakable bricks on the board to
+              clear the wave and earn a <strong>+500 wave bonus</strong>.
+            </p>
+          </div>
+
+          <!-- BRICK CODEX TABLE -->
+          <div class="codex-section">
+            <div class="codex-table-wrapper">
+              <table class="codex-table">
+                <thead>
+                  <tr>
+                    <th class="th-brick">BRICK</th>
+                    <th class="th-skill">SKILL &amp; TYPE</th>
+                    <th class="th-effect">EFFECT</th>
+                  </tr>
+                </thead>
+                <tbody id="codex-table-body">
+                  <!-- BUFF BRICKS (Blue Text) -->
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_yo.webp" class="codex-brick-img" alt="Yo">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">OVERDRIVE</strong>
+                    </td>
+                    <td>Activate Yo's beam bat and extended the bat for 30 seconds. Timer refreshes on repeat hits.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_tsuki.webp" class="codex-brick-img" alt="Tsuki">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">IROHA BALL</strong>
+                    </td>
+                    <td>Gives magnet effect to the nearest brick, drawing the ball that breaks the brick straight into
+                      it.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_q.webp" class="codex-brick-img" alt="Q">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">BROKEN MORAL</strong>
+                    </td>
+                    <td>Explodes and destroys all adjacent bricks in a 3x3 radius.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_kazuki.webp" class="codex-brick-img" alt="Kazuki">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">DEFLECT SERVER</strong>
+                    </td>
+                    <td>Deploys a safety shield beneath the bat for 15s. Destroyed after 1 hit.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_miu.webp" class="codex-brick-img" alt="Miu">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">LUMINOUS CRYSTAL</strong>
+                    </td>
+                    <td>Summoned luminous crystal that fire upward plasma lasers whenever a ball bounces on
+                      the bat for 30s.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_jio.webp" class="codex-brick-img" alt="Jio">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">POISON RAIN</strong>
+                    </td>
+                    <td>Poisons 1 adjacent brick. Poison destroys the brick after 5s or cascades to another unhit brick.
+                    </td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_enoki.webp" class="codex-brick-img" alt="Enoki">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">IGNITION</strong>
+                    </td>
+                    <td>Requires 3 hits. On 3rd hit, detonates diagonal X-line laser beams across the
+                      entire grid!</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_saigo.webp" class="codex-brick-img" alt="Saigo">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">ROAR OF OUTRAGE</strong>
+                    </td>
+                    <td>Requires 3 hits. On 3rd hit, detonates cross-fire laser beams along its entire
+                      row and column!</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_koishi.webp" class="codex-brick-img" alt="Koishi">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">TIME TO EAT</strong>
+                    </td>
+                    <td>Cleanses active debuffs.
+                    </td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_shun.webp" class="codex-brick-img" alt="Shun">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">PLAY BALL</strong>
+                    </td>
+                    <td>Drops extra XB Ball.
+                    </td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_eiji.webp" class="codex-brick-img" alt="Eiji">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">MONEY IS POWER!</strong>
+                    </td>
+                    <td>Drops kane. Earn up to 1000 points when collected.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_hyakuichitaro.webp" class="codex-brick-img" alt="Hyakuichitaro">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">FIGHTING SPIRIT</strong>
+                    </td>
+                    <td>Turns ball into a blazing Fire Ball that pierces through bricks without bouncing back for 5
+                      consecutive hits!</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_tsuruko.webp" class="codex-brick-img" alt="Tsuruko">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">TWILIGHT'S EMBRACE</strong>
+                    </td>
+                    <td>Activates a gravity field in the bottom of playfield for 8s. Balls will slow down as they
+                      fall.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_mita.webp" class="codex-brick-img" alt="Mita">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">ENERGIZE</strong>
+                    </td>
+                    <td>Accelerates bat movement speed by +75% for 20s.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_manami.webp" class="codex-brick-img" alt="Manami">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">HEAVY METAL</strong>
+                    </td>
+                    <td>Leaps across the field and explodes 5-brick cross on landing!
+                    </td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_saori.webp" class="codex-brick-img" alt="Saori">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">INSTANT PERCEPTION</strong>
+                    </td>
+                    <td>Fires 5 sequential BB shots from the bat straight up that pierces through bricks.</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_taiga.webp" class="codex-brick-img" alt="Taiga">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">BREAKTHROUGH</strong>
+                    </td>
+                    <td>Summons a wind updraft from the bottom for 1s that bounces every falling ball
+                      upward!</td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_zero.webp" class="codex-brick-img" alt="Zero">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">ITS YOUR CUTE ZERO!</strong>
+                    </td>
+                    <td>Drops a Zero Ball! Catch it to earn +1 Extra Life.
+                    </td>
+                  </tr>
+
+                  <tr class="brick-row-buff" data-type="buff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_haru.webp" class="codex-brick-img" alt="Haru">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-buff">BUFF</span>
+                      <strong class="skill-name-buff">POWER RESONANCE</strong>
+                    </td>
+                    <td>Slow motion for 2 seconds, then resets all ball speed.</td>
+                  </tr>
+
+                  <!-- DEBUFF BRICKS (Red Text) -->
+                  <tr class="brick-row-debuff" data-type="debuff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_ichinose.webp" class="codex-brick-img" alt="Ichinose">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-debuff">DEBUFF</span>
+                      <strong class="skill-name-debuff">POWER HARASSMENT</strong>
+                    </td>
+                    <td>Clamps all points gained to strictly 1 point for 60s.</td>
+                  </tr>
+
+                  <tr class="brick-row-debuff" data-type="debuff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_akuta.webp" class="codex-brick-img" alt="Akuta">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-debuff">DEBUFF</span>
+                      <strong class="skill-name-debuff">TOKIMEKI TIME</strong>
+                    </td>
+                    <td>Breaks the bat to half for 60 seconds.</td>
+                  </tr>
+
+                  <tr class="brick-row-debuff" data-type="debuff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_sui.webp" class="codex-brick-img" alt="Sui">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-debuff">DEBUFF</span>
+                      <strong class="skill-name-debuff">LEBENSTRIEB</strong>
+                    </td>
+                    <td>Drops red shipping containers. Catching one slows the bat for 2s!</td>
+                  </tr>
+
+                  <tr class="brick-row-debuff" data-type="debuff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_magata.webp" class="codex-brick-img" alt="Magata">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-debuff">DEBUFF</span>
+                      <strong class="skill-name-debuff">REJECTION IMPULSE</strong>
+                    </td>
+                    <td>Floods the brick field with livestream comments for 30s.</td>
+                  </tr>
+
+                  <tr class="brick-row-debuff" data-type="debuff">
+                    <td class="codex-brick-col">
+                      <div class="codex-brick-cell">
+                        <img src="images/brick_ruriiro.webp" class="codex-brick-img" alt="Ruriiro">
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge-debuff">DEBUFF</span>
+                      <strong class="skill-name-debuff">HEAVEN OR HELL</strong>
+                    </td>
+                    <td>Turns all other bricks into fake Ruriiro. Remove by finding the Real Ruriiro. All bricks effect
+                      will remain as normal bricks until reverted.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-modal-footer">
+          <button id="btn-close-info" class="btn-primary" type="button">CLOSE</button>
         </div>
       </div>
     </div>

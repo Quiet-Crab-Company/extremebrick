@@ -24,7 +24,7 @@ This document provides a breakdown of the grid architecture and each brick type 
 | **Normal Brick** | `images/brick_normal.webp` | Standard brick. Grants +10 points when destroyed. | Permanent | ~6–12 of 30 | `audio/hit.mp3` |
 | **Hard Brick** *(2-Hit Normal Brick)* | `images/brick_hard.webp` → `images/brick_cracked.webp` | Reinforced normal brick requiring **2 hits** to break. Turns into cracked brick (`images/brick_cracked.webp`) on 1st hit; destroys on 2nd hit. Grants **+30 points** instead of 10. | Permanent (2 Hits) | Random 3–6 of Normal pool | `audio/hit.mp3` |
 | **Yo Brick** *(Board Extender)* | `images/brick_yo.webp` | Widens paddle from 215px to 284px and equips extended sprite. | **30 Seconds** (Timer resets if another Yo brick is broken) | ~15.5% | `audio/special_brick.mp3` |
-| **Zero Brick** *(3-Bounce Zero Heart Extra Life)* | `images/brick_zero.webp` | Drops a **Zero Heart** (`images/zero_heart.webp`, resized to ball size) that must be bounced on the paddle **3 times** to transform into an extra life (max 3 lives). Heavy physics; does not hit bricks; does not destroy Kazuki shield; unaffected by gravity field. | **3 Paddle Bounces** (Max 3 Lives) | **~7.0%** (Rarest special brick) | `audio/special_brick.mp3` |
+| **Zero Brick** *(3-Bounce Zero Heart Extra Life)* | `images/brick_zero.webp` | Drops a **Zero Heart** (`images/zero_heart.webp`, sized to 22px radius, 44px diameter) that must be bounced on the paddle **3 times** to transform into an extra life (max 3 lives). Heavy physics with comfortable bounce height; does not hit bricks; does not destroy Kazuki shield; unaffected by gravity field. | **3 Paddle Bounces** (Max 3 Lives) | **~7.0%** (Rarest special brick) | `audio/special_brick.mp3` |
 | **Tsuki Brick** *(Magnetism)* | `images/brick_tsuki.webp` | Grants magnetism to the **next 1 closest brick** to the paddle. | **1 Brick** (Single ball binding) | ~15.5% | `audio/special_brick.mp3` |
 | **Q Brick** *(Bomb Blast)* | `images/brick_q.webp` | Explodes all adjacent bricks (activates special skills on hit!). | Instant | ~15.5% | `audio/explode.mp3` |
 | **Kazuki Brick** *(Neon Shield)* | `images/brick_kazuki.webp` | Deploys an animated digital jagged neon light blue shield line beneath player board that scrolls to the right and loops. Deflects ball safely; disappears after **1 hit** or **15 seconds**. | **15 Seconds or 1 Hit** | ~15.5% | `audio/special_brick.mp3` |
@@ -43,7 +43,7 @@ This document provides a breakdown of the grid architecture and each brick type 
 | **Akuta Brick** *(Damaged Board Debuff)* | `images/brick_akuta.webp` | **DEBUFF BRICK**: Shrinks board to half-paddle (`images/bat_half.webp`, width 146px) for **1 minute (60s)**. Damaged board continuously emits billows of smoke and crackling electric sparks! | **60 Seconds (1 Min)** | ~6.0% | `audio/special_brick_debuff.mp3` |
 | **Taiga Brick** *(Green Gale Updraft)* | `images/brick_taiga.webp` | Summons a powerful **Green Wind** surging up from the bottom of the screen for 1 second that bounces every ball upwards once! | Instant / 1.0s Wind Surge | ~5.8% | `audio/special_brick.mp3` & Wind Gale SFX |
 | **Sui Brick** *(Container Drop Debuff)* | `images/brick_sui.webp` | **DEBUFF BRICK**: Drops a random **1–3 red shipping containers** (`images/container.webp`) sequentially from random places. If the board catches a container, it becomes **very slow for 2 seconds**! | **2 Seconds Slow** | ~5.5% | `audio/special_brick_debuff.mp3` |
-| **Magata Brick** *(Danmaku Comments Debuff)* | `images/brick_magata.webp` | **DEBUFF BRICK**: Floods brick area with flying **Nico Nico Douga** style comments moving from right to left for 30s! Standout **MA☆GA☆TA** comment moves slowly in neon pink. Customizable via `magata_comments.json`. | **30 Seconds** | ~5.3% | `audio/special_brick_debuff.mp3` |
+| **Magata Brick** *(Danmaku Comments Debuff)* | `images/brick_magata.webp` | **DEBUFF BRICK**: Floods brick area with flying **Nico Nico Douga** style comments moving from right to left for 30s! All comments move at identical speed (`220px/s`) so the debuff ends cleanly and simultaneously. Standout **MA☆GA☆TA** comment renders in prominent neon pink. Customizable via `magata_comments.json`. | **30 Seconds** | ~5.3% | `audio/special_brick_debuff.mp3` |
 | **Ruriiro Brick** *(Illusion Swapper Debuff)* | `images/brick_ruriiro.webp` | **DEBUFF BRICK**: When broken, swaps a random brick with the **"Real" Ruriiro** brick and turns the rest into **fake Ruriiro** bricks! Fakes act like normal bricks. Destroying the Real one reverts all surviving bricks to their original state! | **Until Real Brick Destroyed / Cleared** | ~5.0% | `audio/special_brick_debuff.mp3` & `audio/special_brick.mp3` |
 | **Haru Brick** *(Power Resonance)* | `images/brick_haru.webp` | Activates **Power Resonance**: slows down all balls and falling items (Zero Hearts, Containers) in **slow motion for 2 seconds**, then resets all ball speeds to normal base speed (`BASE_BALL_SPEED`)! | **2s Slow Motion + Speed Reset** | ~5.0% | `audio/special_brick.mp3` |
 
@@ -86,17 +86,17 @@ The **Yo Brick** is a temporary defensive power-up designed to dramatically expa
 ## 2. Zero Brick (`brick_zero.webp`) - *Zero Heart (3-Bounce Extra Life)*
 
 ### Purpose & Concept
-The **Zero Brick** introduces an interactive recovery minigame. Rather than granting an instant life upon impact, destroying a Zero brick drops a heavy, radiant **Zero Heart** item (`images/zero_heart.webp`, resized to the exact size of the ball: 16px radius, 32px diameter). The player must successfully bounce the Zero Heart on their paddle **3 times** before it crystallizes into an extra life!
+The **Zero Brick** introduces an interactive recovery minigame. Rather than granting an instant life upon impact, destroying a Zero brick drops a heavy, radiant **Zero Heart** item (`images/zero_heart.webp`, sized to 22px radius, 44px diameter). The player must successfully bounce the Zero Heart on their paddle **3 times** before it crystallizes into an extra life!
 
 ### Core Mechanics
 * **Zero Heart Drop**:
-  * Upon destruction, spawns a heavy glowing Zero Heart entity (`images/zero_heart.webp`) from the center of the brick, sized to match the ball (32x32px).
+  * Upon destruction, spawns a heavy glowing Zero Heart entity (`images/zero_heart.webp`) from the center of the brick, sized comfortably for catching (22px radius, 44px diameter).
   * Emits cyan & magenta particle sparks and displays floating text `BOUNCE HEART 3x!`.
-* **Heavy Gravity Physics**:
-  * The heart is much heavier than the standard ball, subjected to continuous downward gravitational acceleration (`HEART_GRAVITY = 0.40`).
+* **Tuned Gravity Physics**:
+  * The heart is subjected to downward gravitational acceleration (`HEART_GRAVITY = 0.35`).
   * Horizontal momentum reflects off left and right screen borders (`vx = -vx * 0.85`).
-* **Non-Brick Interaction (Low Bounce Apex)**:
-  * Upward deflection on paddle bounces is tuned (`vy = -12.5`) so its maximum parabolic peak stays in the lower zone (`~1240px`), well below the brick grid (`575px`).
+* **Non-Brick Interaction (Higher, Controlled Bounce Arc)**:
+  * Upward deflection on paddle bounces is tuned (`vy = -15.5`) so its maximum parabolic peak rises comfortably into the lower-middle zone (`~1140px`, ~300px above paddle), giving ample time to position the board while remaining well below the brick grid (`575px`).
   * The heart **never collides with or destroys bricks**.
 * **3-Bounce Extra Life Conversion**:
   * The Zero Heart renders cleanly as-is during its drop and bounce arc (floating badge omitted).
@@ -113,7 +113,7 @@ The **Zero Brick** introduces an interactive recovery minigame. Rather than gran
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` on drop and on final 3rd bounce; `audio/bounce.mp3` on paddle deflections.
 * **Floating Text**: `BOUNCE HEART 3x!` on spawn, `ZERO HEART N/3!` on paddle bounce, and `+1 LIFE!` on 3rd bounce.
-* **Visuals**: Rendered cleanly with `images/zero_heart.webp` as is (sized to 32x32px ball dimensions), without artificial glow or floating `1/3` badge, accompanied by paddle hit sparks.
+* **Visuals**: Rendered cleanly with `images/zero_heart.webp` as is (sized to 22px radius, 44px diameter), accompanied by paddle hit sparks.
 
 ---
 
@@ -176,7 +176,8 @@ The **Kazuki Brick** summons an emergency neon safety barrier beneath the player
 * **Animated Digital Jagged Neon Light Blue Line**:
   * Deployed across the full screen width at `Y = 1530` (comfortably below the player's paddle at `Y = 1440`).
   * Features a dynamic digital pulse waveform with raised and lowered rectangular blocks scrolling smoothly to the right and looping seamlessly.
-  * Rendered with semi-transparent cyan filled pulse blocks, a multi-layered laser outline with an intense `#00f3ff` light-blue neon glow, and white-hot laser core.
+  * Rendered in a single unified neon blue color (`#00f3ff`) across all strokes, baseline, glow, and pulse blocks (no white core).
+  * Surrounded by ambient floating light blue cyber data box particles (small digital squares & rectangular data packets with cybernetic shimmer).
   * Includes a subtle straight baseline beam for clear spatial reference.
 * **Active Duration (15 Seconds) & 1-Hit Expiration**:
   * Stays active for **15 seconds** of live gameplay (`SHIELD_DURATION = 15`), or until struck by a ball.
@@ -184,13 +185,13 @@ The **Kazuki Brick** summons an emergency neon safety barrier beneath the player
   * If another Kazuki brick is broken while active, the timer refreshes to 15 seconds.
   * During the last 3 seconds of its timer, the shield flashes as a visual expiration warning.
 * **Ball Deflection**:
-  * Any ball descending past the paddle hits the shield line, bounces back upwards (`ball.vy = -Math.abs(ball.vy)`), triggers neon cyan impact sparks, and consumes the shield.
+  * Any ball descending past the paddle hits the shield line, bounces back upwards (`ball.vy = -Math.abs(ball.vy)`), triggers neon blue impact sparks, and consumes the shield.
 * **Explosion Trigger**: If destroyed by an adjacent Q Brick explosion, the neon shield deploys immediately!
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` on activation; `audio/bounce.mp3` on deflection.
 * **Floating Text**: None (only points text appears in the field).
-* **Particles**: 30 electric cyan particles on activation, plus vibrant cyan & white explosion sparks along the shield line on ball bounce.
+* **Particles**: 30 electric cyan particles on activation, ambient floating light blue cyber data box particles, plus neon blue explosion sparks along the shield line on ball bounce.
 
 ---
 
@@ -442,14 +443,15 @@ The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike ben
     }
     ```
   * All floating score indicators render in warning crimson red (`#ff3344`) displaying `+1` while the debuff is active.
-* **Field Watermark ("NUMBERS 1 NANODA")**:
-  * Centered directly on the open playfield between the brick formation and the paddle, a large transparent white watermark displays:
+* **Billboard Blinking Text ("NUMBERS 1 NANODA")**:
+  * Centered directly on the open playfield between the brick formation and the paddle, large illuminated billboard text displays:
     ```
     NUMBERS
        1
     NANODA
     ```
-    with the **`1` rendered in an enormous 240px bold font**, displayed as pure, transparent white text with no outline throughout the debuff duration.
+    with the **`1` rendered in an enormous 240px bold font**.
+  * **Billboard Blinking Animation**: Rhythmically blinks in glowing, bright white like an electronic marquee sign (460ms illuminated with radiant white bloom shadow and electric tube micro-flicker, 260ms unlit filament). Flashes rapidly in the final 3 seconds.
 * **Curved Red Corner Screen Glow (Vignette)**:
   * When the debuff is active, a red glow renders around the corners and edges of the screen:
     * **4 Corner Radial Gradients**: Located at top-left `(0, 0)`, top-right `(CANVAS_WIDTH, 0)`, bottom-left `(0, CANVAS_HEIGHT)`, and bottom-right `(CANVAS_WIDTH, CANVAS_HEIGHT)` with radius `420px`, fading smoothly toward the center.
@@ -465,9 +467,9 @@ The **Ichinose Brick** introduces a new archetype: **Debuff Bricks**. Unlike ben
 
 ### Sensory Feedback
 * **Audio**: Plays specialized debuff audio `audio/special_brick_debuff.mp3` upon activation.
-* **Field Watermark**: Transparent white `NUMBERS 1 NANODA` text (no outline) with giant `1` in the center field.
+* **Billboard Text**: Glowing white billboard-blinking `NUMBERS 1 NANODA` marquee with giant `1` in the center field.
 * **Particles**: Tri-level dark crimson, burgundy, and abyss particle burst (`#ff0033`, `#880015`, `#220005`).
-* **Visuals**: Curved 4-corner radial red screen glow, edge perimeter vignette, live header timer, red `+1` score numbers, and transparent white field text.
+* **Visuals**: Curved 4-corner radial red screen glow, edge perimeter vignette, live header timer, red `+1` score numbers, and white billboard-blinking field text.
 
 ---
 
@@ -687,14 +689,17 @@ The **Magata Brick** is a sensory obstruction debuff brick featuring Magata. Whe
   * One special comment with text `"MA☆GA☆TA"` stands out distinctly:
     * Rendered in radiant neon pink (`#ff007f` / `#ff2a85`) with a pulsing neon pink glow aura.
     * Layered on top of all other comments (highest z-index).
-    * Moves **very slowly** across the central lane of the brick field (`speed: 55px/s`).
+    * Moves across the central lane of the brick field at the uniform speed (`220px/s`).
+* **Uniform Danmaku Velocity (`DANMAKU_SPEED = 220px/s`)**:
+  * All comments (including `"MA☆GA☆TA"`) travel at the exact same uniform speed (`220px/s`).
+  * When the 30-second debuff timer reaches zero, queued off-screen comments are stopped and all comments currently crossing the field clear off simultaneously, ending the debuff cleanly together.
 * **Configurable JSON File (`magata_comments.json`)**:
-  * Loaded at start so anyone can easily customize or add comments, sizes, colors, and speeds manually:
+  * Loaded at start so anyone can easily customize or add comments, sizes, colors, and text:
     ```json
     [
-      { "text": "MA☆GA☆TA", "color": "#ff007f", "size": 44, "speed": 55, "standout": true },
-      { "text": "wwwwwwwwwwwwwwwwwwww", "color": "#ffffff", "size": 28, "speed": 210 },
-      { "text": "弾幕ｷﾀ━━━━(ﾟ∀ﾟ)━━━━!!", "color": "#00f3ff", "size": 28, "speed": 230 }
+      { "text": "MA☆GA☆TA", "color": "#ff007f", "size": 110, "speed": 220, "standout": true },
+      { "text": "wwwwwwwwwwwwwwwwwwww", "color": "#ffffff", "size": 52, "speed": 220 },
+      { "text": "弾幕ｷﾀ━━━━(ﾟ∀ﾟ)━━━━!!", "color": "#00f3ff", "size": 56, "speed": 220 }
     ]
     ```
 * **Cleansable by Koishi Brick**:

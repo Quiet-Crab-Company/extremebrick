@@ -41,6 +41,10 @@ const BOARD_SPEED_BOOST_DURATION = 20; // 20 seconds board speed boost from Mita
 const BAT_HEIGHT = 34;
 const BAT_Y = 1440;
 const BALL_RADIUS = 16;
+const ZERO_HEART_RADIUS = 22; // Slightly larger than ball (22px radius, 44px diameter) to make it easier to catch
+const ZERO_HEART_GRAVITY = 0.35; // Downward gravity acceleration
+const ZERO_HEART_BOUNCE_VY = -15.5; // Upward bounce velocity from paddle (bounces higher for easier catching)
+const DANMAKU_SPEED = 220; // Uniform speed for all Magata Danmaku comments so debuff concludes simultaneously
 const BASE_BALL_SPEED = 11.5;
 
 // --- Web Audio Synthesizer & Audio Asset Player ---
@@ -682,13 +686,19 @@ class BrickBreakerGame {
     this.btnRestartPause = document.getElementById('btn-restart-pause');
     this.btnRestart = document.getElementById('btn-restart');
     this.btnSettings = document.getElementById('btn-settings');
+    this.btnInfo = document.getElementById('btn-info');
     this.btnPause = document.getElementById('btn-pause');
     this.overlaySettings = document.getElementById('overlay-settings');
     this.btnCloseSettings = document.getElementById('btn-close-settings');
+    this.overlayInfo = document.getElementById('overlay-info');
+    this.btnCloseInfo = document.getElementById('btn-close-info');
+    this.btnCloseInfoX = document.getElementById('btn-close-info-x');
     this.sliderBgm = document.getElementById('slider-bgm');
     this.sliderSfx = document.getElementById('slider-sfx');
     this.bgmVolumeVal = document.getElementById('bgm-volume-val');
     this.sfxVolumeVal = document.getElementById('sfx-volume-val');
+    this.wasPlayingBeforeSettings = false;
+    this.wasPlayingBeforeInfo = false;
 
     // Audio & Particles
     this.sound = new SoundSystem();
@@ -707,7 +717,7 @@ class BrickBreakerGame {
     this.speedMultiplier = 1.0;
     this.isClearingLevel = false;
     this.magnetBricksRemaining = 0;
-    this.shield = { active: false, timer: 0 };
+    this.shield = { active: false, timer: 0, dataBoxes: [] };
     this.turrets = { active: false, timer: 0 };
     this.bullets = [];
     this.xBeams = [];
@@ -1314,6 +1324,13 @@ class BrickBreakerGame {
       if (e.code === 'KeyM') {
         toggleSoundMute();
       }
+      if (e.code === 'Escape') {
+        if (this.overlayInfo && !this.overlayInfo.classList.contains('hidden')) {
+          this.closeInfo();
+        } else if (this.overlaySettings && !this.overlaySettings.classList.contains('hidden')) {
+          this.closeSettings();
+        }
+      }
     });
 
     window.addEventListener('keyup', (e) => {
@@ -1388,8 +1405,8 @@ class BrickBreakerGame {
     this.btnRestartPause.addEventListener('click', () => this.restartGame());
     this.btnRestart.addEventListener('click', () => this.restartGame());
 
-    // Settings Modal Handlers
-    const openSettings = () => {
+    // Modal Helpers
+    this.openSettings = () => {
       this.sound.init();
       if (this.state === 'PLAYING') {
         this.wasPlayingBeforeSettings = true;
@@ -1403,7 +1420,7 @@ class BrickBreakerGame {
       }
     };
 
-    const closeSettings = () => {
+    this.closeSettings = () => {
       if (this.overlaySettings) {
         this.overlaySettings.classList.add('hidden');
       }
@@ -1415,19 +1432,65 @@ class BrickBreakerGame {
       }
     };
 
+    this.openInfo = () => {
+      this.sound.init();
+      if (this.state === 'PLAYING') {
+        this.wasPlayingBeforeInfo = true;
+        this.state = 'PAUSED';
+        this.sound.pauseBGM();
+      } else {
+        this.wasPlayingBeforeInfo = false;
+      }
+      if (this.overlayInfo) {
+        this.overlayInfo.classList.remove('hidden');
+      }
+    };
+
+    this.closeInfo = () => {
+      if (this.overlayInfo) {
+        this.overlayInfo.classList.add('hidden');
+      }
+      if (this.wasPlayingBeforeInfo && this.state === 'PAUSED') {
+        this.wasPlayingBeforeInfo = false;
+        this.state = 'PLAYING';
+        this.lastTime = performance.now();
+        this.sound.resumeBGM();
+      }
+    };
+
+    // Settings Modal Handlers
     if (this.btnSettings) {
-      this.btnSettings.addEventListener('click', openSettings);
+      this.btnSettings.addEventListener('click', () => this.openSettings());
     }
     if (this.btnCloseSettings) {
-      this.btnCloseSettings.addEventListener('click', closeSettings);
+      this.btnCloseSettings.addEventListener('click', () => this.closeSettings());
     }
     if (this.overlaySettings) {
       this.overlaySettings.addEventListener('click', (e) => {
         if (e.target === this.overlaySettings) {
-          closeSettings();
+          this.closeSettings();
         }
       });
     }
+
+    // Info Modal Handlers
+    if (this.btnInfo) {
+      this.btnInfo.addEventListener('click', () => this.openInfo());
+    }
+    if (this.btnCloseInfo) {
+      this.btnCloseInfo.addEventListener('click', () => this.closeInfo());
+    }
+    if (this.btnCloseInfoX) {
+      this.btnCloseInfoX.addEventListener('click', () => this.closeInfo());
+    }
+    if (this.overlayInfo) {
+      this.overlayInfo.addEventListener('click', (e) => {
+        if (e.target === this.overlayInfo) {
+          this.closeInfo();
+        }
+      });
+    }
+
 
     if (this.sliderBgm) {
       this.sliderBgm.value = this.sound.bgmVolumePercent;
@@ -1503,7 +1566,7 @@ class BrickBreakerGame {
     this.particles = [];
     this.floatingTexts = [];
     this.magnetBricksRemaining = 0;
-    this.shield = { active: false, timer: 0 };
+    this.shield = { active: false, timer: 0, dataBoxes: [] };
     this.turrets = { active: false, timer: 0 };
     this.bullets = [];
     this.xBeams = [];
@@ -1798,6 +1861,71 @@ class BrickBreakerGame {
     });
   }
 
+  initShieldDataBoxes() {
+    this.shield.dataBoxes = [];
+    const count = 35;
+    for (let i = 0; i < count; i++) {
+      this.shield.dataBoxes.push(this.createShieldDataBox(true));
+    }
+  }
+
+  createShieldDataBox(randomY = false) {
+    const isWireframe = Math.random() > 0.45;
+    const isRect = Math.random() > 0.5;
+    const baseSize = Math.floor(Math.random() * 3 + 3); // 3, 4, 5
+    const w = isRect ? (Math.random() > 0.5 ? baseSize + 3 : baseSize) : baseSize;
+    const h = isRect ? (w === baseSize ? baseSize + 3 : baseSize) : baseSize;
+
+    return {
+      x: Math.random() * CANVAS_WIDTH,
+      y: randomY ? (SHIELD_Y + (Math.random() * 56 - 32)) : (SHIELD_Y + (Math.random() * 16 - 6)),
+      w: w,
+      h: h,
+      vx: (Math.random() * 28 + 12), // Drift to the right matching data stream
+      vy: -(Math.random() * 24 + 10), // Float gently upward like cyber data bits
+      alpha: Math.random() * 0.45 + 0.35,
+      flickerSpeed: Math.random() * 10 + 6,
+      flickerOffset: Math.random() * Math.PI * 2,
+      wireframe: isWireframe,
+      life: Math.random() * 1.6 + 0.8,
+      maxLife: 2.2
+    };
+  }
+
+  updateShieldDataBoxes(dt) {
+    if (!this.shield.active) {
+      if (this.shield.dataBoxes && this.shield.dataBoxes.length > 0) {
+        this.shield.dataBoxes = [];
+      }
+      return;
+    }
+
+    if (!this.shield.dataBoxes) this.shield.dataBoxes = [];
+
+    // Maintain 35 ambient cyber data box particles around shield
+    const targetCount = 35;
+    while (this.shield.dataBoxes.length < targetCount) {
+      this.shield.dataBoxes.push(this.createShieldDataBox(false));
+    }
+
+    for (let i = this.shield.dataBoxes.length - 1; i >= 0; i--) {
+      const box = this.shield.dataBoxes[i];
+      box.x += box.vx * dt;
+      box.y += box.vy * dt;
+      box.life -= dt;
+
+      // Wrap if drifted past right canvas edge
+      if (box.x > CANVAS_WIDTH + 15) {
+        box.x = -15;
+      }
+
+      // If drifted too high or life expired, recycle back to shield baseline
+      if (box.life <= 0 || box.y < SHIELD_Y - 45) {
+        Object.assign(box, this.createShieldDataBox(false));
+      }
+    }
+  }
+
   triggerSuiDebuff(brick) {
     this.sound.playDebuff();
 
@@ -1863,37 +1991,37 @@ class BrickBreakerGame {
 
   getDefaultMagataComments() {
     return [
-      { text: "MA☆GA☆TA", color: "#ff007f", size: 110, speed: 55, standout: true },
-      { text: "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", color: "#ffffff", size: 52, speed: 230 },
-      { text: "弾幕ｷﾀ━━━━━━(ﾟ∀ﾟ)━━━━━━!!", color: "#00f3ff", size: 56, speed: 210 },
-      { text: "見えない見えない見えない見えないｗｗｗ", color: "#ffffff", size: 50, speed: 240 },
-      { text: "888888888888888888888888888888888888", color: "#ffea00", size: 48, speed: 190 },
-      { text: "邪魔すぎるだろこれｗｗｗｗｗｗｗｗｗ", color: "#ff3344", size: 54, speed: 250 },
-      { text: "画面が完全に埋まったｗｗｗｗｗｗ", color: "#ff9900", size: 50, speed: 200 },
-      { text: "ボールどこだよ！？！？！？ｗｗｗ", color: "#ffffff", size: 52, speed: 230 },
-      { text: "草草草草草草草草草草草草草草草草草草", color: "#39ff14", size: 54, speed: 260 },
-      { text: "MAGATA SAMA DAISUKI BARRAGE!!!", color: "#ff69b4", size: 56, speed: 180 },
-      { text: "？？？？？？？？？？？？？？？？？？", color: "#ff2a85", size: 58, speed: 170 },
-      { text: "前が見えねェェェェェェェェ！！！", color: "#ffffff", size: 50, speed: 220 },
-      { text: "ブロックどこいったｗｗｗｗｗｗｗ", color: "#ffcc00", size: 48, speed: 210 },
-      { text: "うわあああああああああああああ", color: "#ffffff", size: 52, speed: 240 },
-      { text: "MA☆GA☆TA☆MA☆GA☆TA☆MA☆GA☆TA", color: "#ff00aa", size: 60, speed: 160 },
-      { text: "ｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#ffffff", size: 58, speed: 270 },
-      { text: "完全遮断モード突入ｗｗｗｗｗｗｗｗ", color: "#00f3ff", size: 48, speed: 225 },
-      { text: "たすけてええええええええええ！！", color: "#ff3b30", size: 52, speed: 215 },
-      { text: "ログの暴力ｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#00ff88", size: 50, speed: 235 },
-      { text: "★☆★☆★☆★☆★☆★☆★☆★☆★", color: "#ffe600", size: 54, speed: 185 },
-      { text: "TOTAL BLIND DANMAKU WALL!!", color: "#ff0055", size: 52, speed: 200 },
-      { text: "きたあああああああああああああ！", color: "#ffffff", size: 50, speed: 240 },
-      { text: "無理ゲーすぎて草生えるｗｗｗｗｗ", color: "#39ff14", size: 50, speed: 220 },
-      { text: "なんも見えんぞオイィィィィィィィ！", color: "#ff3344", size: 52, speed: 250 },
-      { text: "神回避しろおおおおおおおおｗｗｗ", color: "#ffea00", size: 48, speed: 195 },
-      { text: "音だけで反射しろｗｗｗｗｗｗｗｗ", color: "#00f3ff", size: 50, speed: 210 },
-      { text: "大草原不可避ｗｗｗｗｗｗｗｗｗｗ", color: "#ffffff", size: 54, speed: 230 },
-      { text: "MAGATA ZONE ACTIVE 1000%!!", color: "#ff007f", size: 56, speed: 175 },
-      { text: "文字の壁ｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#ff9900", size: 52, speed: 245 },
-      { text: "心眼で打て心眼でｗｗｗｗｗｗｗｗ", color: "#00ff88", size: 48, speed: 205 },
-      { text: "ｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#ffffff", size: 62, speed: 280 }
+      { text: "MA☆GA☆TA", color: "#ff007f", size: 110, speed: DANMAKU_SPEED, standout: true },
+      { text: "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", color: "#ffffff", size: 52, speed: DANMAKU_SPEED },
+      { text: "弾幕ｷﾀ━━━━━━(ﾟ∀ﾟ)━━━━━━!!", color: "#00f3ff", size: 56, speed: DANMAKU_SPEED },
+      { text: "見えない見えない見えない見えないｗｗｗ", color: "#ffffff", size: 50, speed: DANMAKU_SPEED },
+      { text: "888888888888888888888888888888888888", color: "#ffea00", size: 48, speed: DANMAKU_SPEED },
+      { text: "邪魔すぎるだろこれｗｗｗｗｗｗｗｗｗ", color: "#ff3344", size: 54, speed: DANMAKU_SPEED },
+      { text: "画面が完全に埋まったｗｗｗｗｗｗ", color: "#ff9900", size: 50, speed: DANMAKU_SPEED },
+      { text: "ボールどこだよ！？！？！？ｗｗｗ", color: "#ffffff", size: 52, speed: DANMAKU_SPEED },
+      { text: "草草草草草草草草草草草草草草草草草草", color: "#39ff14", size: 54, speed: DANMAKU_SPEED },
+      { text: "MAGATA SAMA DAISUKI BARRAGE!!!", color: "#ff69b4", size: 56, speed: DANMAKU_SPEED },
+      { text: "？？？？？？？？？？？？？？？？？？", color: "#ff2a85", size: 58, speed: DANMAKU_SPEED },
+      { text: "前が見えねェェェェェェェェ！！！", color: "#ffffff", size: 50, speed: DANMAKU_SPEED },
+      { text: "ブロックどこいったｗｗｗｗｗｗｗ", color: "#ffcc00", size: 48, speed: DANMAKU_SPEED },
+      { text: "うわあああああああああああああ", color: "#ffffff", size: 52, speed: DANMAKU_SPEED },
+      { text: "MA☆GA☆TA☆MA☆GA☆TA☆MA☆GA☆TA", color: "#ff00aa", size: 60, speed: DANMAKU_SPEED },
+      { text: "ｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#ffffff", size: 58, speed: DANMAKU_SPEED },
+      { text: "完全遮断モード突入ｗｗｗｗｗｗｗｗ", color: "#00f3ff", size: 48, speed: DANMAKU_SPEED },
+      { text: "たすけてええええええええええ！！", color: "#ff3b30", size: 52, speed: DANMAKU_SPEED },
+      { text: "ログの暴力ｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#00ff88", size: 50, speed: DANMAKU_SPEED },
+      { text: "★☆★☆★☆★☆★☆★☆★☆★☆★", color: "#ffe600", size: 54, speed: DANMAKU_SPEED },
+      { text: "TOTAL BLIND DANMAKU WALL!!", color: "#ff0055", size: 52, speed: DANMAKU_SPEED },
+      { text: "きたあああああああああああああ！", color: "#ffffff", size: 50, speed: DANMAKU_SPEED },
+      { text: "無理ゲーすぎて草生えるｗｗｗｗｗ", color: "#39ff14", size: 50, speed: DANMAKU_SPEED },
+      { text: "なんも見えんぞオイィィィィィィィ！", color: "#ff3344", size: 52, speed: DANMAKU_SPEED },
+      { text: "神回避しろおおおおおおおおｗｗｗ", color: "#ffea00", size: 48, speed: DANMAKU_SPEED },
+      { text: "音だけで反射しろｗｗｗｗｗｗｗｗ", color: "#00f3ff", size: 50, speed: DANMAKU_SPEED },
+      { text: "大草原不可避ｗｗｗｗｗｗｗｗｗｗ", color: "#ffffff", size: 54, speed: DANMAKU_SPEED },
+      { text: "MAGATA ZONE ACTIVE 1000%!!", color: "#ff007f", size: 56, speed: DANMAKU_SPEED },
+      { text: "文字の壁ｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#ff9900", size: 52, speed: DANMAKU_SPEED },
+      { text: "心眼で打て心眼でｗｗｗｗｗｗｗｗ", color: "#00ff88", size: 48, speed: DANMAKU_SPEED },
+      { text: "ｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗ", color: "#ffffff", size: 62, speed: DANMAKU_SPEED }
     ];
   }
 
@@ -1922,8 +2050,8 @@ class BrickBreakerGame {
       const isStandout = Boolean(tmpl.standout);
       const size = tmpl.size || (isStandout ? 110 : 50);
       const color = tmpl.color || (isStandout ? '#ff007f' : '#ffffff');
-      // "MA☆GA☆TA" moving very slowly!
-      const speed = tmpl.speed || (isStandout ? 55 : (180 + Math.random() * 80));
+      // All danmaku comments move at the exact same uniform speed so they conclude together
+      const speed = DANMAKU_SPEED;
 
       let y;
       let x;
@@ -2451,6 +2579,7 @@ class BrickBreakerGame {
     if (brick.specialType === 'kazuki') {
       this.shield.active = true;
       this.shield.timer = SHIELD_DURATION;
+      this.initShieldDataBoxes();
       this.sound.playSpecialHit();
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00f3ff', 30);
       return;
@@ -2545,7 +2674,7 @@ class BrickBreakerGame {
       this.hearts.push({
         x: spawnX,
         y: spawnY,
-        radius: BALL_RADIUS, // Resized to the exact size of the ball (16px radius, 32px diameter)
+        radius: ZERO_HEART_RADIUS, // Slightly larger than ball (22px radius, 44px diameter) to make it easier to catch
         vx: (Math.random() - 0.5) * 3.5,
         vy: 2.5,
         bounces: 0,
@@ -3062,12 +3191,14 @@ class BrickBreakerGame {
       }
     }
 
-    // Bottom neon shield timer countdown
+    // Bottom neon shield timer countdown & cyber data box particles
     if (this.shield.active) {
       this.shield.timer -= dt;
+      this.updateShieldDataBoxes(dt);
       if (this.shield.timer <= 0) {
         this.shield.active = false;
         this.shield.timer = 0;
+        this.shield.dataBoxes = [];
       }
     }
 
@@ -3219,9 +3350,17 @@ class BrickBreakerGame {
 
       for (let i = this.magataComments.length - 1; i >= 0; i--) {
         const c = this.magataComments[i];
+        c.speed = DANMAKU_SPEED; // Ensure identical speed for all comments
         c.x -= c.speed * dt;
 
         const textWidth = c.width || (c.size * (c.text ? c.text.length : 10) * 0.85);
+
+        // When timer has reached zero, immediately remove queued comments that have not entered screen yet
+        if (this.magataDebuff.timer <= 0 && c.x >= CANVAS_WIDTH) {
+          this.magataComments.splice(i, 1);
+          continue;
+        }
+
         if (c.x + textWidth < -20) {
           if (this.magataDebuff.timer > 0) {
             // Respawn from right
@@ -3545,9 +3684,9 @@ class BrickBreakerGame {
         // Disappear after 1 hit
         this.shield.active = false;
         this.shield.timer = 0;
+        this.shield.dataBoxes = [];
 
-        this.spawnExplosion(ball.x, SHIELD_Y, '#00f3ff', 24);
-        this.spawnExplosion(ball.x, SHIELD_Y, '#ffffff', 12);
+        this.spawnExplosion(ball.x, SHIELD_Y, '#00f3ff', 30);
       }
 
       // Green Wind Updraft (Taiga Brick Effect): during the 1-second blow, bounce any ball reaching the bottom upwards once
@@ -3661,12 +3800,12 @@ class BrickBreakerGame {
     }
 
     // Update Falling / Bouncing Heart Icons (dropped from Zero bricks)
-    const HEART_GRAVITY = 0.40; // Heavy gravity acceleration
+    const HEART_GRAVITY = ZERO_HEART_GRAVITY; // Tuned gravity acceleration
     const heartSlowModifier = (this.haruSlowMotion && this.haruSlowMotion.active) ? this.haruSlowMotion.slowFactor : 1.0;
     for (let hi = this.hearts.length - 1; hi >= 0; hi--) {
       const heart = this.hearts[hi];
 
-      // Heart is heavier than usual ball (applies downward gravity, unaffected by gravity field)
+      // Heart applies downward gravity (unaffected by gravity field)
       heart.vy += HEART_GRAVITY * dt * 60 * heartSlowModifier;
       heart.vy = Math.min(heart.vy, 15); // Terminal fall velocity
 
@@ -3710,14 +3849,14 @@ class BrickBreakerGame {
           this.hearts.splice(hi, 1);
           continue;
         } else {
-          // 1st or 2nd bounce: bounce upward with heavy feel (does NOT reach bricks)
+          // 1st or 2nd bounce: bounce upward with higher arc to make it easier to catch
           heart.y = this.bat.y - heart.radius;
-          heart.vy = -12.5;
+          heart.vy = ZERO_HEART_BOUNCE_VY;
 
           // Horizontal deflection based on paddle offset
           const batCenter = this.bat.x + this.bat.width / 2;
           const hitOffset = (heart.x - batCenter) / (this.bat.width / 2);
-          heart.vx = hitOffset * 6 + (this.bat.vx ? this.bat.vx * 0.25 : 0);
+          heart.vx = hitOffset * 5 + (this.bat.vx ? this.bat.vx * 0.25 : 0);
 
           this.sound.playWallBounce();
           this.spawnExplosion(heart.x, this.bat.y, '#ff3366', 16);
@@ -3744,6 +3883,7 @@ class BrickBreakerGame {
       this.updateMagnetBrick();
       this.shield.active = false;
       this.shield.timer = 0;
+      this.shield.dataBoxes = [];
       this.turrets.active = false;
       this.turrets.timer = 0;
       this.bullets = [];
@@ -4610,13 +4750,20 @@ class BrickBreakerGame {
       this.ctx.restore();
     }
 
-    // 2d. Draw Ichinose 1-Point Debuff Field Watermark ("NUMBERS 1 NANODA")
+    // 2d. Draw Ichinose 1-Point Debuff Billboard Text ("NUMBERS 1 NANODA")
     if (this.pointDebuff && this.pointDebuff.active) {
       this.ctx.save();
       const isEnding = this.pointDebuff.timer <= 3.0;
-      const pulse = 0.88 + 0.12 * Math.sin(Date.now() / 200);
-      const baseAlpha = isEnding ? (Math.floor(this.pointDebuff.timer * 6) % 2 === 0 ? 0.08 : 0.22) : 0.18;
-      const alpha = baseAlpha * pulse;
+
+      // Billboard electronic blink: rhythmic marquee flash (460ms ON with bright white glow, 260ms unlit)
+      const cycleDuration = isEnding ? 260 : 720;
+      const onDuration = isEnding ? 150 : 460;
+      const cycle = Date.now() % cycleDuration;
+      const isLit = cycle < onDuration;
+
+      // Subtle electric flicker when lit to simulate illuminated billboard / neon bulbs
+      const electricFlicker = isLit ? (Math.random() > 0.96 ? 0.65 : 1.0) : 0.0;
+      const alpha = isLit ? (0.90 * electricFlicker) : 0.14;
 
       const centerX = CANVAS_WIDTH / 2;
       const centerY = 1015; // Centered vertically in open field between brick area (~590) and paddle (1440)
@@ -4624,18 +4771,25 @@ class BrickBreakerGame {
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
 
+      if (isLit) {
+        this.ctx.shadowColor = '#ffffff';
+        this.ctx.shadowBlur = 24;
+      } else {
+        this.ctx.shadowBlur = 0;
+      }
+
       // Line 1: "NUMBERS"
-      this.ctx.font = '900 44px "Impact", "Arial Black", sans-serif';
+      this.ctx.font = '900 48px "Impact", "Arial Black", sans-serif';
       this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       this.ctx.fillText('NUMBERS', centerX, centerY - 145);
 
-      // Line 2: "1" (very big letter!)
+      // Line 2: "1" (giant billboard number!)
       this.ctx.font = '900 240px "Impact", "Arial Black", sans-serif';
-      this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 1.05})`;
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       this.ctx.fillText('1', centerX, centerY + 5);
 
       // Line 3: "NANODA"
-      this.ctx.font = '900 44px "Impact", "Arial Black", sans-serif';
+      this.ctx.font = '900 48px "Impact", "Arial Black", sans-serif';
       this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       this.ctx.fillText('NANODA', centerX, centerY + 155);
 
@@ -5188,7 +5342,7 @@ class BrickBreakerGame {
       this.ctx.save();
       this.ctx.translate(heart.x, heart.y);
 
-      const r = heart.radius || BALL_RADIUS;
+      const r = heart.radius || ZERO_HEART_RADIUS;
       const diameter = r * 2;
 
       if (this.images.zero_heart && this.images.zero_heart.complete && this.images.zero_heart.naturalWidth !== 0) {
@@ -5251,11 +5405,36 @@ class BrickBreakerGame {
       const isEndingSoon = this.shield.timer <= 3.0;
       const shieldAlpha = isEndingSoon ? (Math.floor(this.shield.timer * 6) % 2 === 0 ? 0.35 : 1.0) : 1.0;
       const pulse = 0.8 + 0.2 * Math.sin(Date.now() / 80);
+      const SHIELD_NEON_BLUE = '#00f3ff';
+
+      // 1. Draw small light blue floating cyber data box particles around shield
+      if (this.shield.dataBoxes && this.shield.dataBoxes.length > 0) {
+        this.ctx.save();
+        const now = Date.now() / 1000;
+        for (let i = 0; i < this.shield.dataBoxes.length; i++) {
+          const box = this.shield.dataBoxes[i];
+          const flicker = 0.65 + 0.35 * Math.sin(now * box.flickerSpeed + box.flickerOffset);
+          const currentAlpha = Math.max(0, Math.min(1, box.alpha * flicker * shieldAlpha));
+          this.ctx.globalAlpha = currentAlpha;
+          this.ctx.fillStyle = SHIELD_NEON_BLUE;
+          this.ctx.strokeStyle = SHIELD_NEON_BLUE;
+          this.ctx.shadowColor = SHIELD_NEON_BLUE;
+          this.ctx.shadowBlur = 6;
+
+          if (box.wireframe) {
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(Math.round(box.x), Math.round(box.y), box.w, box.h);
+          } else {
+            this.ctx.fillRect(Math.round(box.x), Math.round(box.y), box.w, box.h);
+          }
+        }
+        this.ctx.restore();
+      }
 
       this.ctx.globalAlpha = shieldAlpha;
 
-      // 1. Subtle straight baseline reference beam
-      this.ctx.strokeStyle = '#00f3ff';
+      // 2. Subtle straight baseline reference beam (strictly single neon blue)
+      this.ctx.strokeStyle = SHIELD_NEON_BLUE;
       this.ctx.lineWidth = 1.5;
       this.ctx.globalAlpha = shieldAlpha * 0.35;
       this.ctx.beginPath();
@@ -5263,22 +5442,22 @@ class BrickBreakerGame {
       this.ctx.lineTo(CANVAS_WIDTH, SHIELD_Y);
       this.ctx.stroke();
 
-      // 2. Animated digital jagged pulse wave moving smoothly to the right
+      // 3. Animated digital jagged pulse wave moving smoothly to the right
       const period = 220;
       const speed = 160; // px/sec to the right
       const offset = (Date.now() / 1000 * speed) % period;
       const stepHeight = 10;
 
-      // Clip shield within canvas horizontal bounds
+      // Clip shield waveform within canvas horizontal bounds
       this.ctx.save();
       this.ctx.beginPath();
       this.ctx.rect(0, SHIELD_Y - 30, CANVAS_WIDTH, 60);
       this.ctx.clip();
 
-      // Draw semi-transparent cyan filled rectangular pulse blocks matching design
+      // Draw semi-transparent neon blue filled rectangular pulse blocks matching design
       this.ctx.globalAlpha = shieldAlpha * (0.35 + 0.15 * pulse);
-      this.ctx.fillStyle = '#00f3ff';
-      this.ctx.shadowColor = '#00f3ff';
+      this.ctx.fillStyle = SHIELD_NEON_BLUE;
+      this.ctx.shadowColor = SHIELD_NEON_BLUE;
       this.ctx.shadowBlur = 12 * pulse;
       for (let base = -period + offset - period; base <= CANVAS_WIDTH + period; base += period) {
         // Raised rectangular block
@@ -5319,21 +5498,15 @@ class BrickBreakerGame {
 
       this.ctx.globalAlpha = shieldAlpha;
 
-      // Outer light blue neon glow
-      this.ctx.strokeStyle = '#00f3ff';
-      this.ctx.lineWidth = 5.5;
-      this.ctx.shadowColor = '#00f3ff';
-      this.ctx.shadowBlur = 20 * pulse + 6;
+      // Glowing neon blue digital beam (only one color in neon blue - no white or multi-tier colors)
+      this.ctx.strokeStyle = SHIELD_NEON_BLUE;
+      this.ctx.lineWidth = 4.5;
+      this.ctx.shadowColor = SHIELD_NEON_BLUE;
+      this.ctx.shadowBlur = 18 * pulse + 8;
       this.ctx.stroke(path);
 
-      // Middle bright cyan beam
-      this.ctx.strokeStyle = '#66ffff';
-      this.ctx.lineWidth = 2.8;
-      this.ctx.stroke(path);
-
-      // Inner intense laser core
-      this.ctx.strokeStyle = '#ffffff';
-      this.ctx.lineWidth = 1.4;
+      this.ctx.lineWidth = 2.0;
+      this.ctx.shadowBlur = 4;
       this.ctx.stroke(path);
 
       this.ctx.restore(); // end clip
