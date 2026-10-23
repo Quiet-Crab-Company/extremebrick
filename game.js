@@ -59,9 +59,9 @@ class SoundSystem {
     try {
       savedBgm = localStorage.getItem('extremebrick_bgm_vol');
       savedSfx = localStorage.getItem('extremebrick_sfx_vol');
-    } catch (e) {}
+    } catch (e) { }
 
-    this.bgmVolumePercent = savedBgm !== null ? Math.max(0, Math.min(100, parseInt(savedBgm, 10))) : 80;
+    this.bgmVolumePercent = savedBgm !== null ? Math.max(0, Math.min(100, parseInt(savedBgm, 10))) : 50;
     this.sfxVolumePercent = savedSfx !== null ? Math.max(0, Math.min(100, parseInt(savedSfx, 10))) : 80;
 
     this.bgmVolume = (this.bgmVolumePercent / 100) * 0.35;
@@ -106,7 +106,7 @@ class SoundSystem {
     this.bgmVolume = (this.bgmVolumePercent / 100) * 0.35;
     try {
       localStorage.setItem('extremebrick_bgm_vol', this.bgmVolumePercent);
-    } catch (e) {}
+    } catch (e) { }
     if (this.bgm) {
       this.bgm.volume = this.bgmVolume;
     }
@@ -117,7 +117,7 @@ class SoundSystem {
     this.sfxVolume = this.sfxVolumePercent / 100;
     try {
       localStorage.setItem('extremebrick_sfx_vol', this.sfxVolumePercent);
-    } catch (e) {}
+    } catch (e) { }
     if (this.ctx && this.masterSfxGain) {
       this.masterSfxGain.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
     }
@@ -191,7 +191,7 @@ class SoundSystem {
       this.bgmPlaying = true;
       this.bgm.muted = false;
       this.bgm.volume = this.bgmVolume;
-      this.bgm.play().catch(() => {});
+      this.bgm.play().catch(() => { });
     }
   }
 
@@ -209,7 +209,7 @@ class SoundSystem {
       this.bgm.muted = this.isMuted;
       this.bgm.volume = this.isMuted ? 0 : this.bgmVolume;
       if (!this.isMuted && this.bgmPlaying && this.bgm.paused) {
-        this.bgm.play().catch(() => {});
+        this.bgm.play().catch(() => { });
       }
     }
   }
@@ -681,6 +681,189 @@ class FloatingText {
   }
 }
 
+// --- Smoke Particle Engine (Ninja Smoke Bomb & Warp Effects) ---
+class SmokeParticle {
+  constructor(x, y, vx, vy, initialSize, maxSize, life = 0.55) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.initialSize = initialSize;
+    this.maxSize = maxSize;
+    this.life = life;
+    this.maxLife = life;
+    const shades = [
+      '240, 245, 255', // bright mist white
+      '215, 220, 230', // soft smoke gray
+      '180, 190, 205', // ash ninja smoke
+      '195, 235, 250', // faint mystical blue haze
+      '160, 165, 180'  // deep billowing puff
+    ];
+    this.color = shades[Math.floor(Math.random() * shades.length)];
+    this.rotation = Math.random() * Math.PI * 2;
+    this.rotSpeed = (Math.random() - 0.5) * 3;
+  }
+
+  update(dt) {
+    this.x += this.vx * dt * 60;
+    this.y += this.vy * dt * 60;
+    this.vx *= 0.94;
+    this.vy *= 0.94;
+    this.rotation += this.rotSpeed * dt;
+    this.life -= dt;
+  }
+
+  draw(ctx) {
+    const progress = Math.max(0, Math.min(1, 1 - (this.life / this.maxLife)));
+    const currentSize = this.initialSize + (this.maxSize - this.initialSize) * Math.sqrt(progress);
+    const alpha = (1 - progress) * 0.65;
+    if (alpha <= 0) return;
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+
+    const grad = ctx.createRadialGradient(0, 0, currentSize * 0.15, 0, 0, currentSize);
+    grad.addColorStop(0, `rgba(${this.color}, ${alpha * 0.85})`);
+    grad.addColorStop(0.55, `rgba(${this.color}, ${alpha * 0.45})`);
+    grad.addColorStop(1, `rgba(${this.color}, 0)`);
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(0, 0, currentSize, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// --- Internationalization (I18N) Dictionary ---
+const I18N = {
+  en: {
+    score: 'SCORE:',
+    high: 'HIGH:',
+    settings: 'SETTINGS',
+    bgm_volume: 'BGM VOLUME',
+    sfx_volume: 'SFX VOLUME',
+    language: 'LANGUAGE',
+    lang_name: 'ENGLISH',
+    close: 'CLOSE',
+    paused: 'PAUSED',
+    resume: 'RESUME',
+    restart: 'RESTART',
+    wave_cleared: 'WAVE CLEARED!',
+    wave_bonus: '+500 BONUS POINTS',
+    game_over: 'GAME OVER',
+    final_score: 'FINAL SCORE',
+    high_score: 'HIGH SCORE',
+    new_record: '🏆 NEW RECORD!',
+    play_again: 'PLAY AGAIN',
+    tap_to_start: 'TAP TO START',
+    loading: 'LOADING ASSETS...',
+    how_to_play: 'HOW TO PLAY',
+    objective_title: 'OBJECTIVE',
+    objective_text: 'Deflect the XB balls with your beam bat to shatter bricks! Destroy all breakable bricks on the board to clear the wave and earn a +500 wave bonus.',
+    th_brick: 'BRICK',
+    th_skill: 'SKILL',
+    th_effect: 'EFFECT',
+    buff_badge: 'Buff',
+    debuff_badge: 'Debuff',
+    skills: {
+      yo: { name: 'OVERDRIVE', desc: "Activate Yo's beam bat and extended the bat for 30 seconds. Timer refreshes on repeat hits." },
+      tsuki: { name: 'IROHA BALL', desc: 'Gives magnet effect to the nearest brick, drawing the ball that breaks the brick straight into it.' },
+      q: { name: 'BROKEN MORAL', desc: 'Explodes and destroys all adjacent bricks in a 3x3 radius.' },
+      kazuki: { name: 'DEFLECT SERVER', desc: 'Deploys a safety shield beneath the bat for 15s. Destroyed after 1 hit.' },
+      miu: { name: 'LUMINOUS CRYSTAL', desc: 'Summoned luminous crystal that fire upward plasma lasers whenever a ball bounces on the bat for 30s.' },
+      jio: { name: 'POISON RAIN', desc: 'Poisons an adjacent brick. If not broken by a ball in 5s, it self-destructs and spreads to another.' },
+      enoki: { name: 'IGNITION', desc: 'Requires 3 hits. When destroyed, unleashes an X-line laser blast destroying all bricks on diagonal axes.' },
+      saigo: { name: 'ROAR OF OUTRAGE', desc: 'Requires 3 hits. When destroyed, detonates a + shape cross laser destroying all bricks in its row & column.' },
+      koishi: { name: 'TIME TO EAT', desc: 'Immediately cleanses and removes all active debuffs affecting the player.' },
+      shun: { name: 'PLAY BALL', desc: 'Spawns an additional extra multiball into play.' },
+      eiji: { name: 'MONEY IS POWER!', desc: 'Spawns 5 fluttering Kane banknotes that drift down from above. Catch them for big bonus points!' },
+      hyakuichitaro: { name: 'FIGHTING SPIRIT', desc: 'Transforms the ball into a piercing Fire Ball that tears through 3 bricks without bouncing.' },
+      tsuruko: { name: "TWILIGHT'S EMBRACE", desc: 'Summons a gravity field for 8s in bottom 30% of arena, reducing falling ball speed by 55%.' },
+      mita: { name: 'ENERGIZE', desc: 'Boosts paddle speed and responsiveness significantly for 20 seconds.' },
+      manami: { name: 'HEAVY METAL', desc: 'When broken, leaps into the air and crashes into another tile, unleashing a cross-blast explosion.' },
+      saori: { name: 'INSTANT PERCEPTION', desc: 'Fires 5 sequential high-speed white plasma bullets upward from the board center.' },
+      taiga: { name: 'BREAKTHROUGH', desc: 'Summons an emerald updraft gale that blows all active balls upward with an explosive boost.' },
+      zero: { name: 'ITS YOUR CUTE ZERO!', desc: 'Drops a heavy Zero Heart. Successfully bouncing it 3 times transforms it into +1 extra life (or +1000 points at max lives)!' },
+      haru: { name: 'POWER RESONANCE', desc: 'Triggers 2 seconds of cinematic bullet-time slow-motion in grayscale.' },
+      taito: { name: 'INTERLOCKING STRATAGEMS', desc: 'Launches festival firework. All points scored are doubled for 15s!' },
+      akiba: { name: 'SUDDEN STRIKE', desc: 'Teleport no Jutsu! Ball teleports to the top of the arena.' },
+      adachi: { name: 'WATCH MY SIX!', desc: 'Requires 3 hits. When destroyed, transforms all available balls into fireballs.' },
+      shinagawa: { name: 'RISK MANAGEMENT', desc: 'Requires 5 hits to destroy. When broken, fires a massive charging purple laser from the left screen edge that sweeps across and obliterates 3 full rows!' },
+      shinjuku: { name: 'SWEET CHARM', desc: 'Requires 3 hits to destroy. When broken, purifies the field by destroying all debuff bricks and clearing all running debuff effects!' },
+      ichinose: { name: 'POWER HARASSMENT', desc: 'Clamps all points gained to strictly 1 point for 60s.' },
+      akuta: { name: 'TOKIMEKI TIME', desc: 'Breaks the bat to half for 60 seconds.' },
+      sui: { name: 'LEBENSTRIEB', desc: 'Drops red shipping containers. Catching one slows the bat for 2s!' },
+      magata: { name: 'REJECTION IMPULSE', desc: 'Floods the brick field with livestream comments for 30s.' },
+      ruriiro: { name: 'WHERE IS THE REAL RURIIRO?', desc: 'Disguises all bricks as Ruriiro illusions. Break the real one to dispel!' },
+      sonoda: { name: 'CHAOTIC ORDER', desc: 'Drops 2 falling bombs. Catching one stuns the paddle for 1s!' }
+    }
+  },
+  ja: {
+    score: 'SCORE:',
+    high: 'HIGH SCORE:',
+    settings: '設定',
+    bgm_volume: 'BGM 音量',
+    sfx_volume: 'SFX 音量',
+    language: '言語',
+    lang_name: '日本語',
+    close: '閉じる',
+    paused: '一時停止',
+    resume: '再開',
+    restart: 'リスタート',
+    wave_cleared: 'ウェーブクリア！',
+    wave_bonus: '+500 ボーナスポイント',
+    game_over: 'ゲームオーバー',
+    final_score: '最終スコア',
+    high_score: 'ハイスコア',
+    new_record: '🏆 新記録！',
+    play_again: 'もう一度遊ぶ',
+    tap_to_start: 'タップしてスタート',
+    loading: 'リソース読み込み中...',
+    how_to_play: '遊び方',
+    objective_title: '目的',
+    objective_text: 'ビームバットでXBボールを打ち返し、ブロックを破壊しよう！画面上のすべての破壊可能ブロックを壊すとウェーブクリアとなり、+500ボーナスを獲得できます。',
+    th_brick: 'ブロック',
+    th_skill: 'スキル',
+    th_effect: '効果',
+    buff_badge: 'バフ',
+    debuff_badge: 'デバフ',
+    skills: {
+      yo: { name: 'OVERDRIVE', desc: '曜のビームバットを起動し、30秒間バットを拡張する。連続ヒットで効果時間が更新。' },
+      tsuki: { name: 'IROHA BALL', desc: '最も近いブロックに磁石効果を付与し、壊したボールを引き寄せる。' },
+      q: { name: 'BROKEN MORAL', desc: '大爆発を起こし、周囲3x3マスのブロックをすべて破壊する。' },
+      kazuki: { name: 'DEFLECT SERVER', desc: 'バットの下に15秒間セーフティシールドを展開。1ヒットで消滅。' },
+      miu: { name: 'LUMINOUS CRYSTAL', desc: 'クリスタルを召喚。30秒間、バットでボールを打ち返すたびに上方へプラズマレーザーを発射。' },
+      jio: { name: 'POISON RAIN', desc: '隣接するブロックに毒を感染させる。5秒以内にボールで破壊しないと自壊し、さらに感染が拡大。' },
+      enoki: { name: 'IGNITION', desc: '破壊に3ヒット必要。破壊時、X字の斜め交差ライン上のブロックをすべて破壊する。' },
+      saigo: { name: 'ROAR OF OUTRAGE', desc: '破壊に3ヒット必要。破壊時、同じ行と列のブロックを十文字にすべて破壊する。' },
+      koishi: { name: 'TIME TO EAT', desc: '現在発動中のデバフ効果を即座に解除・浄化する。' },
+      shun: { name: 'PLAY BALL', desc: '現在のボールから追加のボールを1個分裂させて発射。' },
+      eiji: { name: 'MONEY IS POWER!', desc: '上空からヒラヒラと舞い落ちるカネ（紙幣）を5枚降らせる。キャッチで大量得点！' },
+      hyakuichitaro: { name: 'FIGHTING SPIRIT', desc: 'ボールをファイアボールに変化させる。ブロックを反射せずに3個貫通破壊。' },
+      tsuruko: { name: "TWILIGHT'S EMBRACE", desc: '8秒間、画面下部30%に重力場を展開。落下中のボール速度を55%減速させ受けやすくする。' },
+      mita: { name: 'ENERGIZE', desc: '20秒間、バットの移動速度と操作追従性を大幅にアップ。' },
+      manami: { name: 'HEAVY METAL', desc: '破壊時、別のブロックへジャンプして着地時に十文字爆発を引き起こす。' },
+      saori: { name: 'INSTANT PERCEPTION', desc: '画面中央から上方へ5発の白い高速連射弾を発射。' },
+      taiga: { name: 'BREAKTHROUGH', desc: 'フィールドに翠嵐の突風を巻き起こし、すべてのボールを上方へ吹き飛ばす。' },
+      zero: { name: 'ITS YOUR CUTE ZERO!', desc: '重たいゼロハートをドロップ。バットで3回リフティングするとライフが1回復（最大ライフ時は1000点獲得）！' },
+      haru: { name: 'POWER RESONANCE', desc: '2秒間スローモーションを発動。画面がモノクロになり、安全にボールを狙える。' },
+      taito: { name: 'INTERLOCKING STRATAGEMS', desc: '15秒間、画面下部からお祝いの花火を打ち上げる。期間中のすべての獲得スコアが2倍！' },
+      akiba: { name: 'SUDDEN STRIKE', desc: 'ボールが煙幕とともに天井へワープし、上空から急降下してブロックを強襲！' },
+      adachi: { name: 'WATCH MY SIX!', desc: '破壊に3ヒット必要。破壊時、画面上のすべてのボールを貫通ファイアボールに変化させる。' },
+      shinagawa: { name: 'RISK MANAGEMENT', desc: '破壊に5ヒット必要。破壊時、左端から画面を薙ぎ払う極大レーザーをチャージ発射し3行を一掃！' },
+      shinjuku: { name: 'SWEET CHARM', desc: '破壊に3ヒット必要。破壊時、画面上の全デバフブロックと全発動中デバフを浄化！' },
+      ichinose: { name: 'POWER HARASSMENT', desc: '【デバフ】60秒間、すべての得点獲得が強制的に1点に固定される。' },
+      akuta: { name: 'TOKIMEKI TIME', desc: '【デバフ】バットの左右両端を削り、60秒間バットの横幅を半分に縮小する。' },
+      sui: { name: 'LEBENSTRIEB', desc: '【デバフ】30秒間、上空からコンテナを定期的に落下させる。バットに当たるとライフを1失う！' },
+      magata: { name: 'REJECTION IMPULSE', desc: '【デバフ】30秒間、大量の弾幕コメントが画面を右から左へ横断して視界を妨害する。' },
+      ruriiro: { name: 'WHERE IS THE REAL RURIIRO?', desc: '【デバフ】フィールド上のすべてのブロックをルリイロの幻影に偽装する。本物を壊して解除！' },
+      sonoda: { name: 'CHAOTIC ORDER', desc: '【デバフ】2個の爆弾を投下。バットに当たると1秒間バットがスタンして動けなくなる！' }
+    }
+  }
+};
+
 // --- Game Engine Class ---
 class BrickBreakerGame {
   constructor() {
@@ -722,12 +905,17 @@ class BrickBreakerGame {
     this.sliderSfx = document.getElementById('slider-sfx');
     this.bgmVolumeVal = document.getElementById('bgm-volume-val');
     this.sfxVolumeVal = document.getElementById('sfx-volume-val');
+    this.btnLangEn = document.getElementById('btn-lang-en');
+    this.btnLangJa = document.getElementById('btn-lang-ja');
+    this.langValEl = document.getElementById('lang-val');
+    this.language = this.loadLanguage();
     this.wasPlayingBeforeSettings = false;
     this.wasPlayingBeforeInfo = false;
 
     // Audio & Particles
     this.sound = new SoundSystem();
     this.particles = [];
+    this.smokeParticles = [];
     this.floatingTexts = [];
 
     // State
@@ -872,6 +1060,121 @@ class BrickBreakerGame {
     } catch {
       // storage unavailable / incognito
     }
+  }
+
+  saveHighScoreIfRecord() {
+    const currentScore = Math.max(this.score || 0, this.displayedScore || 0);
+    if (currentScore <= 0) return;
+    const storedRecord = this.loadHighScore();
+    const currentBest = Math.max(this.highScore || 0, storedRecord);
+    if (currentScore > currentBest) {
+      this.highScore = currentScore;
+      this.saveHighScore(currentScore);
+    }
+  }
+
+  loadLanguage() {
+    try {
+      const saved = localStorage.getItem('extremebrick_lang');
+      if (saved === 'ja' || saved === 'en') return saved;
+      const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+      if (browserLang.startsWith('ja')) return 'ja';
+      return 'en';
+    } catch (e) {
+      return 'en';
+    }
+  }
+
+  setLanguage(lang) {
+    this.language = lang === 'ja' ? 'ja' : 'en';
+    try {
+      localStorage.setItem('extremebrick_lang', this.language);
+    } catch (e) { }
+
+    const t = I18N[this.language] || I18N.en;
+
+    if (this.btnLangEn) this.btnLangEn.classList.toggle('active', this.language === 'en');
+    if (this.btnLangJa) this.btnLangJa.classList.toggle('active', this.language === 'ja');
+    if (this.langValEl) this.langValEl.textContent = t.lang_name;
+
+    this.applyLanguageToDOM();
+  }
+
+  applyLanguageToDOM() {
+    const t = I18N[this.language] || I18N.en;
+
+    // HUD
+    const lblScore = document.getElementById('lbl-score');
+    if (lblScore) lblScore.textContent = t.score;
+    const lblHigh = document.getElementById('lbl-high');
+    if (lblHigh) lblHigh.textContent = t.high;
+
+    // Settings Modal
+    const settingsTitle = document.getElementById('settings-title');
+    if (settingsTitle) settingsTitle.textContent = t.settings;
+    const lblBgm = document.getElementById('setting-lbl-bgm');
+    if (lblBgm) lblBgm.textContent = t.bgm_volume;
+    const lblSfx = document.getElementById('setting-lbl-sfx');
+    if (lblSfx) lblSfx.textContent = t.sfx_volume;
+    const lblLang = document.getElementById('setting-lbl-lang');
+    if (lblLang) lblLang.textContent = t.language;
+    if (this.btnCloseSettings) this.btnCloseSettings.textContent = t.close;
+
+    // Pause Modal
+    const pauseTitle = document.getElementById('pause-title');
+    if (pauseTitle) pauseTitle.textContent = t.paused;
+    if (this.btnResume) this.btnResume.textContent = t.resume;
+    if (this.btnRestartPause) this.btnRestartPause.textContent = t.restart;
+
+    // Wave Overlay
+    if (this.waveTitleEl) this.waveTitleEl.textContent = t.wave_cleared;
+    const waveBonus = document.getElementById('wave-bonus');
+    if (waveBonus) waveBonus.textContent = t.wave_bonus;
+
+    // Game Over Overlay
+    const gameoverTitle = document.getElementById('gameover-title');
+    if (gameoverTitle) gameoverTitle.textContent = t.game_over;
+    const lblFinal = document.getElementById('lbl-final-score');
+    if (lblFinal) lblFinal.textContent = t.final_score;
+    const lblOverHigh = document.getElementById('lbl-gameover-high');
+    if (lblOverHigh) lblOverHigh.textContent = t.high_score;
+    if (this.newHighBadgeEl) this.newHighBadgeEl.textContent = t.new_record;
+    if (this.btnRestart) this.btnRestart.textContent = t.play_again;
+
+    // Start / Loading Overlay
+    const loadingStatus = document.getElementById('loading-status');
+    if (loadingStatus) loadingStatus.textContent = t.loading;
+    const tapPrompt = document.getElementById('tap-prompt-text');
+    if (tapPrompt) tapPrompt.textContent = t.tap_to_start;
+
+    // Info Modal
+    const infoModalTitle = document.getElementById('info-modal-title');
+    if (infoModalTitle) infoModalTitle.textContent = t.how_to_play;
+    const infoObjTitle = document.getElementById('info-objective-title');
+    if (infoObjTitle) infoObjTitle.textContent = t.objective_title;
+    const infoObjText = document.getElementById('info-objective-text');
+    if (infoObjText) infoObjText.textContent = t.objective_text;
+    const thBrick = document.getElementById('th-brick');
+    if (thBrick) thBrick.textContent = t.th_brick;
+    const thSkill = document.getElementById('th-skill');
+    if (thSkill) thSkill.textContent = t.th_skill;
+    const thEffect = document.getElementById('th-effect');
+    if (thEffect) thEffect.textContent = t.th_effect;
+    if (this.btnCloseInfo) this.btnCloseInfo.textContent = t.close;
+
+    // Codex Table rows
+    const rows = document.querySelectorAll('#codex-table-body tr[data-brick]');
+    rows.forEach(row => {
+      const brickKey = row.getAttribute('data-brick');
+      const skillInfo = t.skills[brickKey];
+      if (skillInfo) {
+        const strongEl = row.querySelector('.skill-name-buff, .skill-name-debuff');
+        if (strongEl) strongEl.textContent = skillInfo.name;
+        if (row.children && row.children[2]) {
+          row.children[2].textContent = skillInfo.desc;
+        }
+      }
+    });
   }
 
   formatScore(val) {
@@ -1344,6 +1647,9 @@ class BrickBreakerGame {
       hasMagnetEffect: false,
       isFireBall: false,
       fireHitsRemaining: 0,
+      smokeTimer: 0,
+      smokeDuration: 0,
+      smokeSpawnTimer: 0,
       trail: []
     };
   }
@@ -1468,6 +1774,18 @@ class BrickBreakerGame {
     this.btnRestartPause.addEventListener('click', () => this.restartGame());
     this.btnRestart.addEventListener('click', () => this.restartGame());
 
+    // Save latest score if it's a highscore when browser/tab is closed or navigated away
+    const handleBrowserClose = () => {
+      this.saveHighScoreIfRecord();
+    };
+    window.addEventListener('beforeunload', handleBrowserClose);
+    window.addEventListener('pagehide', handleBrowserClose);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        this.saveHighScoreIfRecord();
+      }
+    });
+
     // Modal Helpers
     this.openSettings = () => {
       this.sound.init();
@@ -1520,6 +1838,14 @@ class BrickBreakerGame {
         this.sound.resumeBGM();
       }
     };
+
+    // Language Switcher Handlers
+    if (this.btnLangEn) {
+      this.btnLangEn.addEventListener('click', () => this.setLanguage('en'));
+    }
+    if (this.btnLangJa) {
+      this.btnLangJa.addEventListener('click', () => this.setLanguage('ja'));
+    }
 
     // Settings Modal Handlers
     if (this.btnSettings) {
@@ -1604,6 +1930,7 @@ class BrickBreakerGame {
   async init() {
     this.initVignetteCanvases();
     this.setupInputs();
+    this.setLanguage(this.language);
     this.updateHUD();
     // Position paddle and resting preview ball on canvas behind overlay
     this.bat.x = (CANVAS_WIDTH - BAT_WIDTH) / 2;
@@ -1616,8 +1943,10 @@ class BrickBreakerGame {
   startGame() {
     this.sound.init();
     this.sound.playBGM();
+    this.saveHighScoreIfRecord();
     this.score = 0;
     this.displayedScore = 0;
+    this.highScore = this.loadHighScore();
     this.displayedHighScore = this.highScore;
     this.scoreIncrementTimer = 0;
     if (this.scorePopupContainer) {
@@ -1627,6 +1956,7 @@ class BrickBreakerGame {
     this.lives = INITIAL_LIVES;
     this.speedMultiplier = 1.0;
     this.particles = [];
+    this.smokeParticles = [];
     this.floatingTexts = [];
     this.magnetBricksRemaining = 0;
     this.shield = { active: false, timer: 0, dataBoxes: [] };
@@ -1728,6 +2058,7 @@ class BrickBreakerGame {
   }
 
   triggerGameOver() {
+    this.saveHighScoreIfRecord();
     this.displayedScore = this.score;
     this.displayedHighScore = this.highScore;
     this.updateHUD();
@@ -2368,11 +2699,6 @@ class BrickBreakerGame {
     const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
     const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 180);
 
-    // Floating text
-    this.floatingTexts.push(
-      new FloatingText(bx, by - 12, "CHAOTIC ORDER!", "#ff2a2a", '15px "Press Start 2P"')
-    );
-
     // Crimson and fiery sparks
     this.spawnExplosion(bx, by, '#ff2200', 32);
     this.spawnExplosion(bx, by, '#ff8800', 22);
@@ -2456,13 +2782,6 @@ class BrickBreakerGame {
     const bx = brick ? (brick.x + brick.width / 2) : (CANVAS_WIDTH / 2);
     const by = brick ? (brick.y + brick.height / 2) : (HEADER_HEIGHT + 180);
 
-    // Floating announcements
-    this.floatingTexts.push(
-      new FloatingText(bx, by - 14, "INTERLOCKING STRATAGEMS!", "#ffd700", '15px "Press Start 2P"')
-    );
-    this.floatingTexts.push(
-      new FloatingText(CANVAS_WIDTH / 2, BAT_Y - 50, "DOUBLE SCORE (15s)!", "#00f3ff", '16px "Press Start 2P"')
-    );
 
     // Gold & cyan sparkling explosion on the brick
     this.spawnExplosion(bx, by, '#ffd700', 36);
@@ -2489,6 +2808,7 @@ class BrickBreakerGame {
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#00f3ff', 30);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0055', 20);
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffffff', 12);
+      this.spawnSmokeBurst(brick.x + brick.width / 2, brick.y + brick.height / 2, 18, 3.0);
 
       // Teleport source ball directly to top ceiling (below header)
       sourceBall.y = HEADER_HEIGHT + sourceBall.radius + 6;
@@ -2511,15 +2831,16 @@ class BrickBreakerGame {
         sourceBall.vy = (vy / currentSpeed) * speed;
       }
 
-      // Arrival warp burst at the ceiling
+      // 1-second smoke effect around the ball that teleports
+      sourceBall.smokeTimer = 1.0;
+      sourceBall.smokeDuration = 1.0;
+      sourceBall.smokeSpawnTimer = 0;
+
+      // Arrival warp burst & smoke bomb at the ceiling
       this.spawnExplosion(sourceBall.x, sourceBall.y, '#00f3ff', 32);
       this.spawnExplosion(sourceBall.x, sourceBall.y, '#ff0055', 22);
       this.spawnExplosion(sourceBall.x, sourceBall.y, '#ffffff', 14);
-
-      // Floating indicator
-      this.floatingTexts.push(
-        new FloatingText(sourceBall.x, sourceBall.y + 26, 'TOP WARP!', '#00f3ff', '12px "Press Start 2P"')
-      );
+      this.spawnSmokeBurst(sourceBall.x, sourceBall.y, 24, 3.6);
     } else {
       // Broken by explosion / other brick skills: just gain points (no teleport)
       this.sound.playSpecialHit();
@@ -2871,43 +3192,48 @@ class BrickBreakerGame {
 
   getDefaultSkillsConfig() {
     return {
-      yo: { name: "EXTENDED BOARD", type: "buff", icon: "images/brick_yo.webp" },
-      tsuki: { name: "MAGNET TRACTOR", type: "buff", icon: "images/brick_tsuki.webp" },
-      q: { name: "BOMB BLAST", type: "buff", icon: "images/brick_q.webp" },
-      kazuki: { name: "NEON SHIELD", type: "buff", icon: "images/brick_kazuki.webp" },
-      miu: { name: "DUAL TURRETS", type: "buff", icon: "images/brick_miu.webp" },
-      jio: { name: "TOXIC POISON", type: "buff", icon: "images/brick_jio.webp" },
-      enoki: { name: "X-LINE BLAST", type: "buff", icon: "images/brick_enoki.webp" },
-      koishi: { name: "DEBUFF DISPEL", type: "buff", icon: "images/brick_koishi.webp" },
-      shun: { name: "EXTRA MULTIBALL", type: "buff", icon: "images/brick_shun.webp" },
-      eiji: { name: "GOLDEN TREASURE", type: "buff", icon: "images/brick_eiji.webp" },
-      saigo: { name: "PLUS BLAST", type: "buff", icon: "images/brick_saigo.webp" },
-      hyakuichitaro: { name: "FIREBALL PIERCE", type: "buff", icon: "images/brick_hyakuichitaro.webp" },
-      tsuruko: { name: "GRAVITY FIELD", type: "buff", icon: "images/brick_tsuruko.webp" },
-      ichinose: { name: "POINT PENALTY", type: "debuff", icon: "images/brick_ichinose.webp" },
-      mita: { name: "SPEED BOOST", type: "buff", icon: "images/brick_mita.webp" },
-      manami: { name: "WARP CROSS BLAST", type: "buff", icon: "images/brick_manami.webp" },
-      saori: { name: "RAPID BULLETS", type: "buff", icon: "images/brick_saori.webp" },
-      akuta: { name: "BOARD DAMAGED", type: "debuff", icon: "images/brick_akuta.webp" },
-      taiga: { name: "GREEN GALE", type: "buff", icon: "images/brick_taiga.webp" },
-      sui: { name: "CONTAINER HAZARD", type: "debuff", icon: "images/brick_sui.webp" },
-      magata: { name: "DANMAKU BARRAGE", type: "debuff", icon: "images/brick_magata.webp" },
-      ruriiro: { name: "RURIIRO ILLUSION", type: "debuff", icon: "images/brick_ruriiro.webp" },
-      ruriiro_real: { name: "ILLUSION DISPELLED", type: "buff", icon: "images/brick_ruriiro.webp" },
-      zero: { name: "ZERO HEART DROP", type: "buff", icon: "images/brick_zero.webp" },
+      yo: { name: "OVERDRIVE", type: "buff", icon: "images/brick_yo.webp" },
+      tsuki: { name: "IROHA BALL", type: "buff", icon: "images/brick_tsuki.webp" },
+      q: { name: "BROKEN MORAL", type: "buff", icon: "images/brick_q.webp" },
+      kazuki: { name: "DEFLECT SERVER", type: "buff", icon: "images/brick_kazuki.webp" },
+      miu: { name: "LUMINOUS CRYSTAL", type: "buff", icon: "images/brick_miu.webp" },
+      jio: { name: "POISON RAIN", type: "buff", icon: "images/brick_jio.webp" },
+      enoki: { name: "IGNITION", type: "buff", icon: "images/brick_enoki.webp" },
+      koishi: { name: "TIME TO EAT", type: "buff", icon: "images/brick_koishi.webp" },
+      shun: { name: "PLAY BALL", type: "buff", icon: "images/brick_shun.webp" },
+      eiji: { name: "MONEY IS POWER!", type: "buff", icon: "images/brick_eiji.webp" },
+      saigo: { name: "ROAR OF OUTRAGE", type: "buff", icon: "images/brick_saigo.webp" },
+      hyakuichitaro: { name: "FIGHTING SPIRIT", type: "buff", icon: "images/brick_hyakuichitaro.webp" },
+      tsuruko: { name: "TWILIGHT'S EMBRACE", type: "buff", icon: "images/brick_tsuruko.webp" },
+      ichinose: { name: "POWER HARASSMENT", type: "debuff", icon: "images/brick_ichinose.webp" },
+      mita: { name: "ENERGIZE", type: "buff", icon: "images/brick_mita.webp" },
+      manami: { name: "HEAVY METAL", type: "buff", icon: "images/brick_manami.webp" },
+      saori: { name: "INSTANT PERCEPTION", type: "buff", icon: "images/brick_saori.webp" },
+      akuta: { name: "TOKIMEKI TIME", type: "debuff", icon: "images/brick_akuta.webp" },
+      taiga: { name: "BREAKTHROUGH", type: "buff", icon: "images/brick_taiga.webp" },
+      sui: { name: "LEBENSTRIEB", type: "debuff", icon: "images/brick_sui.webp" },
+      magata: { name: "REJECTION IMPULSE", type: "debuff", icon: "images/brick_magata.webp" },
+      ruriiro: { name: "WHERE IS THE REAL RURIIRO?", type: "debuff", icon: "images/brick_ruriiro.webp" },
+      ruriiro_real: { name: "THE REAL RURIIRO", type: "buff", icon: "images/brick_ruriiro.webp" },
+      zero: { name: "ITS YOUR CUTE ZERO!", type: "buff", icon: "images/brick_zero.webp" },
       haru: { name: "POWER RESONANCE", type: "buff", icon: "images/brick_haru.webp" },
       sonoda: { name: "CHAOTIC ORDER", type: "debuff", icon: "images/brick_sonoda.webp" },
       taito: { name: "INTERLOCKING STRATAGEMS", type: "buff", icon: "images/brick_taito.webp" },
-      akiba: { name: "LOVELY IMPACT", type: "buff", icon: "images/brick_akiba.webp" },
-      adachi: { name: "ALL FIREBALL PIERCE", type: "buff", icon: "images/brick_adachi.webp" },
+      akiba: { name: "SUDDEN STRIKE", type: "buff", icon: "images/brick_akiba.webp" },
+      adachi: { name: "WATCH MY SIX!", type: "buff", icon: "images/brick_adachi.webp" },
       shinagawa: { name: "RISK MANAGEMENT", type: "buff", icon: "images/brick_shinagawa.webp" },
       shinjuku: { name: "SWEET CHARM", type: "buff", icon: "images/brick_shinjuku.webp" }
     };
   }
 
   triggerSkillCutin(brickType) {
+    const t = I18N[this.language || 'en'] || I18N.en;
+    const skillData = t && t.skills && t.skills[brickType];
     const config = (this.skillsConfig && this.skillsConfig[brickType]) || (this.getDefaultSkillsConfig && this.getDefaultSkillsConfig()[brickType]);
-    if (!config) return;
+    if (!config && !skillData) return;
+
+    const skillName = (skillData && skillData.name) || (config && config.name) || brickType.toUpperCase();
+    const skillType = (config && config.type) || 'buff';
 
     const cutinWidth = 400;
     const cutinHeight = 99;
@@ -2936,8 +3262,8 @@ class BrickBreakerGame {
 
     const newCutin = {
       key: brickType,
-      name: config.name || 'SKILL ACTIVATED',
-      type: config.type || 'buff',
+      name: skillName,
+      type: skillType,
       iconImage: iconImg,
       slot: 0,
       x: -420,
@@ -2987,8 +3313,9 @@ class BrickBreakerGame {
       }
 
       // 2. "Buff" or "Debuff" text on the black tab box (red small text for debuff, blue small text for buff)
-      const badgeText = isDebuff ? 'Debuff' : 'Buff';
-      this.ctx.font = '8.5px "Press Start 2P"';
+      const isJa = this.language === 'ja';
+      const badgeText = isDebuff ? (isJa ? 'デバフ' : 'Debuff') : (isJa ? 'バフ' : 'Buff');
+      this.ctx.font = isJa ? '9px "DotGothic16", "Press Start 2P", sans-serif' : '8.5px "Press Start 2P"';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
       this.ctx.fillStyle = isDebuff ? '#ff3b56' : '#00e5ff';
@@ -3002,7 +3329,7 @@ class BrickBreakerGame {
       else if (cutin.name.length > 14) fontSize = 11.5;
       else if (cutin.name.length > 11) fontSize = 12.5;
 
-      this.ctx.font = `${fontSize}px "Press Start 2P"`;
+      this.ctx.font = isJa ? `bold ${Math.max(12, fontSize)}px "DotGothic16", "Noto Sans JP", sans-serif` : `${fontSize}px "Press Start 2P"`;
       this.ctx.textAlign = 'left';
       this.ctx.textBaseline = 'middle';
       this.ctx.shadowColor = '#000000';
@@ -3169,12 +3496,12 @@ class BrickBreakerGame {
         if (!target.alive) continue;
         target.alive = false;
         target.isPoisoned = false;
-        const basePoints = target.points || BRICK_POINTS;
+        const basePoints = target.points || (target.isSpecial ? 100 : BRICK_POINTS);
         const ptsGained = this.addScore(basePoints);
 
         this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, '#bf00ff', 24);
         this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, '#ffffff', 10);
-        const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (target.isHard ? '#ffcc00' : '#df40ff');
+        const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (target.isSpecial ? '#00f3ff' : (target.isHard ? '#ffcc00' : '#df40ff'));
         this.floatingTexts.push(
           new FloatingText(target.x + target.width / 2, target.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
         );
@@ -3185,10 +3512,7 @@ class BrickBreakerGame {
           this.updateMagnetBrick();
         }
 
-        // Activate special skills of any special bricks caught in the X line blast!
-        if (target.isSpecial) {
-          this.onSpecialBrickDestroyed(target, null, false);
-        }
+        // Do NOT run special brick effect when destroyed by enoki laser
       }
       return;
     }
@@ -3220,9 +3544,6 @@ class BrickBreakerGame {
     // Check if this is the "eiji" brick: drops 5 fluttering Kane papers!
     if (brick.specialType === 'eiji') {
       this.sound.playSpecialHit();
-      this.floatingTexts.push(
-        new FloatingText(brick.x + brick.width / 2, brick.y, 'KANE DROP (x5)!', '#ffe600', '14px "Press Start 2P"')
-      );
 
       // Radiant golden treasure burst
       this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffe600', 32);
@@ -3418,12 +3739,12 @@ class BrickBreakerGame {
         if (!target.alive) continue;
         target.alive = false;
         target.isPoisoned = false;
-        const basePoints = target.points || BRICK_POINTS;
+        const basePoints = target.points || (target.isSpecial ? 100 : BRICK_POINTS);
         const ptsGained = this.addScore(basePoints);
 
         this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, '#ff4500', 24);
         this.spawnExplosion(target.x + target.width / 2, target.y + target.height / 2, '#ffffff', 10);
-        const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (target.isHard ? '#ffcc00' : '#ff7733');
+        const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (target.isSpecial ? '#00f3ff' : (target.isHard ? '#ffcc00' : '#ff7733'));
         this.floatingTexts.push(
           new FloatingText(target.x + target.width / 2, target.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
         );
@@ -3434,10 +3755,7 @@ class BrickBreakerGame {
           this.updateMagnetBrick();
         }
 
-        // Activate special skills of any special bricks caught in the + blast!
-        if (target.isSpecial) {
-          this.onSpecialBrickDestroyed(target, null, false);
-        }
+        // Do NOT run special brick effect when destroyed by saigo laser
       }
       return;
     }
@@ -3647,6 +3965,22 @@ class BrickBreakerGame {
       this.particles.push(
         new Particle(x, y, color, size, Math.cos(angle) * speed, Math.sin(angle) * speed, life)
       );
+    }
+  }
+
+  spawnSmokeBurst(x, y, count = 20, speed = 3.5) {
+    if (!this.smokeParticles) this.smokeParticles = [];
+    if (this.smokeParticles.length >= 180) return;
+    const effectiveCount = Math.min(count, 180 - this.smokeParticles.length);
+    for (let i = 0; i < effectiveCount; i++) {
+      const angle = (Math.PI * 2 * i / effectiveCount) + (Math.random() - 0.5) * 0.5;
+      const spd = (0.5 + Math.random() * 0.8) * speed;
+      const vx = Math.cos(angle) * spd;
+      const vy = Math.sin(angle) * spd;
+      const initSize = 6 + Math.random() * 8;
+      const maxSize = 22 + Math.random() * 16;
+      const life = 0.5 + Math.random() * 0.45;
+      this.smokeParticles.push(new SmokeParticle(x, y, vx, vy, initSize, maxSize, life));
     }
   }
 
@@ -4083,6 +4417,27 @@ class BrickBreakerGame {
         this.spawnExplosion(ball.x + (Math.random() - 0.5) * ball.radius, ball.y + (Math.random() - 0.5) * ball.radius, '#ff69b4', 2);
       }
 
+      // Akiba teleport 1-second smoke effect update & continuous puff emission
+      if (ball.smokeTimer > 0) {
+        ball.smokeTimer -= dt;
+        if (ball.smokeTimer < 0) ball.smokeTimer = 0;
+
+        ball.smokeSpawnTimer = (ball.smokeSpawnTimer || 0) - dt;
+        if (ball.smokeSpawnTimer <= 0) {
+          ball.smokeSpawnTimer = 0.028; // ~35 puffs/sec for a lush smoke trail
+          const angle = Math.random() * Math.PI * 2;
+          const dist = Math.random() * (ball.radius * 0.9);
+          const px = ball.x + Math.cos(angle) * dist;
+          const py = ball.y + Math.sin(angle) * dist;
+          const pvx = (Math.random() - 0.5) * 1.8 - ball.vx * 0.18;
+          const pvy = (Math.random() - 0.5) * 1.8 - ball.vy * 0.18;
+          if (!this.smokeParticles) this.smokeParticles = [];
+          this.smokeParticles.push(
+            new SmokeParticle(px, py, pvx, pvy, ball.radius * 0.7, ball.radius * 2.8, 0.5 + Math.random() * 0.3)
+          );
+        }
+      }
+
       // Wall reflections
       // Left Wall
       if (ball.x - ball.radius <= 0) {
@@ -4357,17 +4712,20 @@ class BrickBreakerGame {
             this.updateMagnetBrick();
           }
 
-          // Do NOT run special brick effect when destroyed with laser
-          this.sound.playBrickHit();
-          const sparkColor = wasMagnet ? '#00f3ff' : (brick.isSpecial ? '#00f3ff' : (brick.isHard ? '#e0e0e0' : '#ff007f'));
-          this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 16);
-          if (brick.isHard) {
-            this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffcc00', 8);
+          if (brick.isSpecial) {
+            this.onSpecialBrickDestroyed(brick, null, false);
+          } else {
+            this.sound.playBrickHit();
+            const sparkColor = wasMagnet ? '#00f3ff' : (brick.isHard ? '#e0e0e0' : '#ff007f');
+            this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, sparkColor, 16);
+            if (brick.isHard) {
+              this.spawnExplosion(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ffcc00', 8);
+            }
+            const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (brick.isHard ? '#ffcc00' : '#ff007f');
+            this.floatingTexts.push(
+              new FloatingText(brick.x + brick.width / 2, brick.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
+            );
           }
-          const ptsColor = ptsGained === 1 && basePoints > 1 ? '#ff3344' : (brick.isSpecial ? '#00f3ff' : (brick.isHard ? '#ffcc00' : '#ff007f'));
-          this.floatingTexts.push(
-            new FloatingText(brick.x + brick.width / 2, brick.y, `+${ptsGained}`, ptsColor, '10px "Press Start 2P"')
-          );
           break;
         }
       }
@@ -4416,12 +4774,23 @@ class BrickBreakerGame {
           if (this.lives < MAX_LIVES) {
             this.lives = Math.min(MAX_LIVES, this.lives + 1);
             this.updateHUD();
+            this.floatingTexts.push(
+              new FloatingText(heart.x, this.bat.y - 20, '+1 LIFE!', '#00ff88', '14px "Press Start 2P"')
+            );
             this.spawnExplosion(heart.x, this.bat.y, '#88d629', 32);
             this.spawnExplosion(heart.x, this.bat.y, '#00ff88', 24);
             this.spawnExplosion(heart.x, this.bat.y, '#ffe600', 16);
           } else {
-            // Already at max 3 lives
-            this.spawnExplosion(heart.x, this.bat.y, '#88d629', 20);
+            // Already at max lives: award 1000 points instead!
+            const ptsGained = this.addScore(1000);
+            this.updateHUD();
+            const ptsColor = ptsGained === 1 ? '#ff3344' : '#ffe600';
+            this.floatingTexts.push(
+              new FloatingText(heart.x, this.bat.y - 20, `+${ptsGained}`, ptsColor, '14px "Press Start 2P"')
+            );
+            this.spawnExplosion(heart.x, this.bat.y, '#ffe600', 32);
+            this.spawnExplosion(heart.x, this.bat.y, '#ffaa00', 24);
+            this.spawnExplosion(heart.x, this.bat.y, '#ffffff', 16);
           }
 
           this.hearts.splice(hi, 1);
@@ -4520,6 +4889,16 @@ class BrickBreakerGame {
       this.particles[p].update(dt);
       if (this.particles[p].life <= 0) {
         this.particles.splice(p, 1);
+      }
+    }
+
+    // Update Smoke Particles
+    if (this.smokeParticles) {
+      for (let si = this.smokeParticles.length - 1; si >= 0; si--) {
+        this.smokeParticles[si].update(dt);
+        if (this.smokeParticles[si].life <= 0) {
+          this.smokeParticles.splice(si, 1);
+        }
       }
     }
 
@@ -4982,7 +5361,7 @@ class BrickBreakerGame {
       const batBottom = this.bat.y + this.bat.height;
 
       if (kRight >= batLeft - 6 && kLeft <= batRight + 6 &&
-          kBottom >= batTop - 6 && kTop <= batBottom + 8) {
+        kBottom >= batTop - 6 && kTop <= batBottom + 8) {
         // Collected Kane paper! Earn 200 points
         const gained = this.addScore(k.scoreValue || 200);
         this.sound.playSpecialHit();
@@ -5042,7 +5421,7 @@ class BrickBreakerGame {
       const batBottom = this.bat.y + this.bat.height;
 
       if (bRight >= batLeft + 4 && bLeft <= batRight - 4 &&
-          bBottom >= batTop && bTop <= batBottom + 12 && b.vy > 0) {
+        bBottom >= batTop && bTop <= batBottom + 12 && b.vy > 0) {
         // Bomb hits the board!
         this.sound.playExplode();
 
@@ -5056,10 +5435,6 @@ class BrickBreakerGame {
 
         this.container.classList.add('shake');
         setTimeout(() => this.container.classList.remove('shake'), 300);
-
-        this.floatingTexts.push(
-          new FloatingText(this.bat.x + this.bat.width / 2, this.bat.y - 20, "STUNNED!", "#ff2222", '16px "Press Start 2P"')
-        );
 
         // Board cannot move for 1 second while flashing red
         this.boardStunTimer = 1.0;
@@ -5083,9 +5458,6 @@ class BrickBreakerGame {
         if (this.interlockingStratagems.timer <= 0) {
           this.interlockingStratagems.active = false;
           this.interlockingStratagems.timer = 0;
-          this.floatingTexts.push(
-            new FloatingText(CANVAS_WIDTH / 2, BAT_Y - 35, "DOUBLE SCORE ENDED", "#888888", '13px "Press Start 2P"')
-          );
         } else {
           // Continuously launch new fireworks at the bottom
           this.interlockingStratagems.nextLaunchTimer -= dt;
@@ -6416,6 +6788,33 @@ class BrickBreakerGame {
         this.ctx.restore();
       }
 
+      // 1-second billowing ninja smoke shroud around teleported ball
+      if (ball.smokeTimer > 0) {
+        const smokeProgress = ball.smokeTimer / (ball.smokeDuration || 1.0);
+        const shroudAlpha = Math.min(1.0, smokeProgress * 1.4) * 0.85;
+
+        this.ctx.save();
+        const t = performance.now() / 140;
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * (Math.PI * 2 / 5)) + t * (i % 2 === 0 ? 1 : -1) * 0.8;
+          const dist = (ball.radius * 0.6) + Math.sin(t * 2 + i) * 2;
+          const px = ball.x + Math.cos(angle) * dist;
+          const py = ball.y + Math.sin(angle) * dist;
+          const puffRadius = ball.radius * (1.3 + 0.35 * Math.sin(t + i));
+
+          const grad = this.ctx.createRadialGradient(px, py, puffRadius * 0.1, px, py, puffRadius);
+          grad.addColorStop(0, `rgba(240, 245, 255, ${shroudAlpha * 0.7})`);
+          grad.addColorStop(0.6, `rgba(210, 215, 225, ${shroudAlpha * 0.4})`);
+          grad.addColorStop(1, 'rgba(180, 190, 205, 0)');
+
+          this.ctx.fillStyle = grad;
+          this.ctx.beginPath();
+          this.ctx.arc(px, py, puffRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+        this.ctx.restore();
+      }
+
       // Soft neon pink anti-gravity pulse ring when falling in gravity field
       if (this.gravityField.active && ball.y >= GRAVITY_FIELD_Y && ball.vy > 0) {
         this.ctx.save();
@@ -6753,6 +7152,13 @@ class BrickBreakerGame {
         this.particles[p].draw(this.ctx);
       }
       this.ctx.restore();
+    }
+
+    // 5b. Draw Smoke Particles
+    if (this.smokeParticles && this.smokeParticles.length > 0) {
+      for (let s = 0; s < this.smokeParticles.length; s++) {
+        this.smokeParticles[s].draw(this.ctx);
+      }
     }
 
     // 6. Draw Floating Texts

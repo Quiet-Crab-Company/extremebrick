@@ -104,7 +104,7 @@ The **Zero Brick** introduces an interactive recovery minigame. Rather than gran
   * **Hit 2**: Paddle bounce displays `ZERO HEART 2/3! (1 LEFT)`, playing `audio/boing.mp3`.
   * **Hit 3**: Transmutes into a life pickup! Plays `audio/special_brick.mp3` instead of `audio/boing.mp3`.
     * If `this.lives < 3`: Awards `+1 LIFE!`, restores a HUD life slot, plays celebratory fanfare, and erupts in cyan, magenta & gold healing particles.
-    * If `this.lives >= 3`: Plays sound, triggers particles, and displays `MAX LIVES (3/3)!` without exceeding the 3-life ceiling.
+    * If `this.lives >= 3`: Already at maximum lives — awards `+1000` bonus points via `this.addScore(1000)` with radiant gold/white spark bursts and displays floating `+1000` score text!
 * **Kazuki Shield Immunity**:
   * The heart icon **does not destroy or consume Kazuki's Neon Shield**. If the player fails to catch the heart, it drops cleanly through `SHIELD_Y = 1530` and falls off-screen (`HEART LOST`), leaving the shield 100% active and intact.
 * **Gravity Field Immunity**:
@@ -112,7 +112,7 @@ The **Zero Brick** introduces an interactive recovery minigame. Rather than gran
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/special_brick.mp3` on drop and on final 3rd bounce (instead of boing); `audio/boing.mp3` on 1st and 2nd paddle bounces.
-* **Floating Text**: `BOUNCE HEART 3x!` on spawn, `ZERO HEART N/3!` on paddle bounce, and `+1 LIFE!` on 3rd bounce.
+* **Floating Text**: `+1 LIFE!` on 3rd bounce (or `+1000` points if already at max lives).
 * **Visuals**: Rendered cleanly with `images/zero_heart.webp` as is (sized to 22px radius, 44px diameter), accompanied by paddle hit sparks.
 
 ---
@@ -229,7 +229,7 @@ The **Miu Brick** mounts high-tech cyber turrets on the left and right flanks of
     ```
 * **Bullet Impact & Chain Reactions**:
   * Bullets travel upward at `BULLET_SPEED = 20`.
-  * Special bricks struck by turret lasers are destroyed and award bonus score (+100) without running their special skill effect, preventing infinite cascade loops.
+  * Special bricks struck by turret fire are destroyed and trigger their special skill effects normally!
 * **Explosion Trigger**: If destroyed by an adjacent Q Brick explosion, the dual turrets deploy immediately!
 
 ### Sensory Feedback
@@ -285,8 +285,8 @@ The **Enoki Brick** is a fortified tactical cluster bomb brick with glowing purp
     );
     ```
   * Every brick along both diagonals (\ and /) across the full board is immediately obliterated!
-* **Special Brick Skill Activation in X-Blast**:
-  * Any special bricks caught in the diagonal blast trigger their special power-ups immediately (cascading Enoki X-blasts, Q bomb explosions, shields, turrets, poison chains, etc.)!
+* **Special Brick Destruction in X-Blast**:
+  * Any special bricks caught in the diagonal laser blast are destroyed and award full bonus points (+100), but do not trigger their special brick effects (preventing cascading laser/explosion loops).
 * **Visual Laser Beams**:
   * Renders brilliant multi-tiered purple neon laser beams (`#bf00ff`, `#e066ff`, white core) slicing diagonally through the playfield.
 
@@ -364,8 +364,8 @@ The **Saigo Brick** is a fortified cybernetic heavy artillery brick with mechani
     );
     ```
   * Obliterates the entire horizontal row and vertical column simultaneously!
-* **Special Brick Skill Activation in Blast Zone**:
-  * Any special bricks caught in the + blast trigger their special power-ups immediately (cascading blasts, bombs, multiballs, shields, poison, etc.)!
+* **Special Brick Destruction in Blast Zone**:
+  * Any special bricks caught in the + cross laser blast are destroyed and award full bonus points (+100), but do not trigger their special brick effects (preventing cascading laser/explosion loops).
 * **Visual Laser Beams**:
   * Renders brilliant fiery red/orange laser beams (`#ff3300`, `#ffa500`, white core) slicing across the entire width and height of the playfield.
 
@@ -889,14 +889,16 @@ The **Akiba Brick** features Hinagiku Akiba from the Akiba Tribe. Destroying thi
   * The ball's horizontal position is preserved (clamped safely within arena bounds).
   * Its velocity is redirected downward into the playfield ($V_y > 0$, maintaining its speed magnitude) so it rains down on the bricks from above.
   * Its motion trail history is reset upon teleportation to prevent stretching lines across the arena.
+* **1-Second Ninja Smoke Effect**:
+  * Upon teleporting, an immediate smoke bomb burst explodes at both the departure site and the top arrival ceiling location.
+  * For **1 full second**, the teleported ball is enveloped in a swirling ninja smoke shroud and continuously streams expanding billowing smoke clouds as it shoots downward into the arena.
 * **Secondary / Skill Destruction Handling**:
   * If the Akiba Brick is eliminated through indirect means (e.g., Q brick blast, Saigo cross beam, Enoki X beam, Jio poison timeout, turret lasers, or bullet volleys), no ball is teleported.
   * The player cleanly receives the brick's score points with neon sparkles and a `+100` floating indicator.
 
 ### Sensory Feedback
 * **Audio**: Plays `audio/smoke_bomb.mp3` upon warping the breaking ball behind/to the top; plays `audio/special_brick.mp3` if broken indirectly.
-* **Floating Text**: Displays `TOP WARP!` in electric cyan (`#00f3ff`) right at the ball's top arrival point.
-* **Visuals**: Heterochromatic dual-color sparks—cyan (`#00f3ff`) and vivid hot pink (`#ff0055`)—detonate at both the departure brick location and the top arrival warp point.
+* **Visuals**: Dual-colored neon sparks (cyan `#00f3ff` & hot pink `#ff0055`), an immediate departure & arrival smoke bomb explosion, and a 1-second billowing ninja smoke shroud and trail enveloping the teleported ball.
 
 ---
 

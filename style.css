@@ -7,8 +7,8 @@
   --panel-bg: rgba(14, 12, 30, 0.78);
   --panel-border: rgba(181, 55, 242, 0.45);
   --text-main: #f5f5fc;
-  --font-pixel: 'Press Start 2P', monospace;
-  --font-ui: 'Outfit', sans-serif;
+  --font-pixel: 'Press Start 2P', 'DotGothic16', monospace;
+  --font-ui: 'Outfit', 'Noto Sans JP', sans-serif;
 }
 
 * {
@@ -680,6 +680,42 @@ body {
 .settings-actions {
   display: flex;
   justify-content: center;
+}
+
+/* Language Switcher */
+.lang-switch-wrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.lang-btn {
+  flex: 1;
+  padding: 9px 12px;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #9da0b5;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(181, 55, 242, 0.35);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.lang-btn:hover {
+  color: #ffffff;
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 10px rgba(255, 42, 133, 0.4);
+}
+
+.lang-btn.active {
+  color: #ffffff;
+  border-color: var(--neon-cyan);
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.22) 0%, rgba(181, 55, 242, 0.22) 100%);
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.5), inset 0 0 8px rgba(0, 243, 255, 0.25);
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
 }
 
 /* --- Info / How to Play Modal & Brick Codex --- */
